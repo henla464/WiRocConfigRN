@@ -1,0 +1,7 @@
+npx react-native start
+npm start
+npx react-native run-android
+npm run android
+
+npm start --reset-cache
+
