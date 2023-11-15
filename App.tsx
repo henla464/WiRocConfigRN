@@ -23,35 +23,53 @@ function App(): JSX.Element {
   const hideModal = () => {
     setIsModalVisible(false);
   };
-  const {requestPermissions, allDevices, scanForDevices} = useBLE();
-  const openModal = async () => {
+  const {
+    requestPermissions,
+    allDevices,
+    scanForDevices,
+    connectToDevice,
+    connectedDevice,
+  } = useBLE();
+  const scan = async () => {
     requestPermissions((isGranted: boolean) => {
       if (isGranted) {
         scanForDevices();
-        setIsModalVisible(true);
+        //setIsModalVisible(true);
       }
     });
   };
 
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  const connect = async () => {
+    await connectToDevice(allDevices[0]);
+    if (connectedDevice?.isConnected) {
+    } else {
+    }
   };
 
+  //const isDarkMode = useColorScheme(openModal) === 'dark';
+
+  //const backgroundStyle = {
+  //  backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  //};
+
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
+    <SafeAreaView style={Colors.lighter}>
+      <StatusBar barStyle={'dark-content'} backgroundColor={Colors.lighter} />
       <DeviceModal closeModal={hideModal} modalVisible={isModalVisible} />
       <View>
         <Text>Please connect to a device</Text>
       </View>
-      <TouchableOpacity style={styles.button} onPress={openModal}>
-        <Text>Press Here</Text>
+      <TouchableOpacity style={styles.button} onPress={scan}>
+        <Text>Scan</Text>
       </TouchableOpacity>
+      <TouchableOpacity style={styles.button} onPress={connect}>
+        <Text>Connect</Text>
+      </TouchableOpacity>
+      <View>
+        <Text>
+          {connectedDevice?.isConnected ? 'Connected!' : 'Not connected...'}
+        </Text>
+      </View>
       {allDevices.map((device: Device) => (
         <Text>
           {device.name +

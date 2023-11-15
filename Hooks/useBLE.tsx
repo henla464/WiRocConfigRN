@@ -1,6 +1,8 @@
 import {useState} from 'react';
 import {PermissionsAndroid, Platform} from 'react-native';
 import {BleManager, Device} from 'react-native-ble-plx';
+import DeviceInfo from 'react-native-device-info';
+import {PERMISSIONS, requestMultiple} from 'react-native-permissions';
 
 type PermissionCallback = (result: boolean) => void;
 
@@ -10,6 +12,8 @@ interface BluetoothLowEnergyApi {
   requestPermissions(callback: PermissionCallback): Promise<void>;
   scanForDevices(): void;
   allDevices: Device[];
+  connectToDevice: (deviceId: Device) => Promise<void>;
+  connectedDevice: Device | null;
 }
 
 export default function useBLE(): BluetoothLowEnergyApi {
@@ -19,19 +23,39 @@ export default function useBLE(): BluetoothLowEnergyApi {
   const testPunchesCharacteristic = 'fb880907-4ab2-40a2-a8f0-14cc1c2e5608'; //N,R,W: test sending punches, subscribe, periodic
 
   const [allDevices, setAllDevices] = useState<Device[]>([]);
+  const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
   const requestPermissions = async (callback: PermissionCallback) => {
     if (Platform.OS === 'android') {
-      const grantedStatus = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
-        {
-          title: 'Location Permission',
-          message: 'Bluetooth Low Energy behöver åtkomst till platsinformation',
-          buttonNegative: 'Avbryt',
-          buttonPositive: 'OK',
-          buttonNeutral: 'Kanske senare',
-        },
-      );
-      callback(grantedStatus === PermissionsAndroid.RESULTS.GRANTED);
+      const apiLevel = await DeviceInfo.getApiLevel();
+      if (apiLevel < 31) {
+        const grantedStatus = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION,
+          {
+            title: 'Location Permission',
+            message:
+              'Bluetooth Low Energy behöver åtkomst till platsinformation',
+            buttonNegative: 'Avbryt',
+            buttonPositive: 'OK',
+            buttonNeutral: 'Kanske senare',
+          },
+        );
+        callback(grantedStatus === PermissionsAndroid.RESULTS.GRANTED);
+      } else {
+        const result = await requestMultiple([
+          PERMISSIONS.ANDROID.BLUETOOTH_SCAN,
+          PERMISSIONS.ANDROID.BLUETOOTH_CONNECT,
+          PERMISSIONS.ANDROID.ACCESS_FINE_LOCATION,
+        ]);
+
+        const isAllPermissionsGranted =
+          result['android.permission.BLUETOOTH_SCAN'] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          result['android.permission.BLUETOOTH_CONNECT'] ===
+            PermissionsAndroid.RESULTS.GRANTED &&
+          result['android.permission.ACCESS_FINE_LOCATION'] ===
+            PermissionsAndroid.RESULTS.GRANTED;
+        callback(isAllPermissionsGranted);
+      }
     } else {
       callback(true);
     }
@@ -57,9 +81,22 @@ export default function useBLE(): BluetoothLowEnergyApi {
     });
   };
 
+  const connectToDevice = async (device: Device) => {
+    try {
+      const deviceConnected = await bleManager.connectToDevice(device.id);
+      setConnectedDevice(deviceConnected);
+      await deviceConnected.discoverAllServicesAndCharacteristics();
+      bleManager.stopDeviceScan();
+    } catch (e) {
+      console.log('ERROR IN CONNECTION');
+    }
+  };
+
   return {
     requestPermissions,
     scanForDevices,
     allDevices,
+    connectToDevice,
+    connectedDevice,
   };
 }
