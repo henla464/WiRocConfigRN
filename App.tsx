@@ -1,95 +1,72 @@
 import React from 'react';
-import {useState} from 'react';
-import {Button} from 'react-native-paper';
-import {
-  Alert,
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  useColorScheme,
-  View,
-} from 'react-native';
+import 'react-native-gesture-handler';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
 
-import {Colors} from 'react-native/Libraries/NewAppScreen';
-import useBLE from './Hooks/useBLE';
-import DeviceModal from './Components/DeviceConnectionModal';
-import {Device} from 'react-native-ble-plx';
+import ScanForDevicesScreen from './Components/ScanForDevicesScreen';
+import {Appbar, Menu, PaperProvider} from 'react-native-paper';
 
-function App(): JSX.Element {
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-  const hideModal = () => {
-    setIsModalVisible(false);
-  };
-  const {
-    requestPermissions,
-    allDevices,
-    scanForDevices,
-    connectToDevice,
-    connectedDevice,
-  } = useBLE();
-  const scan = async () => {
-    requestPermissions((isGranted: boolean) => {
-      if (isGranted) {
-        scanForDevices();
-        //setIsModalVisible(true);
-      }
-    });
-  };
+const Stack = createStackNavigator();
 
-  const connect = async () => {
-    await connectToDevice(allDevices[0]);
-    if (connectedDevice?.isConnected) {
-    } else {
-    }
-  };
-
-  //const isDarkMode = useColorScheme(openModal) === 'dark';
-
-  //const backgroundStyle = {
-  //  backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  //};
+function CustomNavigationBar({navigation, back}) {
+  const [visible, setVisible] = React.useState(true);
+  const openMenu = () => setVisible(true);
+  const closeMenu = () => setVisible(false);
 
   return (
-    <SafeAreaView style={Colors.lighter}>
-      <StatusBar barStyle={'dark-content'} backgroundColor={Colors.lighter} />
-      <DeviceModal closeModal={hideModal} modalVisible={isModalVisible} />
-      <View>
-        <Text>Please connect to a device</Text>
-      </View>
-      <TouchableOpacity style={styles.button} onPress={scan}>
-        <Text>Scan</Text>
-      </TouchableOpacity>
-      <TouchableOpacity style={styles.button} onPress={connect}>
-        <Text>Connect</Text>
-      </TouchableOpacity>
-      <View>
-        <Text>
-          {connectedDevice?.isConnected ? 'Connected!' : 'Not connected...'}
-        </Text>
-      </View>
-      {allDevices.map((device: Device) => (
-        <Text>
-          {device.name +
-            ' ' +
-            device.id +
-            ' ' +
-            (device.serviceUUIDs == null ? '' : device.serviceUUIDs[0])}
-        </Text>
-      ))}
-      <ScrollView />
-    </SafeAreaView>
+    <Appbar.Header>
+      {back ? <Appbar.BackAction onPress={navigation.goBack} /> : null}
+      <Appbar.Content title="My awesome app" />
+      {!back ? (
+        <Menu
+          visible={visible}
+          onDismiss={closeMenu}
+          anchor={
+            <Appbar.Action icon="menu" color="black" onPress={openMenu} />
+          }>
+          <Menu.Item
+            onPress={() => {
+              console.log('Option 1 was pressed');
+            }}
+            title="Option 1"
+          />
+          <Menu.Item
+            onPress={() => {
+              console.log('Option 2 was pressed');
+            }}
+            title="Option 2"
+          />
+          <Menu.Item
+            onPress={() => {
+              console.log('Option 3 was pressed');
+            }}
+            title="Option 3"
+            disabled
+          />
+        </Menu>
+      ) : null}
+    </Appbar.Header>
   );
 }
 
-const styles = StyleSheet.create({
-  button: {
-    alignItems: 'center',
-    backgroundColor: '#DDDDDD',
-    padding: 10,
-  },
-});
+function App(): JSX.Element {
+  return (
+    <PaperProvider>
+      <NavigationContainer>
+        <Stack.Navigator
+          initialRouteName="Sök efter WiRoc"
+          screenOptions={{
+            header: props => <CustomNavigationBar {...props} />,
+          }}>
+          <Stack.Screen
+            name="Sök efter WiRoc"
+            component={ScanForDevicesScreen}
+          />
+          <Stack.Screen name="Details" component={ScanForDevicesScreen} />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </PaperProvider>
+  );
+}
 
 export default App;
