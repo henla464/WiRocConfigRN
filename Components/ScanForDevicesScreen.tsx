@@ -43,7 +43,7 @@ export default function ScanForDevicesScreen() {
       <StatusBar barStyle={'dark-content'} backgroundColor={Colors.lighter} />
       <View>
         <Text>Please connect to a device</Text>
-        <Button icon="menu">Press me</Button>
+        <Button icon="menu">Press me 2</Button>
       </View>
       <TouchableOpacity style={styles.button} onPress={scan}>
         <Text>Scan</Text>

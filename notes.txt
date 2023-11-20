@@ -5,3 +5,15 @@ npm run android
 
 npm start --reset-cache
 
+
+npm cache clean --force
+
+
+sudo update-alternatives --config
+sudo update-alternatives --config javac
+
+
+rm -rf ~/.gradle/caches
+
+cd android
+./gradlew cleanBuildCache
