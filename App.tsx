@@ -10,63 +10,10 @@ import {
 
 //import {createStackNavigator} from '@react-navigation/stack';
 
-import ScanForDevicesScreen from './Components/ScanForDevicesScreen';
-import {
-  useTheme,
-  Avatar,
-  Title,
-  Caption,
-  Paragraph,
-  Drawer,
-  Text,
-  TouchableRipple,
-  Switch,
-} from 'react-native-paper';
-//import {Appbar, Menu} from 'react-native-paper';
+import ScanForDevicesScreen from './components/ScanForDevicesScreen';
+import {Caption, Drawer, Text, TouchableRipple} from 'react-native-paper';
 
-//const Stack = createStackNavigator();
 const Drawer2 = createDrawerNavigator();
-
-// function CustomNavigationBar({navigation, back}) {
-//   const [visible, setVisible] = React.useState(true);
-//   const openMenu = () => setVisible(true);
-//   const closeMenu = () => setVisible(false);
-
-//   return (
-//     <Appbar.Header>
-//       {back ? <Appbar.BackAction onPress={navigation.goBack} /> : null}
-//       <Appbar.Content title="My awesome app" />
-//       {!back ? (
-//         <Menu
-//           visible={visible}
-//           onDismiss={closeMenu}
-//           anchor={
-//             <Appbar.Action icon="menu" color="black" onPress={openMenu} />
-//           }>
-//           <Menu.Item
-//             onPress={() => {
-//               console.log('Option 1 was pressed');
-//             }}
-//             title="Option 1"
-//           />
-//           <Menu.Item
-//             onPress={() => {
-//               console.log('Option 2 was pressed');
-//             }}
-//             title="Option 2"
-//           />
-//           <Menu.Item
-//             onPress={() => {
-//               console.log('Option 3 was pressed');
-//             }}
-//             title="Option 3"
-//             disabled
-//           />
-//         </Menu>
-//       ) : null}
-//     </Appbar.Header>
-//   );
-// }
 
 export function DrawerContent(props: ScrollViewProps) {
   return (

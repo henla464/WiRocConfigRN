@@ -61,21 +61,23 @@ export default function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
-  const isDuplicateDevice = (devices: Device[], nextDevice: Device) => {
-    return devices.findIndex(device => nextDevice.id === device.id) > -1;
-  };
-
   const scanForDevices = () => {
-    bleManager.startDeviceScan([apiService], null, (error, device) => {
+    bleManager.startDeviceScan([apiService], null, (error, newDevice) => {
       if (error) {
         console.log(error);
       }
-      if (device) {
+      if (newDevice) {
         setAllDevices((prevState: Device[]) => {
-          if (!isDuplicateDevice(prevState, device)) {
-            return [...prevState, device];
+          let index = prevState.findIndex(
+            deviceInArr => newDevice.id === deviceInArr.id,
+          );
+          if (index > -1) {
+            let newState = [...prevState];
+            newState[index] = newDevice;
+            return newState;
+          } else {
+            return [...prevState, newDevice];
           }
-          return prevState;
         });
       }
     });
