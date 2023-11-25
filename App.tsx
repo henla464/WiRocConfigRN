@@ -65,7 +65,10 @@ export function DrawerContent(props: DrawerContentProps) {
               <Caption style={styles.caption}>12:54:AC:45:EF:32</Caption>
             </View>
           </TouchableRipple>
-          <TouchableRipple onPress={() => {}}>
+          <TouchableRipple
+            onPress={() => {
+              props.navigation.navigate('Device');
+            }}>
             <View style={styles.foundDevices}>
               <Text>250</Text>
               <Caption style={styles.caption}>22:54:AC:45:EF:43</Caption>

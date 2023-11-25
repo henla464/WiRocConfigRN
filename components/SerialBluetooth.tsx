@@ -3,15 +3,16 @@ import {StyleSheet, Switch, Text, View} from 'react-native';
 import {Icon, List} from 'react-native-paper';
 import IConfigComponentProps from '../interface/IConfigComponentProps';
 
-export default function SIRAP(compProps: IConfigComponentProps) {
-  const [isSIRAPSwitchedOn, setIsSIRAPSwitchedOn] = useState<boolean>(false);
+export default function SerialBluetooth(compProps: IConfigComponentProps) {
+  const [isBTDeviceConfigured, setIsBTDeviceConfigured] =
+    useState<boolean>(false);
   return (
     <List.Accordion
-      title="SIRAP-tcp/ip"
+      title="Seriell Bluetooth"
       id={compProps.id}
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
-          <Switch value={isSIRAPSwitchedOn} disabled={true} />
+          <Switch value={isBTDeviceConfigured} disabled={true} />
           {isExpanded ? (
             <Icon source="chevron-up" size={25} />
           ) : (
@@ -21,11 +22,7 @@ export default function SIRAP(compProps: IConfigComponentProps) {
       )}>
       <View style={styles.container}>
         <View style={styles.switchContainer}>
-          <Text>Aktivera: </Text>
-          <Switch
-            value={isSIRAPSwitchedOn}
-            onValueChange={val => setIsSIRAPSwitchedOn(val)}
-          />
+          <Text>BT... </Text>
         </View>
       </View>
     </List.Accordion>

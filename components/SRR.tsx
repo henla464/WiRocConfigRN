@@ -1,17 +1,18 @@
 import React, {useState} from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
-import {Icon, List} from 'react-native-paper';
+import {Icon, List, RadioButton} from 'react-native-paper';
 import IConfigComponentProps from '../interface/IConfigComponentProps';
 
-export default function SIRAP(compProps: IConfigComponentProps) {
-  const [isSIRAPSwitchedOn, setIsSIRAPSwitchedOn] = useState<boolean>(false);
+export default function SRR(compProps: IConfigComponentProps) {
+  const [sendReceive, setSendReceive] = useState<string>('RECEIVE');
   return (
     <List.Accordion
-      title="SIRAP-tcp/ip"
+      title="SportIdent SRR"
       id={compProps.id}
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
-          <Switch value={isSIRAPSwitchedOn} disabled={true} />
+          <Text>{sendReceive === 'RECEIVE' ? 'Ta emot' : 'Skicka'}</Text>
+          <Switch value={true} disabled={true} />
           {isExpanded ? (
             <Icon source="chevron-up" size={25} />
           ) : (
@@ -19,15 +20,16 @@ export default function SIRAP(compProps: IConfigComponentProps) {
           )}
         </View>
       )}>
-      <View style={styles.container}>
-        <View style={styles.switchContainer}>
-          <Text>Aktivera: </Text>
-          <Switch
-            value={isSIRAPSwitchedOn}
-            onValueChange={val => setIsSIRAPSwitchedOn(val)}
-          />
+      <RadioButton.Group
+        onValueChange={newValue => setSendReceive(newValue)}
+        value={sendReceive}>
+        <View style={styles.container}>
+          <Text>Ta emot</Text>
+          <RadioButton value="RECEIVE" />
+          <Text>Skicka</Text>
+          <RadioButton value="SEND" />
         </View>
-      </View>
+      </RadioButton.Group>
     </List.Accordion>
   );
 }
@@ -39,18 +41,13 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingLeft: 18,
     paddingTop: 1,
     paddingRight: 10,
     paddingBottom: 1,
     backgroundColor: 'lightgray',
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   switch: {
     marginLeft: 10,
