@@ -1,39 +1,46 @@
-import * as React from 'react';
-import {useState} from 'react';
-import {BottomNavigation, Text} from 'react-native-paper';
+import React from 'react';
+import ConfigurationScreen from './ConfigurationScreen';
+import OtherScreen from './OtherScreen';
+import TestScreen from './TestScreen';
+import {createMaterialBottomTabNavigator} from 'react-native-paper/react-navigation';
+import {Icon} from 'react-native-paper';
 
-const MusicRoute = () => <Text>Music</Text>;
-
-const AlbumsRoute = () => <Text>Albums</Text>;
-
-const RecentsRoute = () => <Text>Recents</Text>;
-
-const NotificationsRoute = () => <Text>Notifications</Text>;
+const Tab2 = createMaterialBottomTabNavigator();
 
 export default function DeviceBottomNavigation() {
-  const [index, setIndex] = useState(0);
-  const [routes] = useState([
-    {
-      key: 'music',
-      title: 'Konfiguration',
-      focusedIcon: 'router-wireless-settings',
-    },
-    {key: 'albums', title: 'Test', focusedIcon: 'list-status'},
-    {key: 'recents', title: 'Övrigt', focusedIcon: 'ampersand'},
-  ]);
-
-  const renderScene = BottomNavigation.SceneMap({
-    music: MusicRoute,
-    albums: AlbumsRoute,
-    recents: RecentsRoute,
-    notifications: NotificationsRoute,
-  });
-
   return (
-    <BottomNavigation
-      navigationState={{index, routes}}
-      onIndexChange={setIndex}
-      renderScene={renderScene}
-    />
+    <Tab2.Navigator>
+      <Tab2.Screen
+        name="configuration"
+        component={ConfigurationScreen}
+        options={{
+          tabBarLabel: 'Konfiguration',
+          tabBarIcon: ({color}) => (
+            <Icon source="router-wireless-settings" color={color} size={26} />
+          ),
+        }}
+      />
+      <Tab2.Screen
+        name="test"
+        component={TestScreen}
+        options={{
+          tabBarLabel: 'Test',
+          tabBarIcon: ({color}) => (
+            <Icon source="list-status" color={color} size={26} />
+          ),
+        }}
+      />
+
+      <Tab2.Screen
+        name="other"
+        component={OtherScreen}
+        options={{
+          tabBarLabel: 'Övrigt',
+          tabBarIcon: ({color}) => (
+            <Icon source="ampersand" color={color} size={26} />
+          ),
+        }}
+      />
+    </Tab2.Navigator>
   );
 }

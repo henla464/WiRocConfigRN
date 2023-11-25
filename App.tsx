@@ -20,6 +20,7 @@ import {
   DrawerNavigationHelpers,
 } from '@react-navigation/drawer/lib/typescript/src/types';
 import AboutScreen from './components/AboutScreen';
+import NavigationHeader from './components/NavigationHeader';
 
 const Drawer2 = createDrawerNavigator();
 
@@ -87,6 +88,7 @@ function App(): JSX.Element {
           component={ScanForDevicesScreen}
           options={{
             title: 'Sök WiRoc enheter',
+            headerRight: () => <NavigationHeader />,
           }}
         />
         <Drawer2.Screen
@@ -94,6 +96,7 @@ function App(): JSX.Element {
           component={AboutScreen}
           options={{
             title: 'Om',
+            headerRight: () => <NavigationHeader />,
           }}
         />
         <Drawer2.Screen
@@ -101,6 +104,7 @@ function App(): JSX.Element {
           component={DeviceBottomNavigation}
           options={{
             title: 'WiRoc enhet',
+            headerRight: () => <NavigationHeader />,
           }}
         />
       </Drawer2.Navigator>
