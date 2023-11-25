@@ -1,23 +1,38 @@
 import React from 'react';
 import 'react-native-gesture-handler';
-import {NavigationContainer} from '@react-navigation/native';
-import {View, StyleSheet, ScrollViewProps, Image} from 'react-native';
+import {
+  DrawerNavigationState,
+  NavigationContainer,
+  ParamListBase,
+} from '@react-navigation/native';
+import {View, StyleSheet, Image} from 'react-native';
 import {
   createDrawerNavigator,
   DrawerItem,
   DrawerContentScrollView,
 } from '@react-navigation/drawer';
 
-//import {createStackNavigator} from '@react-navigation/stack';
-
 import ScanForDevicesScreen from './components/ScanForDevicesScreen';
 import {Caption, Drawer, Text, TouchableRipple} from 'react-native-paper';
+import DeviceBottomNavigation from './components/DeviceBottomNavigation';
+import {
+  DrawerDescriptorMap,
+  DrawerNavigationHelpers,
+} from '@react-navigation/drawer/lib/typescript/src/types';
+import AboutScreen from './components/AboutScreen';
 
 const Drawer2 = createDrawerNavigator();
 
-export function DrawerContent(props: ScrollViewProps) {
+interface DrawerContentProps {
+  state: DrawerNavigationState<ParamListBase>;
+  navigation: DrawerNavigationHelpers;
+  descriptors: DrawerDescriptorMap;
+}
+
+//ScrollViewProps
+export function DrawerContent(props: DrawerContentProps) {
   return (
-    <DrawerContentScrollView {...props}>
+    <DrawerContentScrollView>
       <View style={styles.drawerContent}>
         <View style={styles.logo}>
           <Image
@@ -26,11 +41,24 @@ export function DrawerContent(props: ScrollViewProps) {
           />
         </View>
         <Drawer.Section style={styles.drawerSection}>
-          <DrawerItem label="Sök WiRoc enheter" onPress={() => {}} />
-          <DrawerItem label="Om" onPress={() => {}} />
+          <DrawerItem
+            label="Sök WiRoc enheter"
+            onPress={() => {
+              props.navigation.navigate('ScanForDevices');
+            }}
+          />
+          <DrawerItem
+            label="Om"
+            onPress={() => {
+              props.navigation.navigate('About');
+            }}
+          />
         </Drawer.Section>
         <Drawer.Section title="WiRoc enheter">
-          <TouchableRipple onPress={() => {}}>
+          <TouchableRipple
+            onPress={() => {
+              props.navigation.navigate('Device');
+            }}>
             <View style={styles.foundDevices}>
               <Text>102</Text>
               <Caption style={styles.caption}>12:54:AC:45:EF:32</Caption>
@@ -52,13 +80,29 @@ function App(): JSX.Element {
   return (
     <NavigationContainer>
       <Drawer2.Navigator
-        initialRouteName="Sök WiRoc enheter"
-        drawerContent={() => <DrawerContent />}>
+        initialRouteName="ScanForDevices"
+        drawerContent={props => <DrawerContent {...props} />}>
         <Drawer2.Screen
-          name="Sök WiRoc enheter"
+          name="ScanForDevices"
           component={ScanForDevicesScreen}
+          options={{
+            title: 'Sök WiRoc enheter',
+          }}
         />
-        <Drawer2.Screen name="Details" component={ScanForDevicesScreen} />
+        <Drawer2.Screen
+          name="About"
+          component={AboutScreen}
+          options={{
+            title: 'Om',
+          }}
+        />
+        <Drawer2.Screen
+          name="Device"
+          component={DeviceBottomNavigation}
+          options={{
+            title: 'WiRoc enhet',
+          }}
+        />
       </Drawer2.Navigator>
     </NavigationContainer>
   );
