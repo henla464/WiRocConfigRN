@@ -14,7 +14,7 @@ export default function SIRAP(compProps: IConfigComponentProps) {
     [/[1-9]/],
     [/[1-9]/, /[\d.]/],
     [/[1-9]/, /\d/, /[\d.]/],
-    [/[1-2]/, /\d/, /\d/, /\./],
+    [/[1-2]/, /\d/, /\d/, '.'],
   ];
   let groupMaskForDiffLengthForNext_LastGroup = [
     [/[1-9]/],
@@ -25,7 +25,7 @@ export default function SIRAP(compProps: IConfigComponentProps) {
   function getMaskForGroup(
     currentCharsInGroup: string,
     lastGroup: boolean,
-  ): RegExp[] {
+  ): (RegExp | string)[] {
     let noOfCharsInGroup = Math.min(currentCharsInGroup.length, 3);
     if (!lastGroup) {
       if (noOfCharsInGroup === 1) {
@@ -33,12 +33,12 @@ export default function SIRAP(compProps: IConfigComponentProps) {
       } else if (noOfCharsInGroup === 2) {
         // 2 characters
         if (currentCharsInGroup[0] > '2') {
-          return [/\d/, /\d/, /[.]/];
+          return [/\d/, /\d/, '.'];
         } else if (
           currentCharsInGroup[0] >= '2' &&
           currentCharsInGroup[1] >= '6'
         ) {
-          return [/[2]/, /\d/, /[.]/];
+          return [/[2]/, /\d/, '.'];
         } else if (
           currentCharsInGroup[0] === '2' &&
           currentCharsInGroup[1] === '5'
@@ -49,17 +49,17 @@ export default function SIRAP(compProps: IConfigComponentProps) {
         }
       } else if (noOfCharsInGroup === 3) {
         if (currentCharsInGroup[0] > '2') {
-          return [/\d/, /\d/, /[.]/];
+          return [/\d/, /\d/, '.'];
         } else if (
           currentCharsInGroup[0] >= '2' &&
           currentCharsInGroup[1] >= '6'
         ) {
-          return [/\d/, /\d/, /\d/, /[.]/];
+          return [/\d/, /\d/, /\d/, '.'];
         } else if (
           currentCharsInGroup[0] === '2' &&
           currentCharsInGroup[1] === '5'
         ) {
-          return [/[2]/, /[5]/, /[0-5]/, /[.]/];
+          return [/[2]/, /[5]/, /[0-5]/, '.'];
         } else {
           return groupMaskForDiffLengthForNext[noOfCharsInGroup];
         }
@@ -141,17 +141,17 @@ export default function SIRAP(compProps: IConfigComponentProps) {
             <MaskInput
               {...props}
               value={ipAddress}
-              maskAutoComplete={false}
+              maskAutoComplete={true}
               onChangeText={(masked, unmasked) => {
-                let noOfDots = masked.split('.').length - 1;
-                let lastIndexOfDot = masked.lastIndexOf('.');
-                if (
-                  lastIndexOfDot === masked.length - 4 &&
-                  ipAddress.length < masked.length &&
-                  noOfDots < 3
-                ) {
-                  masked = masked + '.';
-                }
+                // let noOfDots = masked.split('.').length - 1;
+                // let lastIndexOfDot = masked.lastIndexOf('.');
+                // if (
+                //   lastIndexOfDot === masked.length - 4 &&
+                //   ipAddress.length < masked.length &&
+                //   noOfDots < 3
+                // ) {
+                //   masked = masked + '.';
+                // }
                 setIpAddress(masked);
               }}
               mask={text => {
