@@ -1,7 +1,15 @@
 import React, {useState} from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
-import {Button, Checkbox, DataTable, Icon, List} from 'react-native-paper';
+import {
+  Button,
+  Checkbox,
+  Chip,
+  DataTable,
+  Icon,
+  List,
+} from 'react-native-paper';
 import IConfigComponentProps from '../interface/IConfigComponentProps';
+import OnOffChip from './OnOffChip';
 
 export default function SerialBluetooth(compProps: IConfigComponentProps) {
   const [isBTDeviceConfigured, setIsBTDeviceConfigured] =
@@ -33,6 +41,7 @@ export default function SerialBluetooth(compProps: IConfigComponentProps) {
       fat: 3.7,
     },
   ]);
+  const chipBackgroundColor = isBTDeviceConfigured ? 'green' : 'red';
 
   return (
     <List.Accordion
@@ -40,7 +49,7 @@ export default function SerialBluetooth(compProps: IConfigComponentProps) {
       id={compProps.id}
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
-          <Switch value={isBTDeviceConfigured} disabled={true} />
+          <OnOffChip on={isBTDeviceConfigured} />
           {isExpanded ? (
             <Icon source="chevron-up" size={25} />
           ) : (

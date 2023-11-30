@@ -1,9 +1,11 @@
 import React, {useState} from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
-import {Icon, List, RadioButton} from 'react-native-paper';
+import {Icon, List, RadioButton, SegmentedButtons} from 'react-native-paper';
 import IConfigComponentProps from '../interface/IConfigComponentProps';
+import OnOffChip from './OnOffChip';
 
 export default function SRR(compProps: IConfigComponentProps) {
+  const [isSRREnabled, setIsSRREnabled] = useState<boolean>(true);
   const [sendReceive, setSendReceive] = useState<string>('RECEIVE');
   return (
     <List.Accordion
@@ -12,7 +14,7 @@ export default function SRR(compProps: IConfigComponentProps) {
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
           <Text>{sendReceive === 'RECEIVE' ? 'Ta emot' : 'Skicka'}</Text>
-          <Switch value={true} disabled={true} />
+          <OnOffChip on={isSRREnabled} />
           {isExpanded ? (
             <Icon source="chevron-up" size={25} />
           ) : (
@@ -20,16 +22,38 @@ export default function SRR(compProps: IConfigComponentProps) {
           )}
         </View>
       )}>
-      <RadioButton.Group
-        onValueChange={newValue => setSendReceive(newValue)}
-        value={sendReceive}>
-        <View style={styles.container}>
-          <Text>Ta emot</Text>
-          <RadioButton value="RECEIVE" />
-          <Text>Skicka</Text>
-          <RadioButton value="SEND" />
+      <View style={styles.containerColumn}>
+        <View style={styles.switchContainer}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: 'bold',
+              alignItems: 'center',
+            }}>
+            Aktivera:{' '}
+          </Text>
+          <Switch
+            value={isSRREnabled}
+            onValueChange={val => setIsSRREnabled(val)}
+          />
         </View>
-      </RadioButton.Group>
+        <SegmentedButtons
+          value={sendReceive}
+          onValueChange={setSendReceive}
+          buttons={[
+            {
+              icon: 'login',
+              value: 'RECEIVE',
+              label: 'Ta emot',
+            },
+            {
+              icon: 'pan-horizontal',
+              value: 'SEND',
+              label: 'Skicka',
+            },
+          ]}
+        />
+      </View>
     </List.Accordion>
   );
 }
@@ -49,7 +73,25 @@ const styles = StyleSheet.create({
     paddingBottom: 1,
     backgroundColor: 'lightgray',
   },
+  containerColumn: {
+    flex: 1,
+    flexDirection: 'column',
+    paddingLeft: 10,
+    paddingTop: 10,
+    paddingRight: 10,
+    paddingBottom: 1,
+    backgroundColor: 'lightgray',
+    height: 100,
+    alignItems: 'center',
+  },
   switch: {
     marginLeft: 10,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 20,
+    alignSelf: 'flex-start',
   },
 });

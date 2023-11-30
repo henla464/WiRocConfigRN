@@ -9,11 +9,11 @@ import {
 } from 'react-native-paper';
 import IConfigComponentProps from '../interface/IConfigComponentProps';
 import {SelectList} from 'react-native-dropdown-select-list';
+import OnOffChip from './OnOffChip';
 
 export default function LoraRadio(compProps: IConfigComponentProps) {
+  const [isLoraRadioEnabled, setIsLoraRadioEnabled] = useState<boolean>(true);
   const [loraMode, setLoraMode] = useState<string>('RECEIVER');
-
-  const [showDropDown, setShowDropDown] = useState(true);
   const [channel, setChannel] = useState<string>('1');
   const [radioRange, setRadioRange] = useState<string>('L');
 
@@ -40,11 +40,7 @@ export default function LoraRadio(compProps: IConfigComponentProps) {
               ? 'Sändare'
               : 'Repeater'}
           </Text>
-          <Chip
-            style={{backgroundColor: 'green', marginLeft: 10}}
-            textStyle={{color: 'white'}}>
-            På
-          </Chip>
+          <OnOffChip on={isLoraRadioEnabled} />
           {isExpanded ? (
             <Icon source="chevron-up" size={25} />
           ) : (
@@ -53,6 +49,20 @@ export default function LoraRadio(compProps: IConfigComponentProps) {
         </View>
       )}>
       <View style={styles.containerColumn}>
+        <View style={styles.switchContainer}>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: 'bold',
+              alignItems: 'center',
+            }}>
+            Aktivera:{' '}
+          </Text>
+          <Switch
+            value={isLoraRadioEnabled}
+            onValueChange={val => setIsLoraRadioEnabled(val)}
+          />
+        </View>
         <Text
           style={{
             fontSize: 20,
@@ -206,5 +216,12 @@ const styles = StyleSheet.create({
   },
   switch: {
     marginLeft: 10,
+  },
+  switchContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingBottom: 20,
+    alignSelf: 'flex-start',
   },
 });

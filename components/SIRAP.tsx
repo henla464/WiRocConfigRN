@@ -4,6 +4,7 @@ import {Icon, List, TextInput} from 'react-native-paper';
 import IConfigComponentProps from '../interface/IConfigComponentProps';
 import MaskInput from 'react-native-mask-input';
 import {RenderProps} from 'react-native-paper/lib/typescript/components/TextInput/types';
+import OnOffChip from './OnOffChip';
 
 export default function SIRAP(compProps: IConfigComponentProps) {
   const [isSIRAPSwitchedOn, setIsSIRAPSwitchedOn] = useState<boolean>(false);
@@ -115,7 +116,7 @@ export default function SIRAP(compProps: IConfigComponentProps) {
       id={compProps.id}
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
-          <Switch value={isSIRAPSwitchedOn} disabled={true} />
+          <OnOffChip on={isSIRAPSwitchedOn} />
           {isExpanded ? (
             <Icon source="chevron-up" size={25} />
           ) : (
@@ -125,7 +126,15 @@ export default function SIRAP(compProps: IConfigComponentProps) {
       )}>
       <View style={styles.container}>
         <View style={styles.switchContainer}>
-          <Text>Aktivera: </Text>
+          <Text
+            style={{
+              fontSize: 20,
+              fontWeight: 'bold',
+              alignItems: 'center',
+              paddingBottom: 8,
+            }}>
+            Aktivera:{' '}
+          </Text>
           <Switch
             value={isSIRAPSwitchedOn}
             onValueChange={val => setIsSIRAPSwitchedOn(val)}

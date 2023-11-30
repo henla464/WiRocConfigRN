@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
 import {Checkbox, Icon, List, RadioButton} from 'react-native-paper';
 import IConfigComponentProps from '../interface/IConfigComponentProps';
+import OnOffChip from './OnOffChip';
 
 export default function RS232(compProps: IConfigComponentProps) {
   const [sendReceive, setSendReceive] = useState<string>('RECEIVE');
@@ -14,7 +15,7 @@ export default function RS232(compProps: IConfigComponentProps) {
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
           <Text>{sendReceive === 'RECEIVE' ? 'Ta emot' : 'Skicka'}</Text>
-          <Switch value={true} disabled={true} />
+          <OnOffChip on={true} />
           {isExpanded ? (
             <Icon source="chevron-up" size={25} />
           ) : (

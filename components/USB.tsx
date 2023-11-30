@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
-import {StyleSheet, Switch, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {Checkbox, Icon, List} from 'react-native-paper';
 import IConfigComponentProps from '../interface/IConfigComponentProps';
+import OnOffChip from './OnOffChip';
 
 export default function USB(compProps: IConfigComponentProps) {
   const [isOneWay, setIsOneWay] = useState<boolean>(false);
@@ -12,7 +13,7 @@ export default function USB(compProps: IConfigComponentProps) {
       id={compProps.id}
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
-          <Switch value={true} disabled={true} />
+          <OnOffChip on={true} />
           {isExpanded ? (
             <Icon source="chevron-up" size={25} />
           ) : (
