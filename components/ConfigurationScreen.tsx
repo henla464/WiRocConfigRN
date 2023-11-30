@@ -1,6 +1,6 @@
 import React from 'react';
 import {SafeAreaView, ScrollView, StyleSheet, Text, View} from 'react-native';
-import {List} from 'react-native-paper';
+import {Divider, List} from 'react-native-paper';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import SIRAP from './SIRAP';
@@ -16,18 +16,24 @@ export default function ConfigurationScreen() {
       <ScrollView>
         <List.AccordionGroup>
           <View>
+            <Divider bold={true} />
             <Text style={styles.header}>Indata</Text>
+            <Divider bold={true} />
             <USB id={1} />
             <SerialBluetooth id={2} />
             <SRR id={3} />
           </View>
           <View>
+            <Divider bold={true} />
             <Text style={styles.header}>In- och utdata</Text>
+            <Divider bold={true} />
             <LoraRadio id={4} />
             <RS232 id={5} />
           </View>
           <View>
+            <Divider bold={true} />
             <Text style={styles.header}>Utdata</Text>
+            <Divider bold={true} />
             <SIRAP id={6} />
           </View>
         </List.AccordionGroup>
