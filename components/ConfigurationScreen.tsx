@@ -11,6 +11,8 @@ import LoraRadio from './LoraRadio';
 import SRR from './SRR';
 
 export default function ConfigurationScreen() {
+  //let s = SerialBluetooth({id: 2});
+
   return (
     <SafeAreaView style={Colors.lighter}>
       <ScrollView>
