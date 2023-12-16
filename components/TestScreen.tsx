@@ -1,7 +1,7 @@
 import React from 'react';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
-import AboutScreen from './AboutScreen';
 import SendPunches from './SendPunches';
+import ViewPunches from './ViewPunches';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -20,7 +20,7 @@ export default function TestScreen() {
       />
       <Tab.Screen
         name="ViewPunches"
-        component={AboutScreen}
+        component={ViewPunches}
         options={{tabBarLabel: 'Visa stämplingar'}}
       />
     </Tab.Navigator>
