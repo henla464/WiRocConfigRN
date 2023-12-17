@@ -4,38 +4,35 @@ import {Button} from 'react-native-paper';
 import {SafeAreaView, ScrollView, StatusBar, StyleSheet} from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import useBLE from '../hooks/useBLE';
 import {Device} from 'react-native-ble-plx';
 import DeviceCard from './DeviceCard';
+import {useBLEApiContext} from '../context/BLEApiContext';
 
 export default function ScanForDevicesScreen() {
-  const {
-    requestPermissions,
-    allDevices,
-    scanForDevices,
-    connectToDevice,
-    connectedDevice,
-  } = useBLE();
+  //const {
+  //  requestPermissions,
+  //  allDevices,
+  //  scanForDevices,
+  //  connectToDevice,
+  //  connectedDevice,
+  //} = useBLE();
 
   const [isSearching, setIsSearching] = useState<boolean>(false);
+  const BLEAPI = useBLEApiContext();
 
   const scan = async () => {
     if (isSearching) {
+      console.log('Stop scan');
       setIsSearching(false);
+      BLEAPI.stopScanningForDevices();
     } else {
-      requestPermissions((isGranted: boolean) => {
+      console.log('Start scan');
+      BLEAPI.requestPermissions((isGranted: boolean) => {
         if (isGranted) {
           setIsSearching(true);
-          scanForDevices();
+          BLEAPI.scanForDevices();
         }
       });
-    }
-  };
-
-  const connect = async () => {
-    await connectToDevice(allDevices[0]);
-    if (connectedDevice?.isConnected) {
-    } else {
     }
   };
 
@@ -52,12 +49,8 @@ export default function ScanForDevicesScreen() {
           {isSearching ? 'Stoppa sökning' : 'Sök WiRoc enheter'}
         </Button>
 
-        {allDevices.map((device: Device) => (
-          <DeviceCard
-            connect={connect}
-            connectedDevice={connectedDevice}
-            device={device}
-          />
+        {BLEAPI.allDevices.map((device: Device) => (
+          <DeviceCard device={device} key={'deviceCard-' + device.id} />
         ))}
       </ScrollView>
     </SafeAreaView>

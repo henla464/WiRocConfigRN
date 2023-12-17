@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {useState} from 'react';
 import {
   Button,
@@ -10,32 +10,44 @@ import {
 } from 'react-native-paper';
 import {StyleSheet} from 'react-native';
 import {Device} from 'react-native-ble-plx';
+import {useBLEApiContext} from '../context/BLEApiContext';
+import {useNavigation} from '@react-navigation/native';
 
-type ConnectFN = (deviceId: Device) => Promise<void>;
 interface DeviceCardProps {
   device: Device;
-  connect: ConnectFN;
-  connectedDevice: Device | null;
 }
 
-export default function DeviceCard({
-  device,
-  connect,
-  connectedDevice,
-}: DeviceCardProps) {
+export default function DeviceCard({device}: DeviceCardProps) {
   const [isConnected, setIsConnected] = useState<boolean>(false);
+  const [isConnecting, setIsConnecting] = useState<boolean>(false);
+  const BLEAPI = useBLEApiContext();
 
   const cardConnect = async () => {
-    await connect(device);
-    if (
-      (await connectedDevice?.isConnected()) &&
-      connectedDevice?.id === device.id
-    ) {
+    setIsConnecting(true);
+    await BLEAPI.connectToDevice(device);
+    setIsConnecting(false);
+    /*if (await device?.isConnected()) {
       setIsConnected(true);
     } else {
       setIsConnected(false);
-    }
+    }*/
   };
+
+  const cardDisconnect = async () => {
+    await BLEAPI.disconnectDevice(device);
+  };
+
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    setIsConnected(device.id === BLEAPI.connectedDevice?.id);
+  }, [device.id, BLEAPI.connectedDevice?.id]);
+
+  useEffect(() => {
+    if (isConnected) {
+      navigation.navigate('Device' as never);
+    }
+  }, [isConnected, navigation]);
 
   // Map the RSSI value to a width between 0 and 1
   let rssiWidth: number = 100; // Used when RSSI is zero or greater.
@@ -62,7 +74,11 @@ export default function DeviceCard({
         />
       </Card.Content>
       <Card.Actions>
-        {isConnected ? '' : <Button onPress={cardConnect}>Anslut</Button>}
+        <Button
+          loading={isConnecting}
+          onPress={isConnected ? cardDisconnect : cardConnect}>
+          {isConnected ? 'Koppla från' : 'Anslut'}
+        </Button>
       </Card.Actions>
     </Card>
   );

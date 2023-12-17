@@ -8,12 +8,14 @@ type PermissionCallback = (result: boolean) => void;
 
 const bleManager = new BleManager();
 
-interface BluetoothLowEnergyApi {
+export interface BluetoothLowEnergyApi {
   requestPermissions(callback: PermissionCallback): Promise<void>;
   scanForDevices(): void;
+  stopScanningForDevices(): void;
   allDevices: Device[];
-  connectToDevice: (deviceId: Device) => Promise<void>;
+  connectToDevice: (device: Device) => Promise<void>;
   connectedDevice: Device | null;
+  disconnectDevice: (device: Device) => Promise<void>;
 }
 
 export default function useBLE(): BluetoothLowEnergyApi {
@@ -83,22 +85,52 @@ export default function useBLE(): BluetoothLowEnergyApi {
     });
   };
 
+  const stopScanningForDevices = () => {
+    try {
+      bleManager.stopDeviceScan();
+    } catch (e) {
+      console.log('stopScanningForDevices: ' + e);
+    }
+  };
+
   const connectToDevice = async (device: Device) => {
     try {
+      if (connectedDevice !== null && device.id === connectedDevice.id) {
+        console.log('Already connected to this device');
+        return;
+      }
       const deviceConnected = await bleManager.connectToDevice(device.id);
       setConnectedDevice(deviceConnected);
       await deviceConnected.discoverAllServicesAndCharacteristics();
-      bleManager.stopDeviceScan();
+      //bleManager.stopDeviceScan();
     } catch (e) {
       console.log('ERROR IN CONNECTION');
+    }
+  };
+
+  const disconnectDevice = async (device: Device) => {
+    try {
+      let deviceToDisconnect = device === null ? connectedDevice : device;
+      if (deviceToDisconnect === null) {
+        console.log('disconnectDevice: Not connected to a device');
+        return;
+      }
+      await deviceToDisconnect.cancelConnection();
+      if (deviceToDisconnect.id === connectedDevice?.id) {
+        setConnectedDevice(null);
+      }
+    } catch (e) {
+      console.log('ERROR IN DISCONNECTION: ' + e);
     }
   };
 
   return {
     requestPermissions,
     scanForDevices,
+    stopScanningForDevices,
     allDevices,
     connectToDevice,
     connectedDevice,
+    disconnectDevice,
   };
 }
