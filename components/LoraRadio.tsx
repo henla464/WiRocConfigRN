@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
 import {
   Chip,
@@ -10,6 +10,7 @@ import {
 import IConfigComponentProps from '../interface/IConfigComponentProps';
 import {SelectList} from 'react-native-dropdown-select-list';
 import OnOffChip from './OnOffChip';
+import {useBLEApiContext} from '../context/BLEApiContext';
 
 export default function LoraRadio(compProps: IConfigComponentProps) {
   const [isLoraRadioEnabled, setIsLoraRadioEnabled] = useState<boolean>(true);
@@ -26,6 +27,43 @@ export default function LoraRadio(compProps: IConfigComponentProps) {
     {key: '6', value: '6'},
     {key: '7', value: '7'},
   ];
+
+  const BLEAPI = useBLEApiContext();
+
+  const updateFromWiRoc = (propName: string, propValue: string) => {
+    console.log('LoraRadio:updateFromWiRoc: propName: ' + propName);
+    console.log('LoraRadio:updateFromWiRoc: propValue: ' + propValue);
+    switch (propName) {
+      case 'loramode':
+        setLoraMode(propValue);
+        break;
+      case 'channel':
+        setChannel(propValue);
+        break;
+      case 'lorarange':
+        setRadioRange(propValue);
+        break;
+    }
+  };
+  useEffect(() => {
+    // Lora mode
+    async function getLoraMode() {
+      if (BLEAPI.connectedDevice !== null) {
+        let pc = BLEAPI.requestProperty(
+          BLEAPI.connectedDevice,
+          'loramode',
+          updateFromWiRoc,
+        );
+        let pc2 = BLEAPI.requestProperty(
+          BLEAPI.connectedDevice,
+          'channel',
+          updateFromWiRoc,
+        );
+        //let c = await pc;
+      }
+    }
+    getLoraMode();
+  }, [BLEAPI]);
 
   return (
     <List.Accordion
@@ -113,7 +151,7 @@ export default function LoraRadio(compProps: IConfigComponentProps) {
             alignItems: 'center',
           }}
           arrowicon={<Icon source="chevron-down" size={35} color={'black'} />}
-          defaultOption={{key: '1', value: '1'}}
+          defaultOption={{key: channel, value: channel}}
         />
 
         <Text style={{fontSize: 30, fontWeight: 'bold', paddingTop: 14}}>
