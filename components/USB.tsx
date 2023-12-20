@@ -11,6 +11,7 @@ export default function USB(compProps: IConfigComponentProps) {
     <List.Accordion
       title="USB"
       id={compProps.id}
+      key={compProps.id}
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
           <OnOffChip on={true} />

@@ -18,6 +18,13 @@ export default function LoraRadio(compProps: IConfigComponentProps) {
   const [channel, setChannel] = useState<string>('1');
   const [radioRange, setRadioRange] = useState<string>('L');
 
+  const [origIsLoraRadioEnabled, setOrigIsLoraRadioEnabled] = useState<
+    boolean | null
+  >(null);
+  const [origLoraMode, setOrigLoraMode] = useState<string | null>(null);
+  const [origChannel, setOrigChannel] = useState<string | null>(null);
+  const [origRadioRange, setOrigRadioRange] = useState<string | null>(null);
+
   const channelList = [
     {key: '1', value: '1'},
     {key: '2', value: '2'},
@@ -36,18 +43,21 @@ export default function LoraRadio(compProps: IConfigComponentProps) {
     switch (propName) {
       case 'loramode':
         setLoraMode(propValue);
+        setOrigLoraMode(propValue);
         break;
       case 'channel':
         setChannel(propValue);
+        setOrigChannel(propValue);
         break;
       case 'lorarange':
         setRadioRange(propValue);
+        setOrigRadioRange(propValue);
         break;
     }
   };
   useEffect(() => {
     // Lora mode
-    async function getLoraMode() {
+    async function getLoraRadioSettings() {
       if (BLEAPI.connectedDevice !== null) {
         let pc = BLEAPI.requestProperty(
           BLEAPI.connectedDevice,
@@ -59,11 +69,46 @@ export default function LoraRadio(compProps: IConfigComponentProps) {
           'channel',
           updateFromWiRoc,
         );
-        //let c = await pc;
+        let pc3 = BLEAPI.requestProperty(
+          BLEAPI.connectedDevice,
+          'lorarange',
+          updateFromWiRoc,
+        );
       }
     }
-    getLoraMode();
+    getLoraRadioSettings();
   }, [BLEAPI]);
+
+  useEffect(() => {
+    if (
+      //origIsLoraRadioEnabled === null ||
+      origLoraMode == null ||
+      origChannel === null ||
+      origRadioRange == null
+    ) {
+      return;
+    }
+    if (
+      //origIsLoraRadioEnabled !== isLoraRadioEnabled ||
+      origLoraMode !== loraMode ||
+      origChannel !== channel ||
+      origRadioRange !== radioRange
+    ) {
+      compProps.setIsDirtyFunction(compProps.id, true);
+    } else {
+      compProps.setIsDirtyFunction(compProps.id, false);
+    }
+  }, [
+    isLoraRadioEnabled,
+    loraMode,
+    channel,
+    radioRange,
+    compProps,
+    origIsLoraRadioEnabled,
+    origLoraMode,
+    origChannel,
+    origRadioRange,
+  ]);
 
   return (
     <List.Accordion
