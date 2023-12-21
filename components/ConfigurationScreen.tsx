@@ -1,5 +1,12 @@
-import React, {ReactElement, useState} from 'react';
-import {SafeAreaView, ScrollView, StyleSheet, Text, View} from 'react-native';
+import React, {ReactElement, createRef, useRef, useState} from 'react';
+import {
+  Button,
+  SafeAreaView,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import {Divider, List} from 'react-native-paper';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
@@ -9,83 +16,179 @@ import USB from './USB';
 import SerialBluetooth from './SerialBluetooth';
 import LoraRadio from './LoraRadio';
 import SRR from './SRR';
-import IConfigComponentProps from '../interface/IConfigComponentProps';
+import IRefRetType from '../interface/IRefRetType';
 
 interface ISectionComponent {
   Comp: React.JSX.Element;
   SectionName: string;
   id: number;
   isDirty: boolean;
+  //saveFunction: (() => void) | null;
+  childRef: React.RefObject<IRefRetType>;
 }
 
 export default function ConfigurationScreen(): ReactElement<React.FC> {
   //let s = SerialBluetooth({id: 2});
   const [isDirty, setIsDirty] = useState<boolean>(false);
+  const usbChildRef = useRef<IRefRetType>(null);
+  const loraChildRef = useRef<IRefRetType>(null);
   const [configurationComponents, setConfigurationComponents] = useState<
     ISectionComponent[]
   >([
     {
-      Comp: <USB id={1} setIsDirtyFunction={setIsDirtyOnComponent} key={1} />,
+      Comp: (
+        <USB
+          id={1}
+          setIsDirtyFunction={setIsDirtyOnComponent}
+          registerSaveFunction={registerSaveFunction}
+          key={1}
+          ref={usbChildRef}
+        />
+      ),
       SectionName: 'Input',
       id: 1,
       isDirty: false,
+      //saveFunction: null,
+      childRef: usbChildRef,
     },
     {
       Comp: (
         <SerialBluetooth
           id={2}
           setIsDirtyFunction={setIsDirtyOnComponent}
+          registerSaveFunction={registerSaveFunction}
           key={2}
+          ref={usbChildRef}
         />
       ),
       SectionName: 'Input',
       id: 2,
       isDirty: false,
-    },
-    {
-      Comp: <SRR id={3} setIsDirtyFunction={setIsDirtyOnComponent} key={3} />,
-      SectionName: 'Input',
-      id: 3,
-      isDirty: false,
+      //saveFunction: null,
+      childRef: usbChildRef,
     },
     {
       Comp: (
-        <LoraRadio id={4} setIsDirtyFunction={setIsDirtyOnComponent} key={4} />
+        <SRR
+          id={3}
+          setIsDirtyFunction={setIsDirtyOnComponent}
+          registerSaveFunction={registerSaveFunction}
+          key={3}
+          ref={usbChildRef}
+        />
+      ),
+      SectionName: 'Input',
+      id: 3,
+      isDirty: false,
+      //saveFunction: null,
+      childRef: usbChildRef,
+    },
+    {
+      Comp: (
+        <LoraRadio
+          id={4}
+          setIsDirtyFunction={setIsDirtyOnComponent}
+          registerSaveFunction={registerSaveFunction}
+          key={4}
+          ref={usbChildRef}
+        />
       ),
       SectionName: 'InputOutput',
       id: 4,
       isDirty: false,
+      //saveFunction: null,
+      childRef: loraChildRef,
     },
     {
-      Comp: <RS232 id={5} setIsDirtyFunction={setIsDirtyOnComponent} key={5} />,
+      Comp: (
+        <RS232
+          id={5}
+          setIsDirtyFunction={setIsDirtyOnComponent}
+          registerSaveFunction={registerSaveFunction}
+          key={5}
+          ref={usbChildRef}
+        />
+      ),
       SectionName: 'InputOutput',
       id: 5,
       isDirty: false,
+      //saveFunction: null,
+      childRef: usbChildRef,
     },
     {
-      Comp: <SIRAP id={6} setIsDirtyFunction={setIsDirtyOnComponent} key={6} />,
+      Comp: (
+        <SIRAP
+          id={6}
+          setIsDirtyFunction={setIsDirtyOnComponent}
+          registerSaveFunction={registerSaveFunction}
+          key={6}
+          ref={usbChildRef}
+        />
+      ),
       SectionName: 'Output',
       id: 6,
       isDirty: false,
+      //saveFunction: null,
+      childRef: usbChildRef,
     },
   ]);
+
+  function saveConfigurationScreen() {
+    console.log('saveConfigurationScreen');
+    usbChildRef.current?.save();
+
+    if (configurationComponents[3].childRef) {
+      configurationComponents[3].childRef.current;
+    }
+
+    configurationComponents.forEach(sectionComp => {
+      console.log('saveConfigurationScreen: ' + sectionComp.isDirty);
+      if (sectionComp.isDirty) {
+        if (sectionComp.childRef && sectionComp.childRef.current) {
+          sectionComp.childRef.current.save();
+        } else {
+          console.log('childRef not set');
+        }
+      }
+    });
+  }
+
+  function registerSaveFunction(id: number, saveFunc: () => void) {
+    //let newCompArray = [...configurationComponents];
+    //let theComp = newCompArray.find(comp => {
+    //  return comp.id === id;
+    //});
+    //if (theComp) {
+    //  theComp.saveFunction = saveFunc;
+    //  setConfigurationComponents(newCompArray);
+    //}
+  }
 
   function setIsDirtyOnComponent(id: number, isDirty2: boolean): void {
     console.log('setIsDirtyOnComponent: ' + id + ' isDirty: ' + isDirty2);
     let newCompArray = [...configurationComponents];
-    let theComp = newCompArray.find(comp => {
-      comp.id === id;
+    let theCompIndex = newCompArray.findIndex(comp => {
+      return comp.id === id;
     });
-    if (theComp) {
-      theComp.isDirty = isDirty2;
+    if (theCompIndex >= 0) {
+      newCompArray[theCompIndex].isDirty = isDirty2;
     }
     setConfigurationComponents(newCompArray);
-    setIsDirty(isDirty2);
+    let firstIsDirtyCompIndex = newCompArray.findIndex(comp => {
+      return comp.isDirty;
+    });
+
+    if (firstIsDirtyCompIndex >= 0) {
+      setIsDirty(true);
+    } else {
+      setIsDirty(false);
+    }
   }
 
   return (
     <SafeAreaView style={Colors.lighter}>
       <ScrollView>
+        <Button onPress={saveConfigurationScreen} title="Save" />
         <List.AccordionGroup>
           <View>
             <Text>{isDirty ? 'IS DIRTY' : 'NOT DIRTY'}</Text>

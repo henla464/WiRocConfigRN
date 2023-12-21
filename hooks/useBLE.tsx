@@ -29,6 +29,11 @@ export interface BluetoothLowEnergyApi {
     propName: string,
     callback: callbackFn,
   ) => Promise<Characteristic | null>;
+  saveProperty: (
+    device: Device,
+    propName: string,
+    propValue: string,
+  ) => Promise<Characteristic | null>;
 }
 
 interface PropNotificationSubscriber {
@@ -255,22 +260,35 @@ export default function useBLE(): BluetoothLowEnergyApi {
         );
       console.log('requestProperty 3');
       return characteristic;
-      //const readCharacteristic = await device.readCharacteristicForService(
-      //  apiService,
-      //  propertyCharacteristic,
-      //);
-      //if (readCharacteristic.value === null) {
-      //  return;
-      //}
-      //let propertyValue = decodeCharacteristicValueToString(
-      //  readCharacteristic.value,
-      //);
     } catch (e) {
       console.log('ERROR IN requestProperty: ' + e);
       return null;
     }
   };
 
+  const saveProperty = async (
+    device: Device,
+    propName: string,
+    propValue: string,
+  ): Promise<Characteristic | null> => {
+    try {
+      console.log('saveProperty:deviceName: ' + device.name);
+      console.log('saveProperty:propName: ' + propName);
+      console.log('saveProperty:propValue: ' + propValue);
+      var propNameAndPropValue = propName + '\t' + propValue;
+      let characteristic =
+        await device.writeCharacteristicWithResponseForService(
+          apiService,
+          propertyCharacteristic,
+          encodeStringToBase64(propNameAndPropValue),
+        );
+      console.log('saveproperty 2');
+      return characteristic;
+    } catch (e) {
+      console.log('ERROR IN saveProperty: ' + e);
+      return null;
+    }
+  };
   return {
     requestPermissions,
     scanForDevices,
@@ -280,5 +298,6 @@ export default function useBLE(): BluetoothLowEnergyApi {
     connectedDevice,
     disconnectDevice,
     requestProperty,
+    saveProperty,
   };
 }
