@@ -1,15 +1,20 @@
-import React, {useImperativeHandle, useState} from 'react';
-import {StyleSheet, Switch, Text, View} from 'react-native';
+import React, {useEffect, useImperativeHandle, useState} from 'react';
+import {StyleSheet, Text, View} from 'react-native';
 import {Checkbox, Icon, List, RadioButton} from 'react-native-paper';
 import IConfigComponentProps from '../interface/IConfigComponentProps';
 import OnOffChip from './OnOffChip';
 import IRefRetType from '../interface/IRefRetType';
+import {useBLEApiContext} from '../context/BLEApiContext';
 
 const RS232 = React.forwardRef<IRefRetType, IConfigComponentProps>(
   (compProps: IConfigComponentProps, ref: React.ForwardedRef<IRefRetType>) => {
     const [sendReceive, setSendReceive] = useState<string>('RECEIVE');
     const [isOneWay, setIsOneWay] = useState<boolean>(false);
     const [is4800bps, setIs4800bps] = useState<boolean>(false);
+
+    const [origSendReceive, setOrigSendReceive] = useState<string | null>(null);
+    const [origIsOneWay, setOrigIsOneWay] = useState<boolean | null>(null);
+    const [origIs4800bps, setOrigIs4800bps] = useState<boolean | null>(null);
 
     useImperativeHandle(ref, () => {
       return {
@@ -19,11 +24,110 @@ const RS232 = React.forwardRef<IRefRetType, IConfigComponentProps>(
       };
     });
 
+    const BLEAPI = useBLEApiContext();
+
     const save = () => {
-      null;
+      if (origSendReceive !== sendReceive) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(BLEAPI.connectedDevice, 'rs232mode', sendReceive);
+        } else {
+          console.log('RS232:save:1 not connected to device');
+        }
+      }
+
+      if (origIsOneWay !== isOneWay) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'rs232onewayreceive',
+            isOneWay ? '1' : '0',
+          );
+        } else {
+          console.log('RS232:save:2 not connected to device');
+        }
+      }
+
+      if (origIs4800bps !== is4800bps) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'forcers2324800baudrate',
+            is4800bps ? '1' : '0',
+          );
+        } else {
+          console.log('RS232:save:3 not connected to device');
+        }
+      }
     };
 
-    compProps.registerSaveFunction(compProps.id, save);
+    const updateFromWiRoc = (propName: string, propValue: string) => {
+      console.log('RS232:updateFromWiRoc: propName: ' + propName);
+      console.log('RS232:updateFromWiRoc: propValue: ' + propValue);
+      switch (propName) {
+        case 'rs232mode':
+          setSendReceive(propValue);
+          setOrigSendReceive(propValue);
+          break;
+        case 'rs232onewayreceive':
+          setIsOneWay(parseInt(propValue, 10) !== 0);
+          setOrigIsOneWay(parseInt(propValue, 10) !== 0);
+          break;
+        case 'forcers2324800baudrate':
+          setIs4800bps(parseInt(propValue, 10) !== 0);
+          setOrigIs4800bps(parseInt(propValue, 10) !== 0);
+          break;
+      }
+    };
+
+    useEffect(() => {
+      async function getRS232Settings() {
+        if (BLEAPI.connectedDevice !== null) {
+          let pc = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'rs232mode',
+            updateFromWiRoc,
+          );
+          let pc2 = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'rs232onewayreceive',
+            updateFromWiRoc,
+          );
+          let pc3 = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'forcers2324800baudrate',
+            updateFromWiRoc,
+          );
+        }
+      }
+      getRS232Settings();
+    }, [BLEAPI]);
+
+    useEffect(() => {
+      if (
+        origSendReceive == null ||
+        origIsOneWay === null ||
+        origIs4800bps === null
+      ) {
+        return;
+      }
+      if (
+        origSendReceive !== sendReceive ||
+        origIsOneWay !== isOneWay ||
+        origIs4800bps !== is4800bps
+      ) {
+        compProps.setIsDirtyFunction(compProps.id, true);
+      } else {
+        compProps.setIsDirtyFunction(compProps.id, false);
+      }
+    }, [
+      sendReceive,
+      isOneWay,
+      is4800bps,
+      compProps,
+      origSendReceive,
+      origIsOneWay,
+      origIs4800bps,
+    ]);
 
     return (
       <List.Accordion

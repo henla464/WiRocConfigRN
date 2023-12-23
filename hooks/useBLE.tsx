@@ -11,6 +11,8 @@ import {
 import DeviceInfo from 'react-native-device-info';
 import {PERMISSIONS, requestMultiple} from 'react-native-permissions';
 
+let demoDeviceData = require('./demoDeviceData.json');
+
 global.Buffer = require('buffer').Buffer;
 
 type PermissionCallback = (result: boolean) => void;
@@ -22,18 +24,29 @@ export interface BluetoothLowEnergyApi {
   stopScanningForDevices(): void;
   allDevices: Device[];
   connectToDevice: (device: Device) => Promise<void>;
-  connectedDevice: Device | null;
+  connectedDevice: Device | IDemoDevice | null;
   disconnectDevice: (device: Device) => Promise<void>;
   requestProperty: (
-    device: Device,
+    device: Device | IDemoDevice,
     propName: string,
     callback: callbackFn,
   ) => Promise<Characteristic | null>;
   saveProperty: (
-    device: Device,
+    device: Device | IDemoDevice,
     propName: string,
     propValue: string,
   ) => Promise<Characteristic | null>;
+}
+
+interface IDemoDevice {
+  demo: string;
+  id: string;
+  name: string;
+  isConnected: boolean;
+}
+
+function instanceOfIDemoDevice(object: any): object is IDemoDevice {
+  return 'demo' in object;
 }
 
 interface PropNotificationSubscriber {
@@ -42,15 +55,15 @@ interface PropNotificationSubscriber {
 }
 
 const bleManager = new BleManager();
-var propertyNotificationSubscriptions: PropNotificationSubscriber[] = [
-  {
-    propName: 'asdf',
-    callback: (a: string, b: string) => {
-      console.log(a + b);
-    },
-  },
-];
+var propertyNotificationSubscriptions: PropNotificationSubscriber[] = [];
 let propertySubscription: Subscription;
+
+export const demoDevice: IDemoDevice = {
+  demo: 'Yes I am a Demo Device',
+  id: '11:22:33:44:55:66',
+  name: 'Demo Device',
+  isConnected: false,
+};
 
 export default function useBLE(): BluetoothLowEnergyApi {
   const apiService = 'fb880900-4ab2-40a2-a8f0-14cc1c2e5608';
@@ -59,7 +72,9 @@ export default function useBLE(): BluetoothLowEnergyApi {
   const testPunchesCharacteristic = 'fb880907-4ab2-40a2-a8f0-14cc1c2e5608'; //N,R,W: test sending punches, subscribe, periodic
 
   const [allDevices, setAllDevices] = useState<Device[]>([]);
-  const [connectedDevice, setConnectedDevice] = useState<Device | null>(null);
+  const [connectedDevice, setConnectedDevice] = useState<
+    Device | IDemoDevice | null
+  >(null);
   const [isDisconnecting, setIsDisconnecting] = useState<boolean>(false);
 
   const requestPermissions = async (callback: PermissionCallback) => {
@@ -138,7 +153,19 @@ export default function useBLE(): BluetoothLowEnergyApi {
     return Buffer.from(value).toString('base64');
   };
 
-  const notify = (
+  const propertyNotify2 = (propName: string, propValue: string) => {
+    // Find all subscribers and call them
+    console.log(propertyNotificationSubscriptions);
+    for (const propNotificationSub of propertyNotificationSubscriptions) {
+      console.log('for ..of propertyNotificationSubscriptions');
+      console.log(propNotificationSub.propName);
+      if (propNotificationSub.propName === propName) {
+        propNotificationSub.callback(propName, propValue);
+      }
+    }
+  };
+
+  const propertyNotify = (
     error: BleError | null,
     characteristic: Characteristic | null,
   ): void => {
@@ -161,14 +188,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
         console.log('propName: ' + propName);
         console.log('propValue: ' + propValue);
         // Find all subscribers and call them
-        console.log(propertyNotificationSubscriptions);
-        for (const propNotificationSub of propertyNotificationSubscriptions) {
-          console.log('for ..of propertyNotificationSubscriptions');
-          console.log(propNotificationSub.propName);
-          if (propNotificationSub.propName === propName) {
-            propNotificationSub.callback(propName, propValue);
-          }
-        }
+        propertyNotify2(propName, propValue);
       }
     }
   };
@@ -178,7 +198,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
       propertySubscription = device.monitorCharacteristicForService(
         apiService,
         propertyCharacteristic,
-        notify,
+        propertyNotify,
         'propertyNotificationTransaction',
       );
     } catch (e) {
@@ -187,7 +207,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
     console.log('enablepropertyNotification');
   };
 
-  const connectToDevice = async (device: Device) => {
+  const connectToDevice = async (device: Device | IDemoDevice) => {
     try {
       if (connectedDevice !== null && device.id === connectedDevice.id) {
         console.log('Already connected to this device');
@@ -195,20 +215,26 @@ export default function useBLE(): BluetoothLowEnergyApi {
       } else {
         console.log('Connecting to: ' + device.name);
       }
-      const deviceConnected = await bleManager.connectToDevice(device.id);
-      await deviceConnected.discoverAllServicesAndCharacteristics();
-      console.log('connectToDevice: discoverAllServicesAndCharacteristics');
-      enablePropertyNotification(device);
-      console.log('connectToDevice: enablePropertyNotification');
-      setConnectedDevice(deviceConnected);
-      console.log('connectToDevice: setConnectedDevice');
-      //bleManager.stopDeviceScan();
+      if (instanceOfIDemoDevice(device)) {
+        console.log('useBLE: DEMO DEVICE!!');
+        device.isConnected = true;
+        setConnectedDevice(device);
+      } else {
+        const deviceConnected = await bleManager.connectToDevice(device.id);
+        await deviceConnected.discoverAllServicesAndCharacteristics();
+        console.log('connectToDevice: discoverAllServicesAndCharacteristics');
+        enablePropertyNotification(device);
+        console.log('connectToDevice: enablePropertyNotification');
+        setConnectedDevice(deviceConnected);
+        console.log('connectToDevice: setConnectedDevice');
+        //bleManager.stopDeviceScan();
+      }
     } catch (e) {
-      console.log('ERROR IN CONNECTION');
+      console.log('ERROR IN CONNECTION: ' + e);
     }
   };
 
-  const disconnectDevice = async (device: Device) => {
+  const disconnectDevice = async (device: Device | IDemoDevice) => {
     try {
       console.log('disconnectDevice: ' + device.id);
       setIsDisconnecting(true);
@@ -217,20 +243,28 @@ export default function useBLE(): BluetoothLowEnergyApi {
         console.log('disconnectDevice: Not connected to a device');
         return;
       }
-      console.log('disconnectDevice 1');
-      if (propertySubscription) {
-        propertySubscription.remove();
+      if (instanceOfIDemoDevice(deviceToDisconnect)) {
+        console.log('useBLE: DEMO DEVICE!!');
+        if (deviceToDisconnect.id === connectedDevice?.id) {
+          deviceToDisconnect.isConnected = false;
+          setConnectedDevice(null);
+        }
+      } else {
+        console.log('disconnectDevice 1');
+        if (propertySubscription) {
+          propertySubscription.remove();
+        }
+        console.log('disconnectDevice 1.1');
+        bleManager.cancelTransaction('propertyNotificationTransaction');
+        console.log('disconnectDevice 2');
+        await deviceToDisconnect.cancelConnection();
+        console.log('disconnectDevice 3');
+        if (deviceToDisconnect.id === connectedDevice?.id) {
+          setConnectedDevice(null);
+        }
+        console.log('disconnectDevice 4');
+        setIsDisconnecting(false);
       }
-      console.log('disconnectDevice 1.1');
-      bleManager.cancelTransaction('propertyNotificationTransaction');
-      console.log('disconnectDevice 2');
-      await deviceToDisconnect.cancelConnection();
-      console.log('disconnectDevice 3');
-      if (deviceToDisconnect.id === connectedDevice?.id) {
-        setConnectedDevice(null);
-      }
-      console.log('disconnectDevice 4');
-      setIsDisconnecting(false);
     } catch (e) {
       setConnectedDevice(null);
       setIsDisconnecting(false);
@@ -238,8 +272,13 @@ export default function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
+  const sendPropertyValueToDemoDevice = (propName: string): void => {
+    let propValue = demoDeviceData[propName];
+    propertyNotify2(propName, propValue);
+  };
+
   const requestProperty = async (
-    device: Device,
+    device: Device | IDemoDevice,
     propName: string,
     callback: callbackFn,
   ): Promise<Characteristic | null> => {
@@ -252,14 +291,19 @@ export default function useBLE(): BluetoothLowEnergyApi {
       });
       console.log(propertyNotificationSubscriptions);
       console.log('requestProperty 2');
-      let characteristic =
-        await device.writeCharacteristicWithResponseForService(
-          apiService,
-          propertyCharacteristic,
-          encodeStringToBase64(propName),
-        );
-      console.log('requestProperty 3');
-      return characteristic;
+      if (instanceOfIDemoDevice(device)) {
+        sendPropertyValueToDemoDevice(propName);
+        return null; // maybe should return someting else?
+      } else {
+        let characteristic =
+          await device.writeCharacteristicWithResponseForService(
+            apiService,
+            propertyCharacteristic,
+            encodeStringToBase64(propName),
+          );
+        console.log('requestProperty 3');
+        return characteristic;
+      }
     } catch (e) {
       console.log('ERROR IN requestProperty: ' + e);
       return null;
@@ -267,7 +311,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
   };
 
   const saveProperty = async (
-    device: Device,
+    device: Device | IDemoDevice,
     propName: string,
     propValue: string,
   ): Promise<Characteristic | null> => {
@@ -275,15 +319,20 @@ export default function useBLE(): BluetoothLowEnergyApi {
       console.log('saveProperty:deviceName: ' + device.name);
       console.log('saveProperty:propName: ' + propName);
       console.log('saveProperty:propValue: ' + propValue);
-      var propNameAndPropValue = propName + '\t' + propValue;
-      let characteristic =
-        await device.writeCharacteristicWithResponseForService(
-          apiService,
-          propertyCharacteristic,
-          encodeStringToBase64(propNameAndPropValue),
-        );
-      console.log('saveproperty 2');
-      return characteristic;
+      if (instanceOfIDemoDevice(device)) {
+        demoDeviceData[propName] = propValue;
+        return null;
+      } else {
+        var propNameAndPropValue = propName + '\t' + propValue;
+        let characteristic =
+          await device.writeCharacteristicWithResponseForService(
+            apiService,
+            propertyCharacteristic,
+            encodeStringToBase64(propNameAndPropValue),
+          );
+        console.log('saveproperty 2');
+        return characteristic;
+      }
     } catch (e) {
       console.log('ERROR IN saveProperty: ' + e);
       return null;

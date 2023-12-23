@@ -56,8 +56,6 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
       null;
     };
 
-    compProps.registerSaveFunction(compProps.id, save);
-
     const chipBackgroundColor = isBTDeviceConfigured ? 'green' : 'red';
 
     return (

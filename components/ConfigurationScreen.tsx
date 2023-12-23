@@ -1,4 +1,4 @@
-import React, {ReactElement, createRef, useRef, useState} from 'react';
+import React, {ReactElement, useRef, useState} from 'react';
 import {
   Button,
   SafeAreaView,
@@ -40,7 +40,6 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
         <USB
           id={1}
           setIsDirtyFunction={setIsDirtyOnComponent}
-          registerSaveFunction={registerSaveFunction}
           key={1}
           ref={usbChildRef}
         />
@@ -56,7 +55,6 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
         <SerialBluetooth
           id={2}
           setIsDirtyFunction={setIsDirtyOnComponent}
-          registerSaveFunction={registerSaveFunction}
           key={2}
           ref={usbChildRef}
         />
@@ -72,7 +70,6 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
         <SRR
           id={3}
           setIsDirtyFunction={setIsDirtyOnComponent}
-          registerSaveFunction={registerSaveFunction}
           key={3}
           ref={usbChildRef}
         />
@@ -88,7 +85,6 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
         <LoraRadio
           id={4}
           setIsDirtyFunction={setIsDirtyOnComponent}
-          registerSaveFunction={registerSaveFunction}
           key={4}
           ref={usbChildRef}
         />
@@ -104,7 +100,6 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
         <RS232
           id={5}
           setIsDirtyFunction={setIsDirtyOnComponent}
-          registerSaveFunction={registerSaveFunction}
           key={5}
           ref={usbChildRef}
         />
@@ -120,7 +115,6 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
         <SIRAP
           id={6}
           setIsDirtyFunction={setIsDirtyOnComponent}
-          registerSaveFunction={registerSaveFunction}
           key={6}
           ref={usbChildRef}
         />
@@ -128,7 +122,6 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
       SectionName: 'Output',
       id: 6,
       isDirty: false,
-      //saveFunction: null,
       childRef: usbChildRef,
     },
   ]);
@@ -151,17 +144,6 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
         }
       }
     });
-  }
-
-  function registerSaveFunction(id: number, saveFunc: () => void) {
-    //let newCompArray = [...configurationComponents];
-    //let theComp = newCompArray.find(comp => {
-    //  return comp.id === id;
-    //});
-    //if (theComp) {
-    //  theComp.saveFunction = saveFunc;
-    //  setConfigurationComponents(newCompArray);
-    //}
   }
 
   function setIsDirtyOnComponent(id: number, isDirty2: boolean): void {

@@ -1,4 +1,4 @@
-import React, {useImperativeHandle, useState} from 'react';
+import React, {useEffect, useImperativeHandle, useState} from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
 import {Icon, List, TextInput} from 'react-native-paper';
 import IConfigComponentProps from '../interface/IConfigComponentProps';
@@ -6,12 +6,19 @@ import MaskInput from 'react-native-mask-input';
 import {RenderProps} from 'react-native-paper/lib/typescript/components/TextInput/types';
 import OnOffChip from './OnOffChip';
 import IRefRetType from '../interface/IRefRetType';
+import {useBLEApiContext} from '../context/BLEApiContext';
 
 const SIRAP = React.forwardRef<IRefRetType, IConfigComponentProps>(
   (compProps: IConfigComponentProps, ref: React.ForwardedRef<IRefRetType>) => {
     const [isSIRAPSwitchedOn, setIsSIRAPSwitchedOn] = useState<boolean>(false);
     const [ipAddress, setIpAddress] = useState<string>('');
     const [ipPort, setIpPort] = useState<string>('10000');
+
+    const [origIsSIRAPSwitchedOn, setOrigIsSIRAPSwitchedOn] = useState<
+      boolean | null
+    >(null);
+    const [origIpAddress, setOrigIpAddress] = useState<string | null>(null);
+    const [origIpPort, setOrigIpPort] = useState<string | null>(null);
 
     useImperativeHandle(ref, () => {
       return {
@@ -21,11 +28,114 @@ const SIRAP = React.forwardRef<IRefRetType, IConfigComponentProps>(
       };
     });
 
+    const BLEAPI = useBLEApiContext();
+
     const save = () => {
-      null;
+      if (origIsSIRAPSwitchedOn !== isSIRAPSwitchedOn) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'onewayreceive',
+            isSIRAPSwitchedOn ? '1' : '0',
+          );
+        } else {
+          console.log('SIRAP:save:1 not connected to device');
+        }
+      }
+
+      if (origIpAddress !== ipAddress) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'force4800baudrate',
+            ipAddress,
+          );
+        } else {
+          console.log('SIRAP:save:2 not connected to device');
+        }
+      }
+
+      if (origIpPort !== ipPort) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'force4800baudrate',
+            ipPort,
+          );
+        } else {
+          console.log('SIRAP:save:3 not connected to device');
+        }
+      }
     };
 
-    compProps.registerSaveFunction(compProps.id, save);
+    const updateFromWiRoc = (propName: string, propValue: string) => {
+      console.log('SIRAP:updateFromWiRoc: propName: ' + propName);
+      console.log('SIRAP:updateFromWiRoc: propValue: ' + propValue);
+      switch (propName) {
+        case 'sendtosirapenabled':
+          setIsSIRAPSwitchedOn(parseInt(propValue, 10) !== 0);
+          setOrigIsSIRAPSwitchedOn(parseInt(propValue, 10) !== 0);
+          break;
+        case 'sendtosirapip':
+          setIpAddress(propValue);
+          setOrigIpAddress(propValue);
+          break;
+        case 'sendtosirapipport':
+          setIpPort(propValue);
+          setOrigIpPort(propValue);
+          break;
+      }
+    };
+
+    useEffect(() => {
+      async function getSIRAPSettings() {
+        if (BLEAPI.connectedDevice !== null) {
+          let pc = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'sendtosirapenabled',
+            updateFromWiRoc,
+          );
+          let pc2 = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'sendtosirapip',
+            updateFromWiRoc,
+          );
+          let pc3 = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'sendtosirapipport',
+            updateFromWiRoc,
+          );
+        }
+      }
+      getSIRAPSettings();
+    }, [BLEAPI]);
+
+    useEffect(() => {
+      if (
+        origIsSIRAPSwitchedOn == null ||
+        origIpAddress === null ||
+        origIpPort === null
+      ) {
+        return;
+      }
+      if (
+        origIsSIRAPSwitchedOn !== isSIRAPSwitchedOn ||
+        origIpAddress !== ipAddress ||
+        origIpPort !== ipPort
+      ) {
+        compProps.setIsDirtyFunction(compProps.id, true);
+      } else {
+        compProps.setIsDirtyFunction(compProps.id, false);
+      }
+    }, [
+      isSIRAPSwitchedOn,
+      ipAddress,
+      ipPort,
+      compProps,
+      origIsSIRAPSwitchedOn,
+      origIpAddress,
+      origIpPort,
+    ]);
 
     let groupMaskForDiffLengthForNext = [
       [/[1-9]/],

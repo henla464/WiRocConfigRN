@@ -1,12 +1,6 @@
 import React, {useEffect, useImperativeHandle, useState} from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
-import {
-  Chip,
-  Icon,
-  List,
-  RadioButton,
-  SegmentedButtons,
-} from 'react-native-paper';
+import {Icon, List, RadioButton, SegmentedButtons} from 'react-native-paper';
 import IConfigComponentProps from '../interface/IConfigComponentProps';
 import {SelectList} from 'react-native-dropdown-select-list';
 import OnOffChip from './OnOffChip';
@@ -71,8 +65,6 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
       }
     };
 
-    compProps.registerSaveFunction(compProps.id, save);
-
     const updateFromWiRoc = (propName: string, propValue: string) => {
       console.log('LoraRadio:updateFromWiRoc: propName: ' + propName);
       console.log('LoraRadio:updateFromWiRoc: propValue: ' + propValue);
@@ -92,9 +84,11 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
       }
     };
     useEffect(() => {
-      // Lora mode
+      console.log('LoraRadio: load values');
       async function getLoraRadioSettings() {
+        console.log('getLoraRadioSettings');
         if (BLEAPI.connectedDevice !== null) {
+          console.log('getLoraRadioSettings:connectedDevice !== null');
           let pc = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
             'loramode',

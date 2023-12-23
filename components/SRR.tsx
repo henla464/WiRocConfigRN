@@ -1,14 +1,38 @@
-import React, {useImperativeHandle, useState} from 'react';
+import React, {useEffect, useImperativeHandle, useState} from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
 import {Icon, List, SegmentedButtons} from 'react-native-paper';
 import IConfigComponentProps from '../interface/IConfigComponentProps';
 import OnOffChip from './OnOffChip';
 import IRefRetType from '../interface/IRefRetType';
+import {useBLEApiContext} from '../context/BLEApiContext';
 
 const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
   (compProps: IConfigComponentProps, ref: React.ForwardedRef<IRefRetType>) => {
     const [isSRREnabled, setIsSRREnabled] = useState<boolean>(true);
-    const [sendReceive, setSendReceive] = useState<string>('RECEIVE');
+    const [SRRMode, setSRRMode] = useState<string>('RECEIVE');
+    const [isRedChannelEnabled, setIsRedChannelEnabled] =
+      useState<boolean>(true);
+    const [isBlueChannelEnabled, setIsBlueChannelEnabled] =
+      useState<boolean>(true);
+    const [isRedChannelListenOnly, setIsRedChannelListenOnly] =
+      useState<boolean>(true);
+    const [isBlueChannelListenOnly, SetIsBlueChannelListenOnly] =
+      useState<boolean>(true);
+
+    const [origIsSRREnabled, setOrigIsSRREnabled] = useState<boolean | null>(
+      null,
+    );
+    const [origSRRMode, setOrigSRRMode] = useState<string | null>(null);
+    const [origIsRedChannelEnabled, setOrigIsRedChannelEnabled] = useState<
+      boolean | null
+    >(null);
+    const [origIsBlueChannelEnabled, setOrigIsBlueChannelEnabled] = useState<
+      boolean | null
+    >(null);
+    const [origIsRedChannelListenOnly, setOrigIsRedChannelListenOnly] =
+      useState<boolean | null>(null);
+    const [origIsBlueChannelListenOnly, SetOrigIsBlueChannelListenOnly] =
+      useState<boolean | null>(null);
 
     useImperativeHandle(ref, () => {
       return {
@@ -18,11 +42,181 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
       };
     });
 
+    const BLEAPI = useBLEApiContext();
+
     const save = () => {
-      null;
+      if (origIsSRREnabled !== isSRREnabled) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'srr/enabled',
+            isSRREnabled ? '1' : '0',
+          );
+        } else {
+          console.log('SRR:save:1 not connected to device');
+        }
+      }
+
+      if (origSRRMode !== SRRMode) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(BLEAPI.connectedDevice, 'srr/mode', SRRMode);
+        } else {
+          console.log('SRR:save:2 not connected to device');
+        }
+      }
+
+      if (origIsRedChannelEnabled !== isRedChannelEnabled) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'srr/redchannel',
+            isRedChannelEnabled ? '1' : '0',
+          );
+        } else {
+          console.log('SRR:save:3 not connected to device');
+        }
+      }
+
+      if (origIsBlueChannelEnabled !== isBlueChannelEnabled) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'srr/bluechannel',
+            isBlueChannelEnabled ? '1' : '0',
+          );
+        } else {
+          console.log('SRR:save:4 not connected to device');
+        }
+      }
+
+      if (origIsRedChannelListenOnly !== isRedChannelListenOnly) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'srr/redchannellistenonly',
+            isRedChannelListenOnly ? '1' : '0',
+          );
+        } else {
+          console.log('SRR:save:5 not connected to device');
+        }
+      }
+
+      if (origIsBlueChannelListenOnly !== isBlueChannelListenOnly) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'srr/bluechannellistenonly',
+            isBlueChannelListenOnly ? '1' : '0',
+          );
+        } else {
+          console.log('SRR:save:6 not connected to device');
+        }
+      }
     };
 
-    compProps.registerSaveFunction(compProps.id, save);
+    const updateFromWiRoc = (propName: string, propValue: string) => {
+      console.log('SRR:updateFromWiRoc: propName: ' + propName);
+      console.log('SRR:updateFromWiRoc: propValue: ' + propValue);
+      switch (propName) {
+        case 'srr/enabled':
+          setIsSRREnabled(parseInt(propValue, 10) !== 0);
+          setOrigIsSRREnabled(parseInt(propValue, 10) !== 0);
+          break;
+        case 'srr/mode':
+          setSRRMode(propValue);
+          setOrigSRRMode(propValue);
+          break;
+        case 'srr/redchannel':
+          setIsRedChannelEnabled(parseInt(propValue, 10) !== 0);
+          setOrigIsRedChannelEnabled(parseInt(propValue, 10) !== 0);
+          break;
+        case 'srr/bluechannel':
+          setIsBlueChannelEnabled(parseInt(propValue, 10) !== 0);
+          setOrigIsBlueChannelEnabled(parseInt(propValue, 10) !== 0);
+          break;
+        case 'srr/redchannellistenonly':
+          setIsRedChannelListenOnly(parseInt(propValue, 10) !== 0);
+          setOrigIsRedChannelListenOnly(parseInt(propValue, 10) !== 0);
+          break;
+        case 'srr/bluechannellistenonly':
+          SetIsBlueChannelListenOnly(parseInt(propValue, 10) !== 0);
+          SetOrigIsBlueChannelListenOnly(parseInt(propValue, 10) !== 0);
+          break;
+      }
+    };
+
+    useEffect(() => {
+      async function getSRRSettings() {
+        if (BLEAPI.connectedDevice !== null) {
+          let pc = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'srr/enabled',
+            updateFromWiRoc,
+          );
+          let pc1 = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'srr/mode',
+            updateFromWiRoc,
+          );
+          let pc2 = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'srr/redchannel',
+            updateFromWiRoc,
+          );
+          let pc3 = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'srr/bluechannel',
+            updateFromWiRoc,
+          );
+          let pc4 = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'srr/redchannellistenonly',
+            updateFromWiRoc,
+          );
+          let pc5 = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'srr/bluechannellistenonly',
+            updateFromWiRoc,
+          );
+        }
+      }
+      getSRRSettings();
+    }, [BLEAPI]);
+
+    useEffect(() => {
+      if (
+        origIsSRREnabled == null ||
+        origIsRedChannelEnabled === null ||
+        origIsBlueChannelEnabled === null ||
+        origIsRedChannelListenOnly === null ||
+        origIsBlueChannelListenOnly === null
+      ) {
+        return;
+      }
+      if (
+        origIsSRREnabled !== isSRREnabled ||
+        origIsRedChannelEnabled !== isRedChannelEnabled ||
+        origIsBlueChannelEnabled !== isBlueChannelEnabled ||
+        origIsRedChannelListenOnly !== isRedChannelListenOnly ||
+        origIsBlueChannelListenOnly !== isBlueChannelListenOnly
+      ) {
+        compProps.setIsDirtyFunction(compProps.id, true);
+      } else {
+        compProps.setIsDirtyFunction(compProps.id, false);
+      }
+    }, [
+      isSRREnabled,
+      isRedChannelEnabled,
+      isBlueChannelEnabled,
+      isRedChannelListenOnly,
+      isBlueChannelListenOnly,
+      compProps,
+      origIsSRREnabled,
+      origIsRedChannelEnabled,
+      origIsBlueChannelEnabled,
+      origIsRedChannelListenOnly,
+      origIsBlueChannelListenOnly,
+    ]);
 
     return (
       <List.Accordion
@@ -30,7 +224,7 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
         id={compProps.id}
         right={({isExpanded}) => (
           <View style={styles.accordionHeader}>
-            <Text>{sendReceive === 'RECEIVE' ? 'Ta emot' : 'Skicka'}</Text>
+            <Text>{SRRMode === 'RECEIVE' ? 'Ta emot' : 'Skicka'}</Text>
             <OnOffChip on={isSRREnabled} />
             {isExpanded ? (
               <Icon source="chevron-up" size={25} />
@@ -55,8 +249,8 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
             />
           </View>
           <SegmentedButtons
-            value={sendReceive}
-            onValueChange={setSendReceive}
+            value={SRRMode}
+            onValueChange={setSRRMode}
             buttons={[
               {
                 icon: 'login',

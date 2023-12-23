@@ -26,14 +26,33 @@ const USB = React.forwardRef<IRefRetType, IConfigComponentProps>(
 
     const save = () => {
       if (origIsOneWay !== isOneWay) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'onewayreceive',
+            isOneWay ? '1' : '0',
+          );
+        } else {
+          console.log('USB:save:1 not connected to device');
+        }
+      }
+
+      if (origIs4800bps !== is4800bps) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'force4800baudrate',
+            is4800bps ? '1' : '0',
+          );
+        } else {
+          console.log('USB:save:2 not connected to device');
+        }
       }
     };
 
-    compProps.registerSaveFunction(compProps.id, save);
-
     const updateFromWiRoc = (propName: string, propValue: string) => {
-      console.log('LoraRadio:updateFromWiRoc: propName: ' + propName);
-      console.log('LoraRadio:updateFromWiRoc: propValue: ' + propValue);
+      console.log('USB:updateFromWiRoc: propName: ' + propName);
+      console.log('USB:updateFromWiRoc: propValue: ' + propValue);
       switch (propName) {
         case 'onewayreceive':
           setIsOneWay(parseInt(propValue, 10) !== 0);
@@ -47,7 +66,6 @@ const USB = React.forwardRef<IRefRetType, IConfigComponentProps>(
     };
 
     useEffect(() => {
-      // Lora mode
       async function getUSBSettings() {
         if (BLEAPI.connectedDevice !== null) {
           let pc = BLEAPI.requestProperty(

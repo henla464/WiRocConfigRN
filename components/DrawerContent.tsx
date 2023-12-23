@@ -9,12 +9,14 @@ import {Image, StyleSheet, View} from 'react-native';
 import {Caption, Drawer, Text, TouchableRipple} from 'react-native-paper';
 import {useBLEApiContext} from '../context/BLEApiContext';
 import {Device} from 'react-native-ble-plx';
+import {demoDevice} from '../hooks/useBLE';
 
 interface DrawerContentProps {
   state: DrawerNavigationState<ParamListBase>;
   navigation: DrawerNavigationHelpers;
   descriptors: DrawerDescriptorMap;
 }
+
 export function DrawerContent(props: DrawerContentProps) {
   const BLEAPI = useBLEApiContext();
 
@@ -70,6 +72,7 @@ export function DrawerContent(props: DrawerContentProps) {
           <TouchableRipple
             key="11:22:33:44:55:66"
             onPress={() => {
+              BLEAPI.connectToDevice(demoDevice);
               props.navigation.navigate('Device');
             }}>
             <View style={styles.foundDevices}>
