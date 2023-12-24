@@ -1,5 +1,19 @@
 {
   "loramode": "RECEIVER",
   "channel": "2",
-  "lorarange": "L"
+  "lorarange": "L",
+  "onewayreceive": "0",
+  "force4800baudrate": "0",
+  "sendtosirapenabled": "0",
+  "sendtosirapip": "",
+  "sendtosirapipport": "10000",
+  "rs232mode": "RECEIVE",
+  "rs232onewayreceive": "0",
+  "forcers2324800baudrate": "0",
+  "srr/enabled": "0",
+  "srr/mode": "RECEIVE",
+  "srr/redchannel": "1",
+  "srr/bluechannel": "1",
+  "srr/redchannellistenonly": "0",
+  "srr/bluechannellistenonly": "0"
 }

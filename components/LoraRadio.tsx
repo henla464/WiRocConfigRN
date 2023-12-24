@@ -91,16 +91,19 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
           console.log('getLoraRadioSettings:connectedDevice !== null');
           let pc = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'LoraRadio',
             'loramode',
             updateFromWiRoc,
           );
           let pc2 = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'LoraRadio',
             'channel',
             updateFromWiRoc,
           );
           let pc3 = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'LoraRadio',
             'lorarange',
             updateFromWiRoc,
           );

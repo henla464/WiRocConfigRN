@@ -92,16 +92,19 @@ const SIRAP = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice !== null) {
           let pc = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'SIRAP',
             'sendtosirapenabled',
             updateFromWiRoc,
           );
           let pc2 = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'SIRAP',
             'sendtosirapip',
             updateFromWiRoc,
           );
           let pc3 = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'SIRAP',
             'sendtosirapipport',
             updateFromWiRoc,
           );

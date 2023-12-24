@@ -70,11 +70,13 @@ const USB = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice !== null) {
           let pc = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'USB',
             'onewayreceive',
             updateFromWiRoc,
           );
           let pc2 = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'USB',
             'force4800baudrate',
             updateFromWiRoc,
           );

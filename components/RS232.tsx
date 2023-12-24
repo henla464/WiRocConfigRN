@@ -84,16 +84,19 @@ const RS232 = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice !== null) {
           let pc = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'RS232',
             'rs232mode',
             updateFromWiRoc,
           );
           let pc2 = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'RS232',
             'rs232onewayreceive',
             updateFromWiRoc,
           );
           let pc3 = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'RS232',
             'forcers2324800baudrate',
             updateFromWiRoc,
           );

@@ -20,18 +20,21 @@ import IRefRetType from '../interface/IRefRetType';
 
 interface ISectionComponent {
   Comp: React.JSX.Element;
+  Name: String;
   SectionName: string;
   id: number;
   isDirty: boolean;
-  //saveFunction: (() => void) | null;
   childRef: React.RefObject<IRefRetType>;
 }
 
 export default function ConfigurationScreen(): ReactElement<React.FC> {
-  //let s = SerialBluetooth({id: 2});
   const [isDirty, setIsDirty] = useState<boolean>(false);
   const usbChildRef = useRef<IRefRetType>(null);
+  const serialBluetoothRef = useRef<IRefRetType>(null);
+  const SRRChildRef = useRef<IRefRetType>(null);
   const loraChildRef = useRef<IRefRetType>(null);
+  const RS232ChildRef = useRef<IRefRetType>(null);
+  const SIRAPChildRef = useRef<IRefRetType>(null);
   const [configurationComponents, setConfigurationComponents] = useState<
     ISectionComponent[]
   >([
@@ -44,10 +47,10 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
           ref={usbChildRef}
         />
       ),
+      Name: 'USB',
       SectionName: 'Input',
       id: 1,
       isDirty: false,
-      //saveFunction: null,
       childRef: usbChildRef,
     },
     {
@@ -56,14 +59,14 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
           id={2}
           setIsDirtyFunction={setIsDirtyOnComponent}
           key={2}
-          ref={usbChildRef}
+          ref={serialBluetoothRef}
         />
       ),
+      Name: 'SerialBluetooth',
       SectionName: 'Input',
       id: 2,
       isDirty: false,
-      //saveFunction: null,
-      childRef: usbChildRef,
+      childRef: serialBluetoothRef,
     },
     {
       Comp: (
@@ -71,14 +74,14 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
           id={3}
           setIsDirtyFunction={setIsDirtyOnComponent}
           key={3}
-          ref={usbChildRef}
+          ref={SRRChildRef}
         />
       ),
+      Name: 'SRR',
       SectionName: 'Input',
       id: 3,
       isDirty: false,
-      //saveFunction: null,
-      childRef: usbChildRef,
+      childRef: SRRChildRef,
     },
     {
       Comp: (
@@ -86,13 +89,13 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
           id={4}
           setIsDirtyFunction={setIsDirtyOnComponent}
           key={4}
-          ref={usbChildRef}
+          ref={loraChildRef}
         />
       ),
+      Name: 'LoraRadio',
       SectionName: 'InputOutput',
       id: 4,
       isDirty: false,
-      //saveFunction: null,
       childRef: loraChildRef,
     },
     {
@@ -101,14 +104,14 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
           id={5}
           setIsDirtyFunction={setIsDirtyOnComponent}
           key={5}
-          ref={usbChildRef}
+          ref={RS232ChildRef}
         />
       ),
+      Name: 'RS232',
       SectionName: 'InputOutput',
       id: 5,
       isDirty: false,
-      //saveFunction: null,
-      childRef: usbChildRef,
+      childRef: RS232ChildRef,
     },
     {
       Comp: (
@@ -116,31 +119,33 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
           id={6}
           setIsDirtyFunction={setIsDirtyOnComponent}
           key={6}
-          ref={usbChildRef}
+          ref={SIRAPChildRef}
         />
       ),
+      Name: 'SIRAP',
       SectionName: 'Output',
       id: 6,
       isDirty: false,
-      childRef: usbChildRef,
+      childRef: SIRAPChildRef,
     },
   ]);
 
   function saveConfigurationScreen() {
-    console.log('saveConfigurationScreen');
-    usbChildRef.current?.save();
-
     if (configurationComponents[3].childRef) {
       configurationComponents[3].childRef.current;
     }
 
     configurationComponents.forEach(sectionComp => {
-      console.log('saveConfigurationScreen: ' + sectionComp.isDirty);
       if (sectionComp.isDirty) {
+        console.log(
+          'saveConfigurationScreen: ' +
+            sectionComp.Name +
+            ' Is dirty -> Save it',
+        );
         if (sectionComp.childRef && sectionComp.childRef.current) {
           sectionComp.childRef.current.save();
         } else {
-          console.log('childRef not set');
+          console.log('saveConfigurationScreen: childRef not set');
         }
       }
     });

@@ -28,6 +28,7 @@ export interface BluetoothLowEnergyApi {
   disconnectDevice: (device: Device) => Promise<void>;
   requestProperty: (
     device: Device | IDemoDevice,
+    componentRequesting: string,
     propName: string,
     callback: callbackFn,
   ) => Promise<Characteristic | null>;
@@ -49,13 +50,14 @@ function instanceOfIDemoDevice(object: any): object is IDemoDevice {
   return 'demo' in object;
 }
 
-interface PropNotificationSubscriber {
+interface IPropNotificationSubscriber {
+  componentRequesting: string;
   propName: string;
   callback: callbackFn;
 }
 
 const bleManager = new BleManager();
-var propertyNotificationSubscriptions: PropNotificationSubscriber[] = [];
+var propertyNotificationSubscriptions: IPropNotificationSubscriber[] = [];
 let propertySubscription: Subscription;
 
 export const demoDevice: IDemoDevice = {
@@ -155,11 +157,14 @@ export default function useBLE(): BluetoothLowEnergyApi {
 
   const propertyNotify2 = (propName: string, propValue: string) => {
     // Find all subscribers and call them
-    console.log(propertyNotificationSubscriptions);
     for (const propNotificationSub of propertyNotificationSubscriptions) {
-      console.log('for ..of propertyNotificationSubscriptions');
-      console.log(propNotificationSub.propName);
       if (propNotificationSub.propName === propName) {
+        console.log(
+          'propertyNotify2: Found sub to notify: ' +
+            propNotificationSub.componentRequesting +
+            ' propName: ' +
+            propNotificationSub.propName,
+        );
         propNotificationSub.callback(propName, propValue);
       }
     }
@@ -277,20 +282,38 @@ export default function useBLE(): BluetoothLowEnergyApi {
     propertyNotify2(propName, propValue);
   };
 
+  const addOrUpdatePropertyNotifiticationSubscription = (
+    newSub: IPropNotificationSubscriber,
+  ) => {
+    let foundSub = propertyNotificationSubscriptions.find(
+      (sub: IPropNotificationSubscriber) => {
+        return (
+          sub.componentRequesting === newSub.componentRequesting &&
+          sub.propName === newSub.propName
+        );
+      },
+    );
+    if (foundSub) {
+      foundSub.callback = newSub.callback;
+    } else {
+      propertyNotificationSubscriptions.push(newSub);
+    }
+  };
+
   const requestProperty = async (
     device: Device | IDemoDevice,
+    componentRequesting: string,
     propName: string,
     callback: callbackFn,
   ): Promise<Characteristic | null> => {
     try {
       console.log('deviceName: ' + device.name);
       console.log('requestProperty: ' + propName);
-      propertyNotificationSubscriptions.push({
+      addOrUpdatePropertyNotifiticationSubscription({
+        componentRequesting: componentRequesting,
         propName: propName,
         callback: callback,
       });
-      console.log(propertyNotificationSubscriptions);
-      console.log('requestProperty 2');
       if (instanceOfIDemoDevice(device)) {
         sendPropertyValueToDemoDevice(propName);
         return null; // maybe should return someting else?

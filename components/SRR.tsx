@@ -150,31 +150,37 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice !== null) {
           let pc = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'SRR',
             'srr/enabled',
             updateFromWiRoc,
           );
           let pc1 = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'SRR',
             'srr/mode',
             updateFromWiRoc,
           );
           let pc2 = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'SRR',
             'srr/redchannel',
             updateFromWiRoc,
           );
           let pc3 = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'SRR',
             'srr/bluechannel',
             updateFromWiRoc,
           );
           let pc4 = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'SRR',
             'srr/redchannellistenonly',
             updateFromWiRoc,
           );
           let pc5 = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
+            'SRR',
             'srr/bluechannellistenonly',
             updateFromWiRoc,
           );
