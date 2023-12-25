@@ -23,9 +23,9 @@ export interface BluetoothLowEnergyApi {
   scanForDevices(): void;
   stopScanningForDevices(): void;
   allDevices: Device[];
-  connectToDevice: (device: Device) => Promise<void>;
+  connectToDevice: (device: Device | IDemoDevice) => Promise<void>;
   connectedDevice: Device | IDemoDevice | null;
-  disconnectDevice: (device: Device) => Promise<void>;
+  disconnectDevice: (device: Device | IDemoDevice) => Promise<void>;
   requestProperty: (
     device: Device | IDemoDevice,
     componentRequesting: string,
