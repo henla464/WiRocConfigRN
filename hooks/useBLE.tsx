@@ -1,7 +1,6 @@
 import {useState} from 'react';
 import {PermissionsAndroid, Platform} from 'react-native';
 import {
-  Base64,
   BleError,
   BleManager,
   Characteristic,
@@ -37,6 +36,10 @@ export interface BluetoothLowEnergyApi {
     propName: string,
     propValue: string,
   ) => Promise<Characteristic | null>;
+  enablePunchesNotification: (device: Device, callback: callbackFn) => void;
+  disablePunchesNotification: (device: Device) => void;
+  enableTestPunchesNotification: (device: Device, callback: callbackFn) => void;
+  disableTestPunchesNotification: (device: Device) => void;
 }
 
 interface IDemoDevice {
@@ -58,7 +61,11 @@ interface IPropNotificationSubscriber {
 
 const bleManager = new BleManager();
 var propertyNotificationSubscriptions: IPropNotificationSubscriber[] = [];
-let propertySubscription: Subscription;
+let propertySubscription: Subscription | null;
+let punchesSubscription: Subscription | null;
+let testPunchesSubscription: Subscription | null;
+let punchesCallbackFunction: callbackFn;
+let testPunchesCallbackFunction: callbackFn;
 
 export const demoDevice: IDemoDevice = {
   demo: 'Yes I am a Demo Device',
@@ -68,6 +75,8 @@ export const demoDevice: IDemoDevice = {
 };
 const chunkLengthToUse: number = 150; // MTU of 153 (3 byte header) should work on all phones hopefully
 let propertyNotificationBufferReceived: Buffer = Buffer.from('');
+let punchesNotificationBufferReceived: Buffer = Buffer.from('');
+let testPunchesNotificationBufferReceived: Buffer = Buffer.from('');
 
 export default function useBLE(): BluetoothLowEnergyApi {
   const apiService = 'fb880900-4ab2-40a2-a8f0-14cc1c2e5608';
@@ -148,6 +157,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
+  /*
   const decodeCharacteristicValueToString = (value: Base64) => {
     console.log(
       'decodeCharacteristicValueToString: ' +
@@ -157,6 +167,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
     );
     return Buffer.from(value, 'base64').toString('utf8');
   };
+  */
 
   const encodeStringToBase64 = (value: string) => {
     console.log(
@@ -228,7 +239,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
         apiService,
         propertyCharacteristic,
         propertyNotify,
-        'propertyNotificationTransaction',
+        'propertyNotificationTransaction' + device.id,
       );
     } catch (e) {
       console.log('exception enablePropertyNotification: ' + e);
@@ -297,10 +308,32 @@ export default function useBLE(): BluetoothLowEnergyApi {
       } else {
         console.log('disconnectDevice 1');
         if (propertySubscription) {
+          console.log('disconnectDevice: removing propertySubscription');
           propertySubscription.remove();
+          propertySubscription = null;
+        }
+        if (punchesSubscription) {
+          console.log('disconnectDevice: removing punchesSubscription');
+          punchesSubscription.remove();
+          punchesSubscription = null;
+        }
+        if (testPunchesSubscription) {
+          console.log('disconnectDevice: removing testPunchesSubscription');
+          testPunchesSubscription.remove();
+          testPunchesSubscription = null;
         }
         console.log('disconnectDevice 1.1');
-        bleManager.cancelTransaction('propertyNotificationTransaction');
+        bleManager.cancelTransaction(
+          'propertyNotificationTransaction' + device.id,
+        );
+        console.log('disconnectDevice 1.2');
+        bleManager.cancelTransaction(
+          'punchesNotificationTransaction' + device.id,
+        );
+        console.log('disconnectDevice 1.3');
+        bleManager.cancelTransaction(
+          'testPunchesNotificationTransaction' + device.id,
+        );
         console.log('disconnectDevice 2');
         await deviceToDisconnect.cancelConnection();
         console.log('disconnectDevice 3');
@@ -405,6 +438,131 @@ export default function useBLE(): BluetoothLowEnergyApi {
       return null;
     }
   };
+
+  const punchesNotify = (
+    error: BleError | null,
+    characteristic: Characteristic | null,
+  ): void => {
+    if (error !== null) {
+      if (!(isDisconnecting && error.message === 'Operation was cancelled')) {
+        console.log('punchesNotify: Notify error ' + error.name);
+        console.log('punchesNotify: Notify error ' + error);
+      }
+    } else if (characteristic !== null && characteristic.value !== null) {
+      let bufferOfReceivedNow = Buffer.from(characteristic.value, 'base64');
+      punchesNotificationBufferReceived = Buffer.concat([
+        punchesNotificationBufferReceived,
+        bufferOfReceivedNow,
+      ]);
+      // we need to check the byte length and not the string length ( ¤ takes two bytes )
+      let punchesString = '';
+      if (bufferOfReceivedNow.length < chunkLengthToUse) {
+        punchesString = punchesNotificationBufferReceived.toString('utf-8');
+        punchesNotificationBufferReceived = Buffer.from('');
+      } else {
+        // This is not the full value, wait for the next fragment
+        return;
+      }
+      punchesCallbackFunction('punches', punchesString);
+    }
+  };
+
+  const enablePunchesNotification = (device: Device, callback: callbackFn) => {
+    try {
+      punchesCallbackFunction = callback;
+      punchesSubscription = device.monitorCharacteristicForService(
+        apiService,
+        punchesCharacteristic,
+        punchesNotify,
+        'punchesNotificationTransaction' + device.id,
+      );
+    } catch (e) {
+      console.log('exception enablePunchesNotification: ' + e);
+    }
+    console.log('enablePunchesNotification');
+  };
+
+  const disablePunchesNotification = (device: Device) => {
+    try {
+      bleManager.cancelTransaction(
+        'punchesNotificationTransaction' + device.id,
+      );
+      if (punchesSubscription) {
+        console.log('disablePunchesNotification: removing punchesSubscription');
+        punchesSubscription.remove();
+        punchesSubscription = null;
+      }
+    } catch (e) {
+      console.log('exception enablePunchesNotification: ' + e);
+    }
+    console.log('enablePunchesNotification');
+  };
+
+  const testPunchesNotify = (
+    error: BleError | null,
+    characteristic: Characteristic | null,
+  ): void => {
+    if (error !== null) {
+      if (!(isDisconnecting && error.message === 'Operation was cancelled')) {
+        console.log('testPunchesNotify: Notify error ' + error.name);
+        console.log('testPunchesNotify: Notify error ' + error);
+      }
+    } else if (characteristic !== null && characteristic.value !== null) {
+      let bufferOfReceivedNow = Buffer.from(characteristic.value, 'base64');
+      testPunchesNotificationBufferReceived = Buffer.concat([
+        testPunchesNotificationBufferReceived,
+        bufferOfReceivedNow,
+      ]);
+      // we need to check the byte length and not the string length ( ¤ takes two bytes )
+      let punchesString = '';
+      if (bufferOfReceivedNow.length < chunkLengthToUse) {
+        punchesString = testPunchesNotificationBufferReceived.toString('utf-8');
+        testPunchesNotificationBufferReceived = Buffer.from('');
+      } else {
+        // This is not the full value, wait for the next fragment
+        return;
+      }
+      testPunchesCallbackFunction('testpunches', punchesString);
+    }
+  };
+
+  const enableTestPunchesNotification = (
+    device: Device,
+    callback: callbackFn,
+  ) => {
+    try {
+      testPunchesCallbackFunction = callback;
+      testPunchesSubscription = device.monitorCharacteristicForService(
+        apiService,
+        testPunchesCharacteristic,
+        testPunchesNotify,
+        'testPunchesNotificationTransaction' + device.id,
+      );
+    } catch (e) {
+      console.log('exception enableTestPunchesNotification: ' + e);
+    }
+    console.log('enableTestPunchesNotification');
+  };
+
+  const disableTestPunchesNotification = (device: Device) => {
+    try {
+      bleManager.stop;
+      bleManager.cancelTransaction(
+        'testPunchesNotificationTransaction' + device.id,
+      );
+      if (testPunchesSubscription) {
+        console.log(
+          'disableTestPunchesNotification: removing testPunchesSubscription',
+        );
+        testPunchesSubscription.remove();
+        testPunchesSubscription = null;
+      }
+    } catch (e) {
+      console.log('exception enablePunchesNotification: ' + e);
+    }
+    console.log('enablePunchesNotification');
+  };
+
   return {
     requestPermissions,
     scanForDevices,
@@ -415,5 +573,9 @@ export default function useBLE(): BluetoothLowEnergyApi {
     disconnectDevice,
     requestProperty,
     saveProperty,
+    enablePunchesNotification,
+    disablePunchesNotification,
+    enableTestPunchesNotification,
+    disableTestPunchesNotification,
   };
 }
