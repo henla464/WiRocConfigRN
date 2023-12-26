@@ -66,6 +66,8 @@ export const demoDevice: IDemoDevice = {
   name: 'Demo Device',
   isConnected: false,
 };
+const chunkLengthToUse: number = 150; // MTU of 153 (3 byte header) should work on all phones hopefully
+let propertyNotificationBufferReceived: Buffer = Buffer.from('');
 
 export default function useBLE(): BluetoothLowEnergyApi {
   const apiService = 'fb880900-4ab2-40a2-a8f0-14cc1c2e5608';
@@ -119,7 +121,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
   const scanForDevices = () => {
     bleManager.startDeviceScan([apiService], null, (error, newDevice) => {
       if (error) {
-        console.log(error);
+        console.log('startDeviceScan: ' + error);
       }
       if (newDevice) {
         setAllDevices((prevState: Device[]) => {
@@ -147,11 +149,22 @@ export default function useBLE(): BluetoothLowEnergyApi {
   };
 
   const decodeCharacteristicValueToString = (value: Base64) => {
+    console.log(
+      'decodeCharacteristicValueToString: ' +
+        value +
+        ' string: ' +
+        Buffer.from(value, 'base64').toString('utf8'),
+    );
     return Buffer.from(value, 'base64').toString('utf8');
   };
 
   const encodeStringToBase64 = (value: string) => {
-    console.log(Buffer.from(value).toString('base64'));
+    console.log(
+      'encodeStringToBase64: ' +
+        value +
+        ' base64: ' +
+        Buffer.from(value).toString('base64'),
+    );
     return Buffer.from(value).toString('base64');
   };
 
@@ -176,22 +189,33 @@ export default function useBLE(): BluetoothLowEnergyApi {
   ): void => {
     if (error !== null) {
       if (isDisconnecting && error.message === 'Operation was cancelled') {
-        console.log('Notify error ' + error.name);
-        console.log('Notify error ' + error);
+        console.log('propertyNotify: Notify error ' + error.name);
+        console.log('propertyNotify: Notify error ' + error);
       }
     } else if (characteristic !== null && characteristic.value !== null) {
-      let propAndValueStrings = decodeCharacteristicValueToString(
-        characteristic.value,
-      );
-      console.log('property value!: ' + propAndValueStrings);
+      let bufferOfReceivedNow = Buffer.from(characteristic.value, 'base64');
+      propertyNotificationBufferReceived = Buffer.concat([
+        propertyNotificationBufferReceived,
+        bufferOfReceivedNow,
+      ]);
+      // we need to check the byte length and not the string length ( ¤ takes two bytes )
+      let propAndValueStrings = '';
+      if (bufferOfReceivedNow.length < chunkLengthToUse) {
+        propAndValueStrings =
+          propertyNotificationBufferReceived.toString('utf-8');
+        propertyNotificationBufferReceived = Buffer.from('');
+      } else {
+        // This is not the full value, wait for the next fragment
+        return;
+      }
+      propAndValueStrings = propAndValueStrings.trimEnd();
       let propAndValuesArray = propAndValueStrings.split('|');
       for (const propAndValue of propAndValuesArray) {
-        console.log('propAndValue: ' + propAndValue);
         let propAndValueArray = propAndValue.split('\t', 2);
         let propName = propAndValueArray[0];
         let propValue = propAndValueArray[1];
-        console.log('propName: ' + propName);
-        console.log('propValue: ' + propValue);
+        console.log('propertyNotify: propName: ' + propName);
+        console.log('propertyNotify: propValue: ' + propValue);
         // Find all subscribers and call them
         propertyNotify2(propName, propValue);
       }
@@ -218,20 +242,36 @@ export default function useBLE(): BluetoothLowEnergyApi {
         console.log('Already connected to this device');
         return;
       } else {
-        console.log('Connecting to: ' + device.name);
+        console.log('connectToDevice: Connecting to: ' + device.name);
       }
       if (instanceOfIDemoDevice(device)) {
-        console.log('useBLE: DEMO DEVICE!!');
+        console.log('connectToDevice: DEMO DEVICE!!');
         device.isConnected = true;
         setConnectedDevice(device);
       } else {
-        const deviceConnected = await bleManager.connectToDevice(device.id);
+        let deviceConnected = await bleManager.connectToDevice(device.id, {
+          requestMTU: chunkLengthToUse + 3,
+        });
+        console.log('MTU: ' + deviceConnected.mtu);
         await deviceConnected.discoverAllServicesAndCharacteristics();
         console.log('connectToDevice: discoverAllServicesAndCharacteristics');
         enablePropertyNotification(device);
         console.log('connectToDevice: enablePropertyNotification');
         setConnectedDevice(deviceConnected);
         console.log('connectToDevice: setConnectedDevice');
+        requestProperty(
+          deviceConnected,
+          'useBLE',
+          'all\t' + chunkLengthToUse,
+          (propName: string, propValue: string) => {
+            console.log(
+              'connectToDevice: propName: ' +
+                propName +
+                ' propValue: ' +
+                propValue,
+            );
+          },
+        );
         //bleManager.stopDeviceScan();
       }
     } catch (e) {
@@ -249,7 +289,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
         return;
       }
       if (instanceOfIDemoDevice(deviceToDisconnect)) {
-        console.log('useBLE: DEMO DEVICE!!');
+        console.log('disconnectDevice: DEMO DEVICE!!');
         if (deviceToDisconnect.id === connectedDevice?.id) {
           deviceToDisconnect.isConnected = false;
           setConnectedDevice(null);
@@ -307,7 +347,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
     callback: callbackFn,
   ): Promise<Characteristic | null> => {
     try {
-      console.log('deviceName: ' + device.name);
+      console.log('requestProperty: deviceName: ' + device.name);
       console.log('requestProperty: ' + propName);
       addOrUpdatePropertyNotifiticationSubscription({
         componentRequesting: componentRequesting,
@@ -318,11 +358,15 @@ export default function useBLE(): BluetoothLowEnergyApi {
         sendPropertyValueToDemoDevice(propName);
         return null; // maybe should return someting else?
       } else {
+        let propNameToSend = propName + '|';
+        if (Buffer.from(propNameToSend, 'utf-8').length === chunkLengthToUse) {
+          propNameToSend += ' ';
+        }
         let characteristic =
           await device.writeCharacteristicWithResponseForService(
             apiService,
             propertyCharacteristic,
-            encodeStringToBase64(propName),
+            encodeStringToBase64(propNameToSend),
           );
         console.log('requestProperty 3');
         return characteristic;
