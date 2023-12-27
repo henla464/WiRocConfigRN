@@ -36,10 +36,16 @@ export interface BluetoothLowEnergyApi {
     propName: string,
     propValue: string,
   ) => Promise<Characteristic | null>;
-  enablePunchesNotification: (device: Device, callback: callbackFn) => void;
-  disablePunchesNotification: (device: Device) => void;
-  enableTestPunchesNotification: (device: Device, callback: callbackFn) => void;
-  disableTestPunchesNotification: (device: Device) => void;
+  enablePunchesNotification: (
+    device: Device | IDemoDevice,
+    callback: callbackFn,
+  ) => void;
+  disablePunchesNotification: (device: Device | IDemoDevice) => void;
+  enableTestPunchesNotification: (
+    device: Device | IDemoDevice,
+    callback: callbackFn,
+  ) => void;
+  disableTestPunchesNotification: (device: Device | IDemoDevice) => void;
 }
 
 interface IDemoDevice {
@@ -73,6 +79,16 @@ export const demoDevice: IDemoDevice = {
   name: 'Demo Device',
   isConnected: false,
 };
+export interface IPunch {
+  Id: number;
+  StationNumber: number;
+  SICardNumber: number;
+  Time: string;
+}
+let demoPunchesIntervalID: NodeJS.Timeout;
+
+let demoPunches: IPunch[] = [];
+
 const chunkLengthToUse: number = 150; // MTU of 153 (3 byte header) should work on all phones hopefully
 let propertyNotificationBufferReceived: Buffer = Buffer.from('');
 let punchesNotificationBufferReceived: Buffer = Buffer.from('');
@@ -467,30 +483,64 @@ export default function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
-  const enablePunchesNotification = (device: Device, callback: callbackFn) => {
+  const sendDemoPunches = (callback: callbackFn) => {
+    let interval = Math.floor(Math.random() * 8000);
+    console.log('useBLE:sendDemoPunches interval ' + interval);
+    demoPunchesIntervalID = setInterval(() => {
+      console.log('useBLE:sendDemoPunches triggered ');
+      demoPunches.push({
+        Id: -1,
+        StationNumber: 100 + Math.floor(Math.random() * 5),
+        SICardNumber: 10000 + Math.floor(Math.random() * 1000000),
+        Time: new Date().toTimeString().split(' ')[0],
+      });
+      callback('punches', JSON.stringify({punches: demoPunches}));
+    }, interval);
+  };
+
+  const enablePunchesNotification = (
+    device: Device | IDemoDevice,
+    callback: callbackFn,
+  ) => {
     try {
-      punchesCallbackFunction = callback;
-      punchesSubscription = device.monitorCharacteristicForService(
-        apiService,
-        punchesCharacteristic,
-        punchesNotify,
-        'punchesNotificationTransaction' + device.id,
-      );
+      if (instanceOfIDemoDevice(device)) {
+        console.log('useBLE:enablePunchesNotification');
+        sendDemoPunches(callback);
+        return null;
+      } else {
+        punchesCallbackFunction = callback;
+        punchesSubscription = device.monitorCharacteristicForService(
+          apiService,
+          punchesCharacteristic,
+          punchesNotify,
+          'punchesNotificationTransaction' + device.id,
+        );
+      }
     } catch (e) {
       console.log('exception enablePunchesNotification: ' + e);
     }
     console.log('enablePunchesNotification');
   };
 
-  const disablePunchesNotification = (device: Device) => {
+  const disablePunchesNotification = (device: Device | IDemoDevice) => {
     try {
-      bleManager.cancelTransaction(
-        'punchesNotificationTransaction' + device.id,
-      );
-      if (punchesSubscription) {
-        console.log('disablePunchesNotification: removing punchesSubscription');
-        punchesSubscription.remove();
-        punchesSubscription = null;
+      if (instanceOfIDemoDevice(device)) {
+        if (demoPunchesIntervalID) {
+          clearInterval(demoPunchesIntervalID);
+          demoPunchesIntervalID = null;
+        }
+        return null;
+      } else {
+        bleManager.cancelTransaction(
+          'punchesNotificationTransaction' + device.id,
+        );
+        if (punchesSubscription) {
+          console.log(
+            'disablePunchesNotification: removing punchesSubscription',
+          );
+          punchesSubscription.remove();
+          punchesSubscription = null;
+        }
       }
     } catch (e) {
       console.log('exception enablePunchesNotification: ' + e);
@@ -527,35 +577,47 @@ export default function useBLE(): BluetoothLowEnergyApi {
   };
 
   const enableTestPunchesNotification = (
-    device: Device,
+    device: Device | IDemoDevice,
     callback: callbackFn,
   ) => {
     try {
-      testPunchesCallbackFunction = callback;
-      testPunchesSubscription = device.monitorCharacteristicForService(
-        apiService,
-        testPunchesCharacteristic,
-        testPunchesNotify,
-        'testPunchesNotificationTransaction' + device.id,
-      );
+      if (instanceOfIDemoDevice(device)) {
+        //sendTestPunches(callback);
+        return null;
+      } else {
+        testPunchesCallbackFunction = callback;
+        testPunchesSubscription = device.monitorCharacteristicForService(
+          apiService,
+          testPunchesCharacteristic,
+          testPunchesNotify,
+          'testPunchesNotificationTransaction' + device.id,
+        );
+      }
     } catch (e) {
       console.log('exception enableTestPunchesNotification: ' + e);
     }
     console.log('enableTestPunchesNotification');
   };
 
-  const disableTestPunchesNotification = (device: Device) => {
+  const disableTestPunchesNotification = (device: Device | IDemoDevice) => {
     try {
-      bleManager.stop;
-      bleManager.cancelTransaction(
-        'testPunchesNotificationTransaction' + device.id,
-      );
-      if (testPunchesSubscription) {
-        console.log(
-          'disableTestPunchesNotification: removing testPunchesSubscription',
+      if (instanceOfIDemoDevice(device)) {
+        //if (testPunchesIntervalID) {
+        //  clearInterval(testPunchesIntervalID);
+        //  testPunchesIntervalID = null;
+        //}
+        return null;
+      } else {
+        bleManager.cancelTransaction(
+          'testPunchesNotificationTransaction' + device.id,
         );
-        testPunchesSubscription.remove();
-        testPunchesSubscription = null;
+        if (testPunchesSubscription) {
+          console.log(
+            'disableTestPunchesNotification: removing testPunchesSubscription',
+          );
+          testPunchesSubscription.remove();
+          testPunchesSubscription = null;
+        }
       }
     } catch (e) {
       console.log('exception enablePunchesNotification: ' + e);

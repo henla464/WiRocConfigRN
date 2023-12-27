@@ -1,112 +1,52 @@
 import React, {useState} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {Button, DataTable} from 'react-native-paper';
+import {useBLEApiContext} from '../context/BLEApiContext';
+import {IPunch} from '../hooks/useBLE';
 
 export default function ViewPunches() {
+  const BLEAPI = useBLEApiContext();
   const [isListening, setIsListening] = useState<boolean>(false);
-  const [punches, setPunches] = useState([
+  const [punches, setPunches] = useState<IPunch[]>([
     {
       Id: 1,
       StationNumber: 250,
       SICardNumber: 102121,
       Time: '20:30',
     },
-    {
-      Id: 2,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
-    },
-    {
-      Id: 3,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
-    },
-    {
-      Id: 3,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
-    },
-    {
-      Id: 3,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
-    },
-    {
-      Id: 3,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
-    },
-    {
-      Id: 3,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
-    },
-    {
-      Id: 3,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
-    },
-    {
-      Id: 3,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
-    },
-    {
-      Id: 3,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
-    },
-    {
-      Id: 3,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
-    },
-    {
-      Id: 3,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
-    },
-    {
-      Id: 3,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
-    },
-    {
-      Id: 3,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
-    },
-    {
-      Id: 3,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
-    },
-    {
-      Id: 3,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
-    },
   ]);
+
+  const updatePunches = (propName: string, propValue: string) => {
+    if (propName === 'punches') {
+      var punchesObj = JSON.parse(propValue);
+
+      let newPunchArray = punchesObj.punches.map(
+        (punch: IPunch, idx: number) => {
+          return {
+            Id: idx,
+            StationNumber: punch.StationNumber,
+            SICardNumber: punch.SICardNumber,
+            Time: punch.Time,
+          };
+        },
+      );
+
+      setPunches(newPunchArray);
+    } else {
+      console.log('ViewPunches:updatePunches propName unknown: ' + propName);
+    }
+  };
 
   const startStopViewPunches = async () => {
     if (isListening) {
+      if (BLEAPI.connectedDevice) {
+        BLEAPI.disablePunchesNotification(BLEAPI.connectedDevice);
+      }
       setIsListening(false);
     } else {
+      if (BLEAPI.connectedDevice) {
+        BLEAPI.enablePunchesNotification(BLEAPI.connectedDevice, updatePunches);
+      }
       setIsListening(true);
     }
   };
@@ -121,6 +61,17 @@ export default function ViewPunches() {
           onPress={startStopViewPunches}
           style={[styles.button, {flex: 1, marginRight: 0}]}>
           {isListening ? 'Sluta visa stämplingar' : 'Visa stämplingar'}
+        </Button>
+      </View>
+      <View style={styles.containerRow}>
+        <Button
+          icon=""
+          mode="contained"
+          onPress={() => {
+            setPunches([]);
+          }}
+          style={[styles.button, {flex: 1, marginRight: 0}]}>
+          Rensa
         </Button>
       </View>
       <View style={styles.tableContainer}>
@@ -175,7 +126,7 @@ const styles = StyleSheet.create({
     paddingLeft: 0,
     paddingTop: 0,
     paddingRight: 0,
-    paddingBottom: 5,
+    paddingBottom: 0,
     backgroundColor: 'lightgray',
   },
   button: {
