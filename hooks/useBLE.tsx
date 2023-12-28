@@ -190,18 +190,6 @@ export default function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
-  /*
-  const decodeCharacteristicValueToString = (value: Base64) => {
-    console.log(
-      'decodeCharacteristicValueToString: ' +
-        value +
-        ' string: ' +
-        Buffer.from(value, 'base64').toString('utf8'),
-    );
-    return Buffer.from(value, 'base64').toString('utf8');
-  };
-  */
-
   const encodeStringToBase64 = (value: string) => {
     console.log(
       'encodeStringToBase64: ' +
@@ -232,7 +220,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
     characteristic: Characteristic | null,
   ): void => {
     if (error !== null) {
-      if (isDisconnecting && error.message === 'Operation was cancelled') {
+      if (!(isDisconnecting && error.message === 'Operation was cancelled')) {
         console.log('propertyNotify: Notify error ' + error.name);
         console.log('propertyNotify: Notify error ' + error);
       }
@@ -480,7 +468,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
     if (error !== null) {
       if (!(isDisconnecting && error.message === 'Operation was cancelled')) {
         console.log('punchesNotify: Notify error ' + error.name);
-        console.log('punchesNotify: Notify error ' + error);
+        console.log('punchesNotify: Notify error ' + error.message);
       }
     } else if (characteristic !== null && characteristic.value !== null) {
       let bufferOfReceivedNow = Buffer.from(characteristic.value, 'base64');
@@ -559,6 +547,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
           punchesSubscription.remove();
           punchesSubscription = null;
         }
+        console.log('setting isdisconnectingpunches to false');
       }
     } catch (e) {
       console.log('exception enablePunchesNotification: ' + e);
@@ -571,10 +560,8 @@ export default function useBLE(): BluetoothLowEnergyApi {
     characteristic: Characteristic | null,
   ): void => {
     if (error !== null) {
-      if (!(isDisconnecting && error.message === 'Operation was cancelled')) {
-        console.log('testPunchesNotify: Notify error ' + error.name);
-        console.log('testPunchesNotify: Notify error ' + error);
-      }
+      console.log('testPunchesNotify: Notify error ' + error.name);
+      console.log('testPunchesNotify: Notify error ' + error);
     } else if (characteristic !== null && characteristic.value !== null) {
       let bufferOfReceivedNow = Buffer.from(characteristic.value, 'base64');
       console.log('useBLE:testPunchesNotify received: ' + bufferOfReceivedNow);
