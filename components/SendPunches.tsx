@@ -1,43 +1,22 @@
-import React, {useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {SelectList} from 'react-native-dropdown-select-list';
 import {Button, DataTable, Icon, TextInput} from 'react-native-paper';
-import {RenderProps} from 'react-native-paper/lib/typescript/components/TextInput/types';
+import {ITestPunch} from '../hooks/useBLE';
+import {useBLEApiContext} from '../context/BLEApiContext';
 
 export default function SendPunches() {
+  const BLEAPI = useBLEApiContext();
   const [siCardNo, setSiCardNo] = useState<string>('');
   const [numberOfPunches, setNumberOfPunches] = useState<string>('1');
   const [isSending, setIsSending] = useState<boolean>(false);
   const [sendInterval, setSendInterval] = useState<string>('1000');
-  const [punches, setPunches] = useState([
-    {
-      Id: 1,
-      SubscrId: 1,
-      SINo: 102121,
-      Time: '20:30',
-      RSSI: 120,
-      Status: 'Not acked',
-      NoOfSendTries: 2,
-    },
-    {
-      Id: 2,
-      SubscrId: 1,
-      SINo: 102121,
-      Time: '20:30',
-      RSSI: 120,
-      Status: 'Not acked',
-      NoOfSendTries: 1,
-    },
-    {
-      Id: 3,
-      SubscrId: 1,
-      SINo: 102121,
-      Time: '20:30',
-      RSSI: 120,
-      Status: 'Not sent',
-      NoOfSendTries: 0,
-    },
-  ]);
+  const [punches, setPunches] = useState<ITestPunch[]>([]);
+  const stateRef = useRef<ITestPunch[]>();
+
+  // make stateRef always have the current punches
+  stateRef.current = punches;
+
   const sendNumberList = [
     {key: '1', value: '1'},
     {key: '2', value: '2'},
@@ -66,11 +45,95 @@ export default function SendPunches() {
     {key: '15000', value: '15 s'},
   ];
 
+  useEffect(() => {
+    let ackReq = true; // todo: use real value
+    let noOfPunchesToSend: number = parseInt(numberOfPunches, 10);
+    let completedPunches = punches.filter(punch => {
+      return (
+        (punch.Status === 'Acked' && ackReq) ||
+        (punch.Status === 'Not acked' && !ackReq) ||
+        (punch.NoOfSendTries > 1 &&
+          (punch.Status === 'Not sent' || punch.Status === 'Not acked'))
+      );
+    });
+
+    let noOfCompletedRows = completedPunches.length;
+    console.log(
+      'SendPunches:useEffect noOfCompletedRows: ' +
+        noOfCompletedRows +
+        ' no of punches in table: ' +
+        punches.length +
+        ' no of punches to send: ' +
+        noOfPunchesToSend,
+    );
+    if (
+      punches.length === noOfPunchesToSend &&
+      noOfPunchesToSend === noOfCompletedRows
+    ) {
+      // all received, stop listening
+      if (BLEAPI.connectedDevice) {
+        BLEAPI.disableTestPunchesNotification(BLEAPI.connectedDevice);
+      }
+      setIsSending(false);
+    }
+  }, [punches, numberOfPunches, BLEAPI]);
+
+  const displayTestPunches = (propName: string, propValue: string) => {
+    if (propName === 'testpunches') {
+      let testPunchObj = JSON.parse(propValue);
+      console.log('displayTestPunches: length of punches: ' + punches.length);
+      if (stateRef.current) {
+        let currentPunches: ITestPunch[] = stateRef.current;
+        let newPunchArray = [...currentPunches];
+        testPunchObj.punches.forEach(function (changedPunch: ITestPunch) {
+          let idx = newPunchArray.findIndex((oldPunch: ITestPunch) => {
+            return oldPunch.Id === changedPunch.Id;
+          });
+          if (idx >= 0) {
+            console.log('displayTestPunches: update punch');
+            newPunchArray[idx] = changedPunch;
+          } else {
+            console.log('displayTestPunches: add punch');
+            newPunchArray.push(changedPunch);
+          }
+        });
+        console.log('displayTestPunches: ' + JSON.stringify(newPunchArray));
+        setPunches(newPunchArray);
+      }
+    }
+  };
+
   const startStopSendPunches = async () => {
     if (isSending) {
+      if (BLEAPI.connectedDevice) {
+        BLEAPI.disableTestPunchesNotification(BLEAPI.connectedDevice);
+      }
       setIsSending(false);
     } else {
-      setIsSending(true);
+      if (!siCardNo || siCardNo.length === 0 || isNaN(parseInt(siCardNo, 10))) {
+        // error, show message?
+        console.log(
+          'SendPunches:startStopSendPunches: SI Card no is not an integer number',
+        );
+        return;
+      }
+
+      if (BLEAPI.connectedDevice) {
+        console.log('startStopSendPunches: start send punches');
+        setPunches([]);
+        console.log('startStopSendPunches: emptied punches');
+        let param = numberOfPunches + '\t' + sendInterval + '\t' + siCardNo;
+        BLEAPI.startSendTestPunches(
+          BLEAPI.connectedDevice,
+          'testpunches',
+          param,
+        );
+        BLEAPI.enableTestPunchesNotification(
+          BLEAPI.connectedDevice,
+          displayTestPunches,
+        );
+        setIsSending(true);
+      }
     }
   };
 
@@ -168,8 +231,26 @@ export default function SendPunches() {
               <DataTable.Cell>{punch.SINo}</DataTable.Cell>
               <DataTable.Cell>{punch.Time}</DataTable.Cell>
               <DataTable.Cell>{punch.RSSI}</DataTable.Cell>
-              <DataTable.Cell>{punch.NoOfSendTries}</DataTable.Cell>
-              <DataTable.Cell>{punch.Status}</DataTable.Cell>
+              <DataTable.Cell
+                style={
+                  punch.NoOfSendTries > 1
+                    ? styles.failure
+                    : punch.Status === 'Acked'
+                    ? styles.success
+                    : null
+                }>
+                {punch.NoOfSendTries}
+              </DataTable.Cell>
+              <DataTable.Cell
+                style={
+                  punch.Status === 'Acked'
+                    ? styles.success
+                    : punch.Status === 'Not acked'
+                    ? styles.failure
+                    : null
+                }>
+                {punch.Status}
+              </DataTable.Cell>
             </DataTable.Row>
           ))}
         </DataTable>
@@ -192,6 +273,12 @@ const styles = StyleSheet.create({
     marginTop: 0,
     backgroundColor: 'lightgray',
   },
+  success: {
+    backgroundColor: 'green',
+  },
+  failure: {
+    backgroundColor: 'red',
+  },
   container: {
     flex: 1,
     justifyContent: 'flex-start',
@@ -206,9 +293,9 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
     paddingLeft: 0,
-    paddingTop: 0,
+    paddingTop: 8,
     paddingRight: 0,
-    paddingBottom: 5,
+    paddingBottom: 0,
     backgroundColor: 'lightgray',
   },
   button: {

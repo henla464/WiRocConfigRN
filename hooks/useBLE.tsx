@@ -46,6 +46,11 @@ export interface BluetoothLowEnergyApi {
     callback: callbackFn,
   ) => void;
   disableTestPunchesNotification: (device: Device | IDemoDevice) => void;
+  startSendTestPunches: (
+    device: Device | IDemoDevice,
+    propName: string,
+    propValue: string,
+  ) => Promise<Characteristic | null>;
 }
 
 interface IDemoDevice {
@@ -85,9 +90,21 @@ export interface IPunch {
   SICardNumber: number;
   Time: string;
 }
-let demoPunchesIntervalID: NodeJS.Timeout;
-
+export interface ITestPunch {
+  Id: number;
+  MsgId: number;
+  Status: string;
+  SINo: number;
+  NoOfSendTries: number;
+  SubscrId: number;
+  RSSI: number;
+  Time: string;
+}
+let demoPunchesIntervalID: NodeJS.Timeout | null;
+let demoTestPunchesIntervalID: NodeJS.Timeout | null;
 let demoPunches: IPunch[] = [];
+let demoTestPunches: ITestPunch[] = [];
+let demoTestPunchId: number = 1;
 
 const chunkLengthToUse: number = 150; // MTU of 153 (3 byte header) should work on all phones hopefully
 let propertyNotificationBufferReceived: Buffer = Buffer.from('');
@@ -279,6 +296,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
         let deviceConnected = await bleManager.connectToDevice(device.id, {
           requestMTU: chunkLengthToUse + 3,
         });
+        console.log('is connected: ' + (await deviceConnected.isConnected()));
         console.log('MTU: ' + deviceConnected.mtu);
         await deviceConnected.discoverAllServicesAndCharacteristics();
         console.log('connectToDevice: discoverAllServicesAndCharacteristics');
@@ -559,6 +577,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
       }
     } else if (characteristic !== null && characteristic.value !== null) {
       let bufferOfReceivedNow = Buffer.from(characteristic.value, 'base64');
+      console.log('useBLE:testPunchesNotify received: ' + bufferOfReceivedNow);
       testPunchesNotificationBufferReceived = Buffer.concat([
         testPunchesNotificationBufferReceived,
         bufferOfReceivedNow,
@@ -566,6 +585,12 @@ export default function useBLE(): BluetoothLowEnergyApi {
       // we need to check the byte length and not the string length ( ¤ takes two bytes )
       let punchesString = '';
       if (bufferOfReceivedNow.length < chunkLengthToUse) {
+        console.log(
+          'useBLE:testPunchesNotify bufferOfReceivedNow.length ' +
+            bufferOfReceivedNow.length +
+            ' chunkLengthToUse' +
+            chunkLengthToUse,
+        );
         punchesString = testPunchesNotificationBufferReceived.toString('utf-8');
         testPunchesNotificationBufferReceived = Buffer.from('');
       } else {
@@ -576,13 +601,56 @@ export default function useBLE(): BluetoothLowEnergyApi {
     }
   };
 
+  const sendDemoTestPunch = (
+    noOfPunches: number,
+    siCardNo: number,
+    callback: callbackFn,
+  ) => {
+    console.log('useBLE:sendDemoTestPunches triggered ');
+    if (demoTestPunchId > noOfPunches && connectedDevice) {
+      disableTestPunchesNotification(connectedDevice);
+      return;
+    }
+    demoTestPunches.push({
+      Id: demoTestPunchId,
+      MsgId: -1,
+      Status: 'Acked',
+      SINo: siCardNo,
+      NoOfSendTries: 1,
+      SubscrId: 1,
+      RSSI: 140,
+      Time: new Date().toTimeString().split(' ')[0],
+    });
+    demoTestPunchId++;
+    callback('testpunches', JSON.stringify({punches: demoTestPunches}));
+  };
+
+  const sendDemoTestPunches = (callback: callbackFn) => {
+    let testPunchParam = demoDeviceData['testpunches'];
+    let testPunchParamArray = testPunchParam.split('\t');
+    let noOfPunches = parseInt(testPunchParamArray[0], 10);
+    let interval = parseInt(testPunchParamArray[1], 10);
+    let siCardNo = parseInt(testPunchParamArray[2], 10);
+    console.log('useBLE:sendDemoTestPunches interval ' + interval);
+
+    // Send first punch immediately
+    sendDemoTestPunch(noOfPunches, siCardNo, callback);
+
+    demoTestPunchesIntervalID = setInterval(() => {
+      sendDemoTestPunch(noOfPunches, siCardNo, callback);
+    }, interval);
+  };
+
   const enableTestPunchesNotification = (
     device: Device | IDemoDevice,
     callback: callbackFn,
   ) => {
     try {
+      console.log('enableTestPunchesNotification');
       if (instanceOfIDemoDevice(device)) {
-        //sendTestPunches(callback);
+        demoTestPunches = [];
+        demoTestPunchId = 1;
+        sendDemoTestPunches(callback);
         return null;
       } else {
         testPunchesCallbackFunction = callback;
@@ -601,11 +669,12 @@ export default function useBLE(): BluetoothLowEnergyApi {
 
   const disableTestPunchesNotification = (device: Device | IDemoDevice) => {
     try {
+      console.log('disableTestPunchesNotification');
       if (instanceOfIDemoDevice(device)) {
-        //if (testPunchesIntervalID) {
-        //  clearInterval(testPunchesIntervalID);
-        //  testPunchesIntervalID = null;
-        //}
+        if (demoTestPunchesIntervalID) {
+          clearInterval(demoTestPunchesIntervalID);
+          demoTestPunchesIntervalID = null;
+        }
         return null;
       } else {
         bleManager.cancelTransaction(
@@ -625,6 +694,34 @@ export default function useBLE(): BluetoothLowEnergyApi {
     console.log('enablePunchesNotification');
   };
 
+  const startSendTestPunches = async (
+    device: Device | IDemoDevice,
+    propName: string,
+    propValue: string,
+  ): Promise<Characteristic | null> => {
+    try {
+      console.log('startSendTestPUnches:deviceName: ' + device.name);
+      console.log('startSendTestPUnches:propName: ' + propName);
+      console.log('startSendTestPUnches:propValue: ' + propValue);
+      if (instanceOfIDemoDevice(device)) {
+        demoDeviceData[propName] = propValue;
+        return null;
+      } else {
+        let characteristic =
+          await device.writeCharacteristicWithResponseForService(
+            apiService,
+            testPunchesCharacteristic,
+            encodeStringToBase64(propValue),
+          );
+        console.log('startSendTestPUnches 2');
+        return characteristic;
+      }
+    } catch (e) {
+      console.log('ERROR IN startSendTestPUnches: ' + e);
+      return null;
+    }
+  };
+
   return {
     requestPermissions,
     scanForDevices,
@@ -639,5 +736,6 @@ export default function useBLE(): BluetoothLowEnergyApi {
     disablePunchesNotification,
     enableTestPunchesNotification,
     disableTestPunchesNotification,
+    startSendTestPunches,
   };
 }
