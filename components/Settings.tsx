@@ -1,7 +1,9 @@
-import React, {useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useState} from 'react';
+import {StyleSheet, Text, View} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {Button, DataTable} from 'react-native-paper';
+import {useBLEApiContext} from '../context/BLEApiContext';
+import AddEditSettingsModal from './AddEditSettingsModal';
 
 interface ISettings {
   Key: string;
@@ -9,41 +11,134 @@ interface ISettings {
 }
 
 export default function Settings() {
-  const [settings, setSettings] = useState<ISettings[]>([
-    {Key: 'NoOfRetries', Value: '3'},
-    {Key: 'LoraMode', Value: 'RECEIVER'},
-  ]);
+  const BLEAPI = useBLEApiContext();
+  const [settings, setSettings] = useState<ISettings[]>([]);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [currentKey, setCurrentKey] = useState<string>('');
+  const [currentValue, setCurrentValue] = useState<string>('');
+  const [newSetting, setNewSetting] = useState<boolean>(false);
+  const [versionTrigger, setVersionTrigger] = useState<number>(0);
 
-  const editSetting = async () => {};
+  const updateSettings = useCallback(
+    (propName: string, propValue: string) => {
+      console.log('Settings:updateSettings start');
+      let settingsObj = JSON.parse(propValue);
+      //console.log('Settings:updateSettings: old ' + JSON.stringify(settings));
+      console.log(
+        'Settings:updateSettings: new ' + JSON.stringify(settingsObj.settings),
+      );
+      setSettings(settingsObj.settings);
+    },
+    [setSettings],
+  );
+
+  useEffect(() => {
+    if (BLEAPI.connectedDevice) {
+      console.log('Settings:useEffect start');
+      BLEAPI.requestProperty(
+        BLEAPI.connectedDevice,
+        'Settings',
+        'settings',
+        updateSettings,
+      );
+    }
+  }, [BLEAPI, updateSettings, versionTrigger]);
+
+  const editSetting = (keyName: string, keyValue: string) => {
+    setCurrentKey(keyName);
+    setCurrentValue(keyValue);
+    setNewSetting(false);
+    setShowModal(true);
+  };
+
+  const addSetting = () => {
+    setCurrentKey('');
+    setCurrentValue('');
+    setNewSetting(true);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
+  const refresh = () => {
+    setVersionTrigger(curState => {
+      return curState + 1;
+    });
+  };
+
+  const saveSetting = async (
+    keyName: string,
+    keyValue: string,
+  ): Promise<void> => {
+    if (BLEAPI.connectedDevice) {
+      var settingKeyAndValue = keyName + '\t' + keyValue;
+      await BLEAPI.saveProperty(
+        BLEAPI.connectedDevice,
+        'setting',
+        settingKeyAndValue,
+      );
+      refresh();
+    }
+    setShowModal(false);
+  };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.tableContainer}>
-        <DataTable style={styles.table}>
-          <DataTable.Header style={styles.row}>
-            <DataTable.Title>Nyckel</DataTable.Title>
-            <DataTable.Title>Värde</DataTable.Title>
-            <DataTable.Title> </DataTable.Title>
-          </DataTable.Header>
-          <ScrollView>
-            {settings.map(setting => (
-              <DataTable.Row key={setting.Key} style={styles.row}>
-                <DataTable.Cell>{setting.Key}</DataTable.Cell>
-                <DataTable.Cell>{setting.Value}</DataTable.Cell>
-                <DataTable.Cell>
-                  <Button icon="" mode="contained" onPress={editSetting}>
-                    Ändra
-                  </Button>
-                </DataTable.Cell>
-              </DataTable.Row>
-            ))}
-          </ScrollView>
-        </DataTable>
+    <>
+      <AddEditSettingsModal
+        modalVisible={showModal}
+        closeModal={closeModal}
+        keyName={currentKey}
+        value={currentValue}
+        saveSetting={saveSetting}
+        newSetting={newSetting}
+      />
+      <View style={styles.container}>
+        <Button mode="contained" style={styles.button} onPress={addSetting}>
+          Lägg till nytt nyckelvärde
+        </Button>
+        <ScrollView
+          horizontal={true}
+          contentContainerStyle={{paddingBottom: 60}}>
+          <View style={styles.tableContainer}>
+            <DataTable style={(styles.table, {width: 600})}>
+              <DataTable.Header style={styles.row}>
+                <DataTable.Title style={{flex: 5}}>Nyckel</DataTable.Title>
+                <DataTable.Title style={{flex: 5}}>Värde</DataTable.Title>
+                <DataTable.Title style={{flex: 3}}> </DataTable.Title>
+              </DataTable.Header>
+              <ScrollView>
+                {settings.map(setting => (
+                  <DataTable.Row key={setting.Key} style={styles.row}>
+                    <DataTable.Cell style={{flex: 5}}>
+                      {setting.Key}
+                    </DataTable.Cell>
+                    <DataTable.Cell style={{flex: 5}}>
+                      {setting.Value}
+                    </DataTable.Cell>
+                    <DataTable.Cell style={{flex: 3}}>
+                      <Button
+                        icon=""
+                        mode="contained"
+                        onPress={() => {
+                          editSetting(setting.Key, setting.Value);
+                        }}>
+                        Ändra
+                      </Button>
+                    </DataTable.Cell>
+                  </DataTable.Row>
+                ))}
+              </ScrollView>
+            </DataTable>
+          </View>
+        </ScrollView>
       </View>
-    </View>
+    </>
   );
 }
-
+/*
+ */
 const styles = StyleSheet.create({
   table: {
     paddingRight: 0,
@@ -53,7 +148,12 @@ const styles = StyleSheet.create({
     paddingRight: 5,
     paddingLeft: 10,
   },
+  scrollview: {
+    flex: 1,
+  },
   tableContainer: {
+    flex: 1,
+    height: '100%',
     paddingRight: 0,
     marginTop: 0,
     backgroundColor: 'lightgray',
@@ -85,5 +185,6 @@ const styles = StyleSheet.create({
     padding: 10,
     margin: 10,
     marginLeft: 0,
+    marginRight: 0,
   },
 });

@@ -1,11 +1,40 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Button} from 'react-native-paper';
+import {useBLEApiContext} from '../context/BLEApiContext';
 
 export default function Database() {
-  const deletePunches = async () => {};
+  const BLEAPI = useBLEApiContext();
 
-  const dropDatabaseTables = async () => {};
+  const deletePunches = async () => {
+    if (BLEAPI.connectedDevice) {
+      BLEAPI.requestProperty(
+        BLEAPI.connectedDevice,
+        'Database',
+        'deletepunches',
+        (propName, propValue) => {
+          if (propName === 'deletepunches') {
+            console.log('Database:deletePunches: ' + propValue);
+          }
+        },
+      );
+    }
+  };
+
+  const dropDatabaseTables = async () => {
+    if (BLEAPI.connectedDevice) {
+      BLEAPI.requestProperty(
+        BLEAPI.connectedDevice,
+        'Database',
+        'dropalltables',
+        (propName, propValue) => {
+          if (propName === 'dropalltables') {
+            console.log('Database:dropDatabaseTables: ' + propValue);
+          }
+        },
+      );
+    }
+  };
 
   return (
     <View style={styles.container}>
