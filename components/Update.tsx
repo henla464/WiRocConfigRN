@@ -1,37 +1,201 @@
-import React, {useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {SelectList} from 'react-native-dropdown-select-list';
-import {ScrollView} from 'react-native-gesture-handler';
 import {Button, Icon} from 'react-native-paper';
+import {useBLEApiContext} from '../context/BLEApiContext';
 
-interface ISelectItems {
+interface ISelectItem {
   key: string;
   value: string;
 }
-export default function Update() {
-  const [currentWiRocVersion, setCurrentWiRocVersion] =
-    useState<string>('v0.253');
-  const [currentWiRocBLEAPIVersion, setCurrentWiRocBLEAPIVersion] =
-    useState<string>('v0.12');
-  const [wiRocVersion, setWiRocVersion] = useState<string>('v0.253');
-  const [wiRocBLEAPIVersion, setWiRocBLEAPIVersion] = useState<string>('v0.12');
 
-  const [wiRocVersionList, setWiRocVersionList] = useState<ISelectItems[]>([
-    {key: 'v0.253', value: 'v0.253'},
-    {key: 'v0.254', value: 'v0.254'},
-    {key: 'v0.255', value: 'v0.255'},
-    {key: 'v0.256', value: 'v0.256'},
-  ]);
+const configObj = require('../config/config.json');
+
+interface IReleaseItem {
+  releaseName: string;
+  versionNumber: number;
+  releaseStatusId: number;
+  minHWVersion: number;
+  minHWRevision: number;
+  maxHWVersion: number;
+  maxHWRevision: number;
+  releaseNote: string;
+  md5HashOfReleaseFile: string;
+  id: number;
+  updateTime: string;
+  createdTime: string;
+  releaseStatusDisplayName: string;
+}
+
+export default function Update() {
+  const BLEAPI = useBLEApiContext();
+
+  const [HWVersion, setHWVersion] = useState<string | null>(null);
+  const [HWRevision, setHWRevision] = useState<string | null>(null);
+  const [currentWiRocVersion, setCurrentWiRocVersion] = useState<string | null>(
+    null,
+  );
+  const [currentWiRocBLEAPIVersion, setCurrentWiRocBLEAPIVersion] = useState<
+    string | null
+  >(null);
+  const [wiRocVersion, setWiRocVersion] = useState<string | null>(null);
+  const [wiRocBLEAPIVersion, setWiRocBLEAPIVersion] = useState<string | null>(
+    null,
+  );
+
+  const [wiRocVersionList, setWiRocVersionList] = useState<ISelectItem[]>([]);
 
   const [wiRocBLEAPIVersionList, setWiRocBLEAPIVersionList] = useState<
-    ISelectItems[]
-  >([
-    {key: 'v0.12', value: 'v0.12'},
-    {key: 'v0.13', value: 'v0.13'},
-    {key: 'v0.14', value: 'v0.14'},
-    {key: 'v0.15', value: 'v0.15'},
-  ]);
+    ISelectItem[]
+  >([]);
 
+  useEffect(() => {
+    if (BLEAPI.connectedDevice) {
+      // wirochwversion
+      BLEAPI.requestProperty(
+        BLEAPI.connectedDevice,
+        'Update',
+        'wirochwversion',
+        (propName: string, propValue: string) => {
+          if (propName === 'wirochwversion') {
+            let revAndRel = propValue.substring(1).split('Rev');
+            setHWVersion(revAndRel[0]);
+            setHWRevision(revAndRel[1]);
+          }
+        },
+      );
+
+      BLEAPI.requestProperty(
+        BLEAPI.connectedDevice,
+        'Update',
+        'wirocpythonversion',
+        (propName: string, propValue: string) => {
+          if (propName === 'wirocpythonversion') {
+            setCurrentWiRocVersion(propValue);
+          }
+        },
+      );
+
+      BLEAPI.requestProperty(
+        BLEAPI.connectedDevice,
+        'Update',
+        'wirocbleversion',
+        (propName: string, propValue: string) => {
+          if (propName === 'wirocbleversion') {
+            setCurrentWiRocBLEAPIVersion(propValue);
+          }
+        },
+      );
+    }
+  }, [BLEAPI]);
+
+  const getWiRocVersions = useCallback(async (): Promise<IReleaseItem[]> => {
+    try {
+      const wirocPythonReleasesURL =
+        'https://monitor.wiroc.se/api/v1/WiRocPython2Releases?sort=versionNumber desc&hwVersion=' +
+        HWVersion +
+        '&hwRevision=' +
+        HWRevision;
+      const response = await fetch(wirocPythonReleasesURL, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Authorization': configObj.apiKey,
+        },
+      });
+      const json = await response.json();
+      return json;
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  }, [HWVersion, HWRevision]);
+
+  useEffect(() => {
+    if (BLEAPI.connectedDevice && HWVersion && HWRevision) {
+      const fetchData = async () => {
+        const releases = await getWiRocVersions();
+
+        let ddReleases: ISelectItem[] = releases.map(rel => {
+          return {key: rel.releaseName, value: rel.releaseName};
+        });
+
+        setWiRocVersionList(ddReleases);
+      };
+
+      fetchData();
+    }
+  }, [BLEAPI, HWRevision, HWVersion, getWiRocVersions]);
+
+  const getBLEAPIVersions = useCallback(async (): Promise<IReleaseItem[]> => {
+    try {
+      const wirocBLEAPIReleasesURL =
+        'https://monitor.wiroc.se/api/v1/WiRocBLEAPIReleases?sort=versionNumber desc&hwVersion=' +
+        HWVersion +
+        '&hwRevision=' +
+        HWRevision;
+      const response = await fetch(wirocBLEAPIReleasesURL, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Authorization': configObj.apiKey,
+        },
+      });
+      const json = await response.json();
+      return json;
+    } catch (error) {
+      console.error(error);
+      return [];
+    }
+  }, [HWVersion, HWRevision]);
+
+  useEffect(() => {
+    if (BLEAPI.connectedDevice && HWVersion && HWRevision) {
+      const fetchData = async () => {
+        const releases = await getBLEAPIVersions();
+
+        let ddReleases: ISelectItem[] = releases.map(rel => {
+          return {key: rel.releaseName, value: rel.releaseName};
+        });
+
+        setWiRocBLEAPIVersionList(ddReleases);
+      };
+
+      fetchData();
+    }
+  }, [BLEAPI, HWRevision, HWVersion, getBLEAPIVersions]);
+
+  const updateBLEAPIVersion = async () => {
+    try {
+      if (BLEAPI.connectedDevice) {
+        if (wiRocBLEAPIVersion) {
+          await BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'upgradewirocble',
+            wiRocBLEAPIVersion,
+          );
+        }
+      }
+    } catch (e) {
+      console.log('Update:updateBLEAPIVersion' + e);
+    }
+  };
+
+  const updateWiRocVersion = async () => {
+    try {
+      if (BLEAPI.connectedDevice) {
+        if (wiRocVersion) {
+          await BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'upgradewirocpython',
+            wiRocVersion,
+          );
+        }
+      }
+    } catch (e) {
+      console.log('Update:updateWiRocVersion' + e);
+    }
+  };
+
+  // wiRocVersion
   return (
     <View style={styles.container}>
       <View style={(styles.containerRow, {width: '100%'})}>
@@ -60,14 +224,14 @@ export default function Update() {
             marginTop: 20,
           }}
           arrowicon={<Icon source="chevron-down" size={35} color={'black'} />}
-          defaultOption={{key: wiRocVersion, value: wiRocVersion}}
+          defaultOption={{key: currentWiRocVersion, value: currentWiRocVersion}}
         />
       </View>
       <View style={styles.containerRow}>
         <Button
           icon=""
           mode="contained"
-          onPress={() => {}}
+          onPress={updateWiRocVersion}
           style={[styles.button, {flex: 1, marginRight: 0, marginTop: 20}]}>
           Uppdatera till ny WiRoc version
         </Button>
@@ -99,14 +263,17 @@ export default function Update() {
             marginTop: 20,
           }}
           arrowicon={<Icon source="chevron-down" size={35} color={'black'} />}
-          defaultOption={{key: wiRocBLEAPIVersion, value: wiRocBLEAPIVersion}}
+          defaultOption={{
+            key: currentWiRocBLEAPIVersion,
+            value: currentWiRocBLEAPIVersion,
+          }}
         />
       </View>
       <View style={styles.containerRow}>
         <Button
           icon=""
           mode="contained"
-          onPress={() => {}}
+          onPress={updateBLEAPIVersion}
           style={[styles.button, {flex: 1, marginRight: 0, marginTop: 20}]}>
           Uppdatera till ny WiRoc BLE API version
         </Button>
