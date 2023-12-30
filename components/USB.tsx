@@ -14,10 +14,15 @@ const USB = React.forwardRef<IRefRetType, IConfigComponentProps>(
     const [origIsOneWay, setOrigIsOneWay] = useState<boolean | null>(null);
     const [origIs4800bps, setOrigIs4800bps] = useState<boolean | null>(null);
 
+    const [triggerVersion, setTriggerVersion] = useState<number>(0);
+
     useImperativeHandle(ref, () => {
       return {
         save: () => {
           save();
+        },
+        reload: () => {
+          reload();
         },
       };
     });
@@ -48,6 +53,12 @@ const USB = React.forwardRef<IRefRetType, IConfigComponentProps>(
           console.log('USB:save:2 not connected to device');
         }
       }
+    };
+
+    const reload = () => {
+      setTriggerVersion(currentValue => {
+        return currentValue + 1;
+      });
     };
 
     const updateFromWiRoc = (propName: string, propValue: string) => {
@@ -83,7 +94,7 @@ const USB = React.forwardRef<IRefRetType, IConfigComponentProps>(
         }
       }
       getUSBSettings();
-    }, [BLEAPI]);
+    }, [BLEAPI, triggerVersion]);
 
     useEffect(() => {
       if (origIsOneWay == null || origIs4800bps === null) {

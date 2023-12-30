@@ -34,15 +34,26 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
     const [origIsBlueChannelListenOnly, SetOrigIsBlueChannelListenOnly] =
       useState<boolean | null>(null);
 
+    const [triggerVersion, setTriggerVersion] = useState<number>(0);
+
     useImperativeHandle(ref, () => {
       return {
         save: () => {
           save();
         },
+        reload: () => {
+          reload();
+        },
       };
     });
 
     const BLEAPI = useBLEApiContext();
+
+    const reload = () => {
+      setTriggerVersion(currentValue => {
+        return currentValue + 1;
+      });
+    };
 
     const save = () => {
       if (origIsSRREnabled !== isSRREnabled) {
@@ -187,7 +198,7 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
         }
       }
       getSRRSettings();
-    }, [BLEAPI]);
+    }, [BLEAPI, triggerVersion]);
 
     useEffect(() => {
       if (

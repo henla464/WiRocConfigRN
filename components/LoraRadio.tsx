@@ -21,6 +21,8 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
     const [origChannel, setOrigChannel] = useState<string | null>(null);
     const [origRadioRange, setOrigRadioRange] = useState<string | null>(null);
 
+    const [triggerVersion, setTriggerVersion] = useState<number>(0);
+
     const channelList = [
       {key: '1', value: '1'},
       {key: '2', value: '2'},
@@ -36,10 +38,19 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
         save: () => {
           save();
         },
+        reload: () => {
+          reload();
+        },
       };
     });
 
     const BLEAPI = useBLEApiContext();
+
+    const reload = () => {
+      setTriggerVersion(currentValue => {
+        return currentValue + 1;
+      });
+    };
 
     const save = () => {
       if (origLoraMode !== loraMode) {
@@ -110,7 +121,7 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
         }
       }
       getLoraRadioSettings();
-    }, [BLEAPI]);
+    }, [BLEAPI, triggerVersion]);
 
     useEffect(() => {
       if (

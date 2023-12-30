@@ -17,6 +17,7 @@ import SerialBluetooth from './SerialBluetooth';
 import LoraRadio from './LoraRadio';
 import SRR from './SRR';
 import IRefRetType from '../interface/IRefRetType';
+import SaveBanner from './SaveBanner';
 
 interface ISectionComponent {
   Comp: React.JSX.Element;
@@ -131,24 +132,23 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
   ]);
 
   function saveConfigurationScreen() {
-    if (configurationComponents[3].childRef) {
-      configurationComponents[3].childRef.current;
-    }
-
     configurationComponents.forEach(sectionComp => {
       if (sectionComp.isDirty) {
         console.log(
-          'saveConfigurationScreen: ' +
+          'ConfigurationScreen:saveConfigurationScreen ' +
             sectionComp.Name +
             ' Is dirty -> Save it',
         );
         if (sectionComp.childRef && sectionComp.childRef.current) {
           sectionComp.childRef.current.save();
         } else {
-          console.log('saveConfigurationScreen: childRef not set');
+          console.log(
+            'ConfigurationScreen:saveConfigurationScreen: childRef not set',
+          );
         }
       }
     });
+    reloadConfigurationScreen();
   }
 
   function setIsDirtyOnComponent(id: number, isDirty2: boolean): void {
@@ -172,10 +172,33 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
     }
   }
 
+  const reloadConfigurationScreen = () => {
+    configurationComponents.forEach(sectionComp => {
+      if (sectionComp.isDirty) {
+        console.log(
+          'ConfigurationScreen:reloadConfigurationScreen: ' +
+            sectionComp.Name +
+            ' Is dirty -> reload it',
+        );
+        if (sectionComp.childRef && sectionComp.childRef.current) {
+          sectionComp.childRef.current.reload();
+        } else {
+          console.log(
+            'ConfigurationScreen:reloadConfigurationScreen: childRef not set',
+          );
+        }
+      }
+    });
+  };
+
   return (
     <SafeAreaView style={Colors.lighter}>
+      <SaveBanner
+        visible={isDirty}
+        save={saveConfigurationScreen}
+        reload={reloadConfigurationScreen}
+      />
       <ScrollView>
-        <Button onPress={saveConfigurationScreen} title="Save" />
         <List.AccordionGroup>
           <View>
             <Text>{isDirty ? 'IS DIRTY' : 'NOT DIRTY'}</Text>

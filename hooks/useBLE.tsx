@@ -230,6 +230,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
         propertyNotificationBufferReceived,
         bufferOfReceivedNow,
       ]);
+
       // we need to check the byte length and not the string length ( ¤ takes two bytes )
       let propAndValueStrings = '';
       if (bufferOfReceivedNow.length < chunkLengthToUse) {
@@ -240,6 +241,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
         // This is not the full value, wait for the next fragment
         return;
       }
+      console.log('propertyNotify: ' + propAndValueStrings);
       propAndValueStrings = propAndValueStrings.trimEnd();
       let propAndValuesArray = propAndValueStrings.split('|');
       for (const propAndValue of propAndValuesArray) {

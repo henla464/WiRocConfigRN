@@ -1,62 +1,157 @@
-import React, {useImperativeHandle, useState} from 'react';
-import {StyleSheet, Switch, Text, View} from 'react-native';
-import {
-  Button,
-  Checkbox,
-  Chip,
-  DataTable,
-  Icon,
-  List,
-} from 'react-native-paper';
+import React, {useEffect, useImperativeHandle, useRef, useState} from 'react';
+import {StyleSheet, Text, View} from 'react-native';
+import {Button, Checkbox, DataTable, Icon, List} from 'react-native-paper';
 import IConfigComponentProps from '../interface/IConfigComponentProps';
 import OnOffChip from './OnOffChip';
 import IRefRetType from '../interface/IRefRetType';
+import {useBLEApiContext} from '../context/BLEApiContext';
+import useInterval from '../hooks/useInterval';
 
+interface IBTSerialDevices {
+  Name: string;
+  BTAddress: string;
+  Status: string; // NotConnected | Connected | ReadError
+  Found: string;
+}
 const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
   (compProps: IConfigComponentProps, ref: React.ForwardedRef<IRefRetType>) => {
     const [isBTDeviceConfigured, setIsBTDeviceConfigured] =
       useState<boolean>(false);
+    const [isScanning, setIsScanning] = useState<boolean>(false);
+    const [interval, setInterval] = useState<number | null>(null);
     const [isOneWay, setIsOneWay] = useState<boolean>(false);
-    const [items, setItems] = useState([
-      {
-        key: 1,
-        name: 'Cupcake',
-        calories: 356,
-        fat: 16,
-      },
-      {
-        key: 2,
-        name: 'Eclair',
-        calories: 262,
-        fat: 16,
-      },
-      {
-        key: 3,
-        name: 'Frozen yogurt',
-        calories: 159,
-        fat: 6,
-      },
-      {
-        key: 4,
-        name: 'Gingerbread',
-        calories: 305,
-        fat: 3.7,
-      },
-    ]);
+
+    const [origIsOneWay, setOrigIsOneWay] = useState<boolean>(false);
+    const [serialBTDevices, setSerialBTDevices] = useState<IBTSerialDevices[]>(
+      [],
+    );
+
+    const [triggerVersion, setTriggerVersion] = useState<number>(0);
+
+    const intervalScanBTDevices = useInterval(startScan, interval);
 
     useImperativeHandle(ref, () => {
       return {
         save: () => {
           save();
         },
+        reload: () => {
+          reload();
+        },
       };
     });
 
+    const BLEAPI = useBLEApiContext();
+
     const save = () => {
-      null;
+      if (BLEAPI.connectedDevice !== null) {
+        let pc = BLEAPI.saveProperty(
+          BLEAPI.connectedDevice,
+          'btserialonewayreceive',
+          isOneWay ? '1' : '0',
+        );
+      }
+      reload();
     };
 
-    const chipBackgroundColor = isBTDeviceConfigured ? 'green' : 'red';
+    const reload = () => {
+      setTriggerVersion(currentValue => {
+        return currentValue + 1;
+      });
+    };
+
+    const updateFromWiRoc = (propName: string, propValue: string) => {
+      console.log('SerialBluetooth:updateFromWiRoc: propName: ' + propName);
+      console.log('SerialBluetooth:updateFromWiRoc: propValue: ' + propValue);
+      switch (propName) {
+        case 'btserialonewayreceive':
+          setIsOneWay(parseInt(propValue, 10) !== 0);
+          setOrigIsOneWay(parseInt(propValue, 10) !== 0);
+          break;
+        case 'scanbtaddresses':
+          let serialBTDevicesArr: IBTSerialDevices[] = JSON.parse(propValue);
+          let connectedDeviceIndex = serialBTDevicesArr.findIndex(item => {
+            return item.Status === 'Connected';
+          });
+          setIsBTDeviceConfigured(connectedDeviceIndex >= 0);
+          setSerialBTDevices(serialBTDevicesArr);
+          break;
+        case 'bindrfcomm':
+          let serialBTDevicesObject = JSON.parse(propValue);
+          let serialBTDevicesArr2: IBTSerialDevices[] =
+            serialBTDevicesObject.Value;
+          let connectedDeviceIndex2 = serialBTDevicesArr2.findIndex(item => {
+            return item.Status === 'Connected';
+          });
+          setIsBTDeviceConfigured(connectedDeviceIndex2 >= 0);
+          setSerialBTDevices(serialBTDevicesArr2);
+          break;
+      }
+    };
+
+    useEffect(() => {
+      async function getSerialBTSettings() {
+        if (BLEAPI.connectedDevice !== null) {
+          let pc = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'SerialBluetooth',
+            'btserialonewayreceive',
+            updateFromWiRoc,
+          );
+          let pc2 = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'SerialBluetooth',
+            'scanbtaddresses',
+            updateFromWiRoc,
+          );
+        }
+      }
+      getSerialBTSettings();
+    }, [BLEAPI, triggerVersion]);
+
+    useEffect(() => {
+      if (origIsOneWay == null) {
+        return;
+      }
+      if (origIsOneWay !== isOneWay) {
+        compProps.setIsDirtyFunction(compProps.id, true);
+      } else {
+        compProps.setIsDirtyFunction(compProps.id, false);
+      }
+    }, [isOneWay, compProps, origIsOneWay]);
+
+    let noOfScans = useRef<number>(0);
+    function startScan() {
+      console.log('startScan: noOfScans: ' + noOfScans.current);
+      if (BLEAPI.connectedDevice !== null) {
+        if (noOfScans.current <= 8) {
+          let pc = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'SerialBluetooth',
+            'scanbtaddresses',
+            updateFromWiRoc,
+          );
+          noOfScans.current += 1;
+        } else {
+          noOfScans.current = 0;
+          setInterval(null);
+          setIsScanning(false);
+        }
+      }
+    }
+
+    const startStopScan = () => {
+      if (isScanning) {
+        setIsScanning(false);
+        setInterval(null);
+      } else {
+        noOfScans.current = 0;
+        setIsScanning(true);
+        setInterval(5000);
+        startScan();
+        console.log('INTERVAL: ' + interval);
+      }
+    };
 
     return (
       <List.Accordion
@@ -85,6 +180,16 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
             />
           </View>
         </View>
+        <View>
+          <Button
+            icon=""
+            loading={isScanning}
+            mode="contained"
+            onPress={() => startStopScan()}
+            style={styles.scanButton}>
+            Sök Bluetooth enheter
+          </Button>
+        </View>
         <View style={styles.tableContainer}>
           <DataTable style={styles.table}>
             <DataTable.Header style={styles.row}>
@@ -97,22 +202,51 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
               </DataTable.Title>
             </DataTable.Header>
 
-            {items.map(item => (
-              <DataTable.Row key={item.key} style={styles.row}>
-                <DataTable.Cell>{item.name}</DataTable.Cell>
-                <View style={styles.btAddressCell}>
-                  <Text numberOfLines={2} ellipsizeMode="tail">
-                    asdfasdfasfafd\nasdfasdf a sdfaksdjfa sdkfj sakdfkasjdf
-                  </Text>
-                </View>
+            {serialBTDevices.map(item => (
+              <DataTable.Row key={item.BTAddress} style={styles.row}>
+                <DataTable.Cell>{item.Name}</DataTable.Cell>
+                <DataTable.Cell>
+                  <View style={styles.btAddressCell}>
+                    <Text numberOfLines={2} ellipsizeMode="tail">
+                      {item.BTAddress + '\n' + item.Status}
+                    </Text>
+                  </View>
+                </DataTable.Cell>
                 <DataTable.Cell style={styles.buttonCell} numeric>
                   <Button
                     icon=""
                     loading={false}
                     mode="contained"
-                    onPress={() => null}
+                    onPress={() => {
+                      let arg = item.BTAddress + '\t' + item.Name;
+                      if (item.Status === 'Connected') {
+                        if (BLEAPI.connectedDevice !== null) {
+                          let cmd = 'releaserfcomm';
+                          let pc = BLEAPI.saveProperty(
+                            BLEAPI.connectedDevice,
+                            cmd,
+                            arg,
+                          );
+                        }
+                      } else if (item.Status === 'NotConnected') {
+                        if (BLEAPI.connectedDevice !== null) {
+                          let cmd = 'bindrfcomm';
+                          let pc2 = BLEAPI.saveProperty(
+                            BLEAPI.connectedDevice,
+                            cmd,
+                            arg,
+                          );
+                        }
+                      } else if (item.Status === 'ReadError') {
+                        console.log('SerialBluetooth:ConnectButton ReadError');
+                      }
+                    }}
                     style={styles.button}>
-                    Anslut
+                    {item.Status === 'Connected'
+                      ? 'Koppla ifrån'
+                      : item.Status === 'NotConnected'
+                      ? 'Anslut'
+                      : 'ReadError'}
                   </Button>
                 </DataTable.Cell>
               </DataTable.Row>
@@ -134,6 +268,7 @@ const styles = StyleSheet.create({
   table: {
     paddingRight: 0,
     marginRight: 0,
+    marginBottom: 20,
   },
   row: {
     paddingRight: 5,
@@ -177,5 +312,9 @@ const styles = StyleSheet.create({
   button: {
     padding: 1,
     margin: 1,
+  },
+  scanButton: {
+    padding: 10,
+    margin: 10,
   },
 });

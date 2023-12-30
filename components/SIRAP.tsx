@@ -20,15 +20,26 @@ const SIRAP = React.forwardRef<IRefRetType, IConfigComponentProps>(
     const [origIpAddress, setOrigIpAddress] = useState<string | null>(null);
     const [origIpPort, setOrigIpPort] = useState<string | null>(null);
 
+    const [triggerVersion, setTriggerVersion] = useState<number>(0);
+
     useImperativeHandle(ref, () => {
       return {
         save: () => {
           save();
         },
+        reload: () => {
+          reload();
+        },
       };
     });
 
     const BLEAPI = useBLEApiContext();
+
+    const reload = () => {
+      setTriggerVersion(currentValue => {
+        return currentValue + 1;
+      });
+    };
 
     const save = () => {
       if (origIsSIRAPSwitchedOn !== isSIRAPSwitchedOn) {
@@ -111,7 +122,7 @@ const SIRAP = React.forwardRef<IRefRetType, IConfigComponentProps>(
         }
       }
       getSIRAPSettings();
-    }, [BLEAPI]);
+    }, [BLEAPI, triggerVersion]);
 
     useEffect(() => {
       if (

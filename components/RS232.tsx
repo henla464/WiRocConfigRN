@@ -16,15 +16,26 @@ const RS232 = React.forwardRef<IRefRetType, IConfigComponentProps>(
     const [origIsOneWay, setOrigIsOneWay] = useState<boolean | null>(null);
     const [origIs4800bps, setOrigIs4800bps] = useState<boolean | null>(null);
 
+    const [triggerVersion, setTriggerVersion] = useState<number>(0);
+
     useImperativeHandle(ref, () => {
       return {
         save: () => {
           save();
         },
+        reload: () => {
+          reload();
+        },
       };
     });
 
     const BLEAPI = useBLEApiContext();
+
+    const reload = () => {
+      setTriggerVersion(currentValue => {
+        return currentValue + 1;
+      });
+    };
 
     const save = () => {
       if (origSendReceive !== sendReceive) {
@@ -103,7 +114,7 @@ const RS232 = React.forwardRef<IRefRetType, IConfigComponentProps>(
         }
       }
       getRS232Settings();
-    }, [BLEAPI]);
+    }, [BLEAPI, triggerVersion]);
 
     useEffect(() => {
       if (
