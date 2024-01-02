@@ -29,6 +29,7 @@ export default function Status() {
   const [services, setServices] = useState<IServices[]>([]);
   const [inData, setInData] = useState<IInData[]>([]);
   const [outData, setOutData] = useState<IOutData[]>([]);
+  const [logs, setLogs] = useState<string>('');
 
   useEffect(() => {
     console.log('Status:useEffect start ' + BLEAPI.connectedDevice);
@@ -57,6 +58,12 @@ export default function Status() {
     }
   }, [BLEAPI]);
 
+  const loadLogs = () => {
+    let newLogs = BLEAPI.getLogs();
+    console.log('logs: ' + newLogs);
+    setLogs(newLogs.join('\n'));
+  };
+
   const uploadDatabaseAndLogs = async () => {
     if (BLEAPI.connectedDevice) {
       BLEAPI.requestProperty(
@@ -80,7 +87,7 @@ export default function Status() {
           mode="contained"
           onPress={uploadDatabaseAndLogs}
           style={[styles.button, {flex: 1, marginRight: 0, marginTop: 30}]}>
-          Ladda upp databas och loggar
+          Ladda upp enhetes databas och loggar
         </Button>
       </View>
       <ScrollView>
@@ -156,6 +163,15 @@ export default function Status() {
           style={{borderWidth: 0.5, borderColor: 'gray', marginBottom: 5}}
         />
         <Text style={styles.header}>WiRoc Config loggar</Text>
+        <Button
+          mode="contained"
+          style={styles.button}
+          onPress={() => {
+            loadLogs();
+          }}>
+          Ladda loggar
+        </Button>
+        <Text>{logs}</Text>
       </ScrollView>
     </View>
   );

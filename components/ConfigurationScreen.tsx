@@ -18,6 +18,7 @@ import LoraRadio from './LoraRadio';
 import SRR from './SRR';
 import IRefRetType from '../interface/IRefRetType';
 import SaveBanner from './SaveBanner';
+import ErrorBanner from './ErrorBanner';
 
 interface ISectionComponent {
   Comp: React.JSX.Element;
@@ -193,6 +194,7 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
 
   return (
     <SafeAreaView style={Colors.lighter}>
+      <ErrorBanner />
       <SaveBanner
         visible={isDirty}
         save={saveConfigurationScreen}
@@ -201,7 +203,6 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
       <ScrollView>
         <List.AccordionGroup>
           <View>
-            <Text>{isDirty ? 'IS DIRTY' : 'NOT DIRTY'}</Text>
             <Divider bold={true} />
             <Text style={styles.header}>Indata</Text>
             <Divider bold={true} />

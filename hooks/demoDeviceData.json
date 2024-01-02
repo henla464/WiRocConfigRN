@@ -15,5 +15,6 @@
   "srr/redchannel": "1",
   "srr/bluechannel": "1",
   "srr/redchannellistenonly": "0",
-  "srr/bluechannellistenonly": "0"
+  "srr/bluechannellistenonly": "0",
+  "scanbtaddresses": "[{\"py/object\": \"init.MicroMock\", \"BTAddress\": \"B8:BC:5B:90:A3:A5\", \"Name\": \"[TV] Samsung Q60 Series (55)\", \"Found\": \"False\", \"Status\": \"NotConnected\"}]"
 }

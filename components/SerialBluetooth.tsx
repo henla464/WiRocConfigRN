@@ -69,12 +69,23 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
           setOrigIsOneWay(parseInt(propValue, 10) !== 0);
           break;
         case 'scanbtaddresses':
-          let serialBTDevicesArr: IBTSerialDevices[] = JSON.parse(propValue);
+          let serialBTDevicesArr: IBTSerialDevices[] = [];
+          try {
+            serialBTDevicesArr = JSON.parse(propValue);
+          } catch (e) {
+            BLEAPI.logDebug(
+              'SerialBluetooth',
+              'updateFromWiRoc',
+              'scanbtaddresses reply is probably corrupt',
+            );
+            return;
+          }
           let connectedDeviceIndex = serialBTDevicesArr.findIndex(item => {
             return item.Status === 'Connected';
           });
           setIsBTDeviceConfigured(connectedDeviceIndex >= 0);
           setSerialBTDevices(serialBTDevicesArr);
+
           break;
         case 'bindrfcomm':
           let serialBTDevicesObject = JSON.parse(propValue);

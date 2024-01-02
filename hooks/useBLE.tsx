@@ -51,6 +51,28 @@ export interface BluetoothLowEnergyApi {
     propName: string,
     propValue: string,
   ) => Promise<Characteristic | null>;
+  logDebug: (
+    componentName: string,
+    functionName: string,
+    message: string,
+  ) => void;
+  logInformation: (
+    componentName: string,
+    functionName: string,
+    message: string,
+  ) => void;
+  logError: (
+    componentName: string,
+    functionName: string,
+    message: string,
+    messageToUser: string,
+  ) => void;
+  getLogs: () => string[];
+  hasErrorsForUser: boolean;
+  getErrorsForUser: () => IErrorsForUser[];
+  logErrorForUser: (log: string) => void;
+  removeErrorForUser: (id: number) => void;
+  removeErrorsForUser: () => void;
 }
 
 interface IDemoDevice {
@@ -100,6 +122,12 @@ export interface ITestPunch {
   RSSI: number;
   Time: string;
 }
+
+export interface IErrorsForUser {
+  id: number;
+  message: string;
+}
+
 let demoPunchesIntervalID: NodeJS.Timeout | null;
 let demoTestPunchesIntervalID: NodeJS.Timeout | null;
 let demoPunches: IPunch[] = [];
@@ -110,6 +138,10 @@ const chunkLengthToUse: number = 150; // MTU of 153 (3 byte header) should work 
 let propertyNotificationBufferReceived: Buffer = Buffer.from('');
 let punchesNotificationBufferReceived: Buffer = Buffer.from('');
 let testPunchesNotificationBufferReceived: Buffer = Buffer.from('');
+
+let logs: string[] = [''];
+let errorsForUsers: IErrorsForUser[] = [];
+let currentErrorsForUsersId: number = 0;
 
 export default function useBLE(): BluetoothLowEnergyApi {
   const apiService = 'fb880900-4ab2-40a2-a8f0-14cc1c2e5608';
@@ -122,6 +154,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
     Device | IDemoDevice | null
   >(null);
   const [isDisconnecting, setIsDisconnecting] = useState<boolean>(false);
+  const [hasErrorsForUser, setHasErrorsForUser] = useState<boolean>(false);
 
   const requestPermissions = async (callback: PermissionCallback) => {
     if (Platform.OS === 'android') {
@@ -164,6 +197,13 @@ export default function useBLE(): BluetoothLowEnergyApi {
     bleManager.startDeviceScan([apiService], null, (error, newDevice) => {
       if (error) {
         console.log('startDeviceScan: ' + error);
+        logError(
+          'useBLE',
+          'scanForDevices',
+          'Error: ' + error.name + ' ' + error.message,
+          'Fel uppstod vid sökning efter enheter',
+        );
+        logErrorForUser('Fel uppstod vid sökning efter enheter');
       }
       if (newDevice) {
         setAllDevices((prevState: Device[]) => {
@@ -184,7 +224,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
 
   const stopScanningForDevices = () => {
     try {
-      bleManager.stopDeviceScan();
+      bleManager?.stopDeviceScan();
     } catch (e) {
       console.log('stopScanningForDevices: ' + e);
     }
@@ -204,11 +244,15 @@ export default function useBLE(): BluetoothLowEnergyApi {
     // Find all subscribers and call them
     for (const propNotificationSub of propertyNotificationSubscriptions) {
       if (propNotificationSub.propName === propName) {
-        console.log(
-          'propertyNotify2: Found sub to notify: ' +
+        logDebug(
+          'useBLE',
+          'propertyNotify2',
+          'Found sub to notify: ' +
             propNotificationSub.componentRequesting +
             ' propName: ' +
-            propNotificationSub.propName,
+            propNotificationSub.propName +
+            ' value: ' +
+            propValue,
         );
         propNotificationSub.callback(propName, propValue);
       }
@@ -221,8 +265,13 @@ export default function useBLE(): BluetoothLowEnergyApi {
   ): void => {
     if (error !== null) {
       if (!(isDisconnecting && error.message === 'Operation was cancelled')) {
-        console.log('propertyNotify: Notify error ' + error.name);
-        console.log('propertyNotify: Notify error ' + error);
+        logError(
+          'useBLE',
+          'propertyNotify',
+          'Error: ' + error.name + ' ' + error.message,
+          'Fel uppstod vid updatering av värde',
+        );
+        logErrorForUser('Fel uppstod vid updatering av värde');
       }
     } else if (characteristic !== null && characteristic.value !== null) {
       let bufferOfReceivedNow = Buffer.from(characteristic.value, 'base64');
@@ -234,6 +283,12 @@ export default function useBLE(): BluetoothLowEnergyApi {
       // we need to check the byte length and not the string length ( ¤ takes two bytes )
       let propAndValueStrings = '';
       if (bufferOfReceivedNow.length < chunkLengthToUse) {
+        console.log(
+          'bufferOfReceivedNow.length: ' +
+            bufferOfReceivedNow.length +
+            ' chunkLengthToUse: ' +
+            chunkLengthToUse,
+        );
         propAndValueStrings =
           propertyNotificationBufferReceived.toString('utf-8');
         propertyNotificationBufferReceived = Buffer.from('');
@@ -266,6 +321,13 @@ export default function useBLE(): BluetoothLowEnergyApi {
       );
     } catch (e) {
       console.log('exception enablePropertyNotification: ' + e);
+      logError(
+        'useBLE',
+        'enablePropertyNotification',
+        'Exception ' + e,
+        'Fel uppstod vid uppsättnignen av lyssning till värden',
+      );
+      logErrorForUser('Fel uppstod vid uppsättnignen av lyssning till värden');
     }
     console.log('enablepropertyNotification');
   };
@@ -310,7 +372,13 @@ export default function useBLE(): BluetoothLowEnergyApi {
         //bleManager.stopDeviceScan();
       }
     } catch (e) {
-      console.log('ERROR IN CONNECTION: ' + e);
+      logError(
+        'useBLE',
+        'connectToDevice',
+        'Exception ' + e,
+        'Fel uppstod vid anslutning till enheten',
+      );
+      logErrorForUser('Fel uppstod vid anslutning till enheten');
     }
   };
 
@@ -320,7 +388,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
       setIsDisconnecting(true);
       let deviceToDisconnect = device === null ? connectedDevice : device;
       if (deviceToDisconnect === null) {
-        console.log('disconnectDevice: Not connected to a device');
+        logDebug('useBLE', 'disconnectDevice', 'Not connected to a device');
         return;
       }
       if (instanceOfIDemoDevice(deviceToDisconnect)) {
@@ -370,7 +438,13 @@ export default function useBLE(): BluetoothLowEnergyApi {
     } catch (e) {
       setConnectedDevice(null);
       setIsDisconnecting(false);
-      console.log('ERROR IN DISCONNECTION: ' + e);
+      logError(
+        'useBLE',
+        'disconnectDevice',
+        'Exception ' + e,
+        'Fel uppstod vid bortkoppling',
+      );
+      logErrorForUser('Fel uppstod vid bortkoppling');
     }
   };
 
@@ -429,7 +503,13 @@ export default function useBLE(): BluetoothLowEnergyApi {
         return characteristic;
       }
     } catch (e) {
-      console.log('ERROR IN requestProperty: ' + e);
+      logError(
+        'useBLE',
+        'requestProperty',
+        'Property name: ' + propName + ' Exception: ' + e,
+        'Misslyckades läsa värde från WiRoc enheten',
+      );
+      logErrorForUser('Misslyckades läsa värde från WiRoc enheten');
       return null;
     }
   };
@@ -458,7 +538,18 @@ export default function useBLE(): BluetoothLowEnergyApi {
         return characteristic;
       }
     } catch (e) {
-      console.log('ERROR IN saveProperty: ' + e);
+      logError(
+        'useBLE',
+        'saveProperty',
+        'Property name: ' +
+          propName +
+          ' Property value: ' +
+          propValue +
+          ' Exception: ' +
+          e,
+        'Misslyckades spara värde till WiRoc enheten',
+      );
+      logErrorForUser('Misslyckades spara värde till WiRoc enheten');
       return null;
     }
   };
@@ -469,8 +560,13 @@ export default function useBLE(): BluetoothLowEnergyApi {
   ): void => {
     if (error !== null) {
       if (!(isDisconnecting && error.message === 'Operation was cancelled')) {
-        console.log('punchesNotify: Notify error ' + error.name);
-        console.log('punchesNotify: Notify error ' + error.message);
+        logError(
+          'useBLE',
+          'punchesNotify',
+          'Error: ' + error.name + ' ' + error.message,
+          'Fel uppstod vid updatering av stämplingslistan',
+        );
+        logErrorForUser('Fel uppstod vid updatering av stämplingslistan');
       }
     } else if (characteristic !== null && characteristic.value !== null) {
       let bufferOfReceivedNow = Buffer.from(characteristic.value, 'base64');
@@ -525,7 +621,13 @@ export default function useBLE(): BluetoothLowEnergyApi {
         );
       }
     } catch (e) {
-      console.log('exception enablePunchesNotification: ' + e);
+      logError(
+        'useBLE',
+        'enablePunchesNotification',
+        'Exception: ' + e,
+        'Fel uppstod vid start av lyssning av stämplingar',
+      );
+      logErrorForUser('Fel uppstod vid start av lyssning av stämplingar');
     }
     console.log('enablePunchesNotification');
   };
@@ -552,7 +654,13 @@ export default function useBLE(): BluetoothLowEnergyApi {
         console.log('setting isdisconnectingpunches to false');
       }
     } catch (e) {
-      console.log('exception enablePunchesNotification: ' + e);
+      logError(
+        'useBLE',
+        'disablePunchesNotification',
+        'Exception: ' + e,
+        'Fel uppstod vid stop av lyssning av stämplingar',
+      );
+      logErrorForUser('Fel uppstod vid stop av lyssning av stämplingar');
     }
     console.log('enablePunchesNotification');
   };
@@ -652,6 +760,13 @@ export default function useBLE(): BluetoothLowEnergyApi {
       }
     } catch (e) {
       console.log('exception enableTestPunchesNotification: ' + e);
+      logError(
+        'useBLE',
+        'enableTestPunchesNotification',
+        'Exception: ' + e,
+        'Fel uppstod vid start av lyssning av teststämplingar',
+      );
+      logErrorForUser('Fel uppstod vid start av lyssning av teststämplingar');
     }
     console.log('enableTestPunchesNotification');
   };
@@ -678,7 +793,13 @@ export default function useBLE(): BluetoothLowEnergyApi {
         }
       }
     } catch (e) {
-      console.log('exception enablePunchesNotification: ' + e);
+      logError(
+        'useBLE',
+        'disableTestPunchesNotification',
+        'Exception: ' + e,
+        'Fel uppstod vid stop av skickning av teststämplingar',
+      );
+      logErrorForUser('Fel uppstod vid stop av skickning av teststämplingar');
     }
     console.log('enablePunchesNotification');
   };
@@ -706,9 +827,106 @@ export default function useBLE(): BluetoothLowEnergyApi {
         return characteristic;
       }
     } catch (e) {
-      console.log('ERROR IN startSendTestPUnches: ' + e);
+      logError(
+        'useBLE',
+        'startSendTestPunches',
+        'Exception: ' + e,
+        'Fel uppstod vid start av skickning av teststämplingar',
+      );
+      logErrorForUser('Fel uppstod vid start av skickning av teststämplingar');
       return null;
     }
+  };
+
+  const logDebug = (
+    componentName: string,
+    functionName: string,
+    message: string,
+  ) => {
+    let newLog =
+      new Date().toISOString() +
+      ' DEBUG ' +
+      componentName +
+      ':' +
+      functionName +
+      ': ' +
+      message;
+    console.log(newLog);
+    let newLogs = [...logs, newLog];
+    logs = newLogs;
+  };
+
+  const logInformation = (
+    componentName: string,
+    functionName: string,
+    message: string,
+  ) => {
+    let newLog =
+      new Date().toISOString() +
+      ' INFO  ' +
+      componentName +
+      ':' +
+      functionName +
+      ': ' +
+      message;
+    console.log(newLog);
+    let newLogs = [...logs, newLog];
+    logs = newLogs;
+  };
+
+  const logError = (
+    componentName: string,
+    functionName: string,
+    message: string,
+    messageToUser: string,
+  ) => {
+    let newLog =
+      new Date().toISOString() +
+      ' ERROR ' +
+      componentName +
+      ':' +
+      functionName +
+      ': ' +
+      message +
+      ' (' +
+      messageToUser +
+      ')';
+    console.log(newLog);
+    let newLogs = [...logs, newLog];
+    logs = newLogs;
+  };
+
+  const getLogs = () => {
+    return logs;
+  };
+
+  const getErrorsForUser = () => {
+    return errorsForUsers;
+  };
+
+  const logErrorForUser = (msg: string) => {
+    currentErrorsForUsersId++;
+    let log: IErrorsForUser = {
+      id: currentErrorsForUsersId,
+      message: msg,
+    };
+    errorsForUsers.push(log);
+    setHasErrorsForUser(true);
+  };
+
+  const removeErrorForUser = (id: number) => {
+    currentErrorsForUsersId++;
+    let idx = errorsForUsers.findIndex((log: IErrorsForUser) => {
+      return log.id === id;
+    });
+    errorsForUsers.splice(idx, 1);
+    setHasErrorsForUser(errorsForUsers.length > 0);
+  };
+
+  const removeErrorsForUser = () => {
+    currentErrorsForUsersId = 0;
+    errorsForUsers = [];
+    setHasErrorsForUser(false);
   };
 
   return {
@@ -726,5 +944,14 @@ export default function useBLE(): BluetoothLowEnergyApi {
     enableTestPunchesNotification,
     disableTestPunchesNotification,
     startSendTestPunches,
+    logDebug,
+    logInformation,
+    logError,
+    getLogs,
+    hasErrorsForUser,
+    getErrorsForUser,
+    logErrorForUser,
+    removeErrorForUser,
+    removeErrorsForUser,
   };
 }
