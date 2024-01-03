@@ -10,14 +10,6 @@ import {useBLEApiContext} from '../context/BLEApiContext';
 import ErrorBanner from './ErrorBanner';
 
 export default function ScanForDevicesScreen() {
-  //const {
-  //  requestPermissions,
-  //  allDevices,
-  //  scanForDevices,
-  //  connectToDevice,
-  //  connectedDevice,
-  //} = useBLE();
-
   const [isSearching, setIsSearching] = useState<boolean>(false);
   const BLEAPI = useBLEApiContext();
 
@@ -29,8 +21,11 @@ export default function ScanForDevicesScreen() {
     } else {
       console.log('Start scan');
       BLEAPI.requestPermissions((isGranted: boolean) => {
+        console.log('Start scan 2');
         if (isGranted) {
+          console.log('Start scan 3');
           setIsSearching(true);
+          console.log('Start scan 4');
           BLEAPI.scanForDevices();
         }
       });

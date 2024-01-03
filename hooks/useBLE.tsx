@@ -506,7 +506,6 @@ export default function useBLE(): BluetoothLowEnergyApi {
     callback: callbackFn,
   ): Promise<Characteristic | null> => {
     try {
-      console.log('requestProperty: deviceName: ' + device.name);
       console.log('requestProperty: ' + propName);
       addOrUpdatePropertyNotifiticationSubscription({
         componentRequesting: componentRequesting,

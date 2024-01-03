@@ -43,7 +43,7 @@ function App(): JSX.Element {
             name="Device"
             component={DeviceBottomNavigation}
             options={{
-              title: 'WiRoc enhet',
+              title: 'Konfigurera enhet',
               headerRight: () => <NavigationHeader />,
             }}
           />
