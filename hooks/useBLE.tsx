@@ -24,7 +24,6 @@ export interface BluetoothLowEnergyApi {
   allDevices: Device[];
   connectToDevice: (device: Device | IDemoDevice) => Promise<void>;
   connectedDevice: Device | IDemoDevice | null;
-  isConnecting: boolean;
   disconnectDevice: (device: Device | IDemoDevice) => Promise<void>;
   requestProperty: (
     device: Device | IDemoDevice,
@@ -155,7 +154,6 @@ export default function useBLE(): BluetoothLowEnergyApi {
     Device | IDemoDevice | null
   >(null);
   const [isDisconnecting, setIsDisconnecting] = useState<boolean>(false);
-  const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [hasErrorsForUser, setHasErrorsForUser] = useState<boolean>(false);
 
   const requestPermissions = async (callback: PermissionCallback) => {
@@ -347,7 +345,6 @@ export default function useBLE(): BluetoothLowEnergyApi {
         return;
       }
 
-      setIsConnecting(true);
       logDebug('useBLE', 'connectToDevice', 'Connecting to: ' + device.name);
       if (instanceOfIDemoDevice(device)) {
         device.isConnected = true;
@@ -378,7 +375,6 @@ export default function useBLE(): BluetoothLowEnergyApi {
             );
             if (disconnectedDevice.id === connectedDevice?.id) {
               setConnectedDevice(null);
-              //setIsConnecting(false);
               setIsDisconnecting(false);
             }
           },
@@ -387,7 +383,6 @@ export default function useBLE(): BluetoothLowEnergyApi {
         await deviceConnected.discoverAllServicesAndCharacteristics();
         enablePropertyNotification(device);
         setConnectedDevice(deviceConnected);
-        setIsConnecting(false);
         logDebug('useBLE', 'connectToDevice', 'request the "all" property');
         requestProperty(
           deviceConnected,
@@ -971,7 +966,6 @@ export default function useBLE(): BluetoothLowEnergyApi {
     allDevices,
     connectToDevice,
     connectedDevice,
-    isConnecting,
     disconnectDevice,
     requestProperty,
     saveProperty,

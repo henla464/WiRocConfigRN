@@ -14,7 +14,7 @@ const ErrorBanner = () => {
   React.useEffect(() => {
     let errs = BLEAPI.getErrorsForUser();
     setErrorsForUser(errs);
-    console.log(errs);
+    //console.log(errs);
   }, [BLEAPI, triggerVersion]);
 
   return (
