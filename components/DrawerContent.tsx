@@ -4,7 +4,7 @@ import {
   DrawerNavigationHelpers,
 } from '@react-navigation/drawer/lib/typescript/src/types';
 import {DrawerNavigationState, ParamListBase} from '@react-navigation/native';
-import React from 'react';
+import React, {useState} from 'react';
 import {Image, StyleSheet, View} from 'react-native';
 import {
   Caption,
@@ -27,6 +27,10 @@ interface DrawerContentProps {
 
 export function DrawerContent(props: DrawerContentProps) {
   const BLEAPI = useBLEApiContext();
+  const [
+    deviceIdConnectingOrDisconnecting,
+    setDeviceIdConnectingOrDisconnecting,
+  ] = useState<string>('');
 
   return (
     <DrawerContentScrollView>
@@ -71,12 +75,9 @@ export function DrawerContent(props: DrawerContentProps) {
             <TouchableRipple
               key={device.id}
               onPress={async () => {
-                let isConnecte = await device.isConnected();
-                if (isConnecte) {
-                  await BLEAPI.disconnectDevice(device);
-                } else {
-                  await BLEAPI.connectToDevice(device);
-                  props.navigation.navigate('Device');
+                if (device.id === BLEAPI.connectedDevice?.id) {
+                  //await BLEAPI.disconnectDevice(device);
+                  //props.navigation.navigate('Device');
                 }
               }}>
               <View style={styles.foundDevices}>
@@ -96,12 +97,16 @@ export function DrawerContent(props: DrawerContentProps) {
                   </View>
                 </View>
                 <Button
+                  loading={deviceIdConnectingOrDisconnecting === device.id}
                   onPress={async () => {
+                    setDeviceIdConnectingOrDisconnecting(device.id);
                     if (device.id === BLEAPI.connectedDevice?.id) {
                       await BLEAPI.disconnectDevice(BLEAPI.connectedDevice);
+                      setDeviceIdConnectingOrDisconnecting('');
                       props.navigation.navigate('ScanForDevices');
                     } else {
-                      BLEAPI.connectToDevice(device);
+                      await BLEAPI.connectToDevice(device);
+                      setDeviceIdConnectingOrDisconnecting('');
                       props.navigation.navigate('Device');
                     }
                   }}
@@ -134,16 +139,20 @@ export function DrawerContent(props: DrawerContentProps) {
                   </Text>
                 </View>
                 <View>
-                  <Caption style={styles.caption}>11:22:33:44:55:66</Caption>
+                  <Caption style={styles.caption}>{demoDevice.id}</Caption>
                 </View>
               </View>
               <Button
+                loading={deviceIdConnectingOrDisconnecting === demoDevice.id}
                 onPress={async () => {
+                  setDeviceIdConnectingOrDisconnecting(demoDevice.id);
                   if (demoDevice.id === BLEAPI.connectedDevice?.id) {
                     await BLEAPI.disconnectDevice(BLEAPI.connectedDevice);
+                    setDeviceIdConnectingOrDisconnecting('');
                     props.navigation.navigate('ScanForDevices');
                   } else {
-                    BLEAPI.connectToDevice(demoDevice);
+                    await BLEAPI.connectToDevice(demoDevice);
+                    setDeviceIdConnectingOrDisconnecting('');
                     props.navigation.navigate('Device');
                   }
                 }}

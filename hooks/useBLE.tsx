@@ -24,6 +24,7 @@ export interface BluetoothLowEnergyApi {
   allDevices: Device[];
   connectToDevice: (device: Device | IDemoDevice) => Promise<void>;
   connectedDevice: Device | IDemoDevice | null;
+  isConnecting: boolean;
   disconnectDevice: (device: Device | IDemoDevice) => Promise<void>;
   requestProperty: (
     device: Device | IDemoDevice,
@@ -154,6 +155,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
     Device | IDemoDevice | null
   >(null);
   const [isDisconnecting, setIsDisconnecting] = useState<boolean>(false);
+  const [isConnecting, setIsConnecting] = useState<boolean>(false);
   const [hasErrorsForUser, setHasErrorsForUser] = useState<boolean>(false);
 
   const requestPermissions = async (callback: PermissionCallback) => {
@@ -264,14 +266,16 @@ export default function useBLE(): BluetoothLowEnergyApi {
     characteristic: Characteristic | null,
   ): void => {
     if (error !== null) {
-      if (!(isDisconnecting && error.message === 'Operation was cancelled')) {
-        logError(
-          'useBLE',
-          'propertyNotify',
-          'Error: ' + error.name + ' ' + error.message,
-          'Fel uppstod vid updatering av värde',
-        );
-        logErrorForUser('Fel uppstod vid updatering av värde');
+      if (!isDisconnecting) {
+        if (connectedDevice) {
+          logError(
+            'useBLE',
+            'propertyNotify',
+            'Error: ' + error.name + ' ' + error.message,
+            'Fel uppstod vid hämtning av värde',
+          );
+          logErrorForUser('Fel uppstod vid hämtning av värde');
+        }
       }
     } else if (characteristic !== null && characteristic.value !== null) {
       let bufferOfReceivedNow = Buffer.from(characteristic.value, 'base64');
@@ -335,27 +339,56 @@ export default function useBLE(): BluetoothLowEnergyApi {
   const connectToDevice = async (device: Device | IDemoDevice) => {
     try {
       if (connectedDevice !== null && device.id === connectedDevice.id) {
-        console.log('Already connected to this device');
+        logDebug(
+          'useBLE',
+          'connectToDevice',
+          'Already connected to this device: ' + device.name,
+        );
         return;
-      } else {
-        console.log('connectToDevice: Connecting to: ' + device.name);
       }
+
+      setIsConnecting(true);
+      logDebug('useBLE', 'connectToDevice', 'Connecting to: ' + device.name);
       if (instanceOfIDemoDevice(device)) {
-        console.log('connectToDevice: DEMO DEVICE!!');
         device.isConnected = true;
         setConnectedDevice(device);
+        logInformation(
+          'useBLE',
+          'connectToDevice',
+          'Connected to DEMO Device!',
+        );
       } else {
         let deviceConnected = await bleManager.connectToDevice(device.id, {
           requestMTU: chunkLengthToUse + 3,
         });
-        console.log('is connected: ' + (await deviceConnected.isConnected()));
-        console.log('MTU: ' + deviceConnected.mtu);
+        logDebug(
+          'useBLE',
+          'connectToDevice',
+          ' isConnected: ' + (await deviceConnected.isConnected()),
+        );
+        logDebug('useBLE', 'connectToDevice', 'MTU: ' + deviceConnected.mtu);
+
+        deviceConnected.onDisconnected(
+          (error: BleError | null, disconnectedDevice: Device) => {
+            console.log('OnDisconnect!');
+            logDebug(
+              'useBLE',
+              'onDisconnected',
+              'Disconnected from: ' + disconnectedDevice.name,
+            );
+            if (disconnectedDevice.id === connectedDevice?.id) {
+              setConnectedDevice(null);
+              //setIsConnecting(false);
+              setIsDisconnecting(false);
+            }
+          },
+        );
+
         await deviceConnected.discoverAllServicesAndCharacteristics();
-        console.log('connectToDevice: discoverAllServicesAndCharacteristics');
         enablePropertyNotification(device);
-        console.log('connectToDevice: enablePropertyNotification');
         setConnectedDevice(deviceConnected);
-        console.log('connectToDevice: setConnectedDevice');
+        setIsConnecting(false);
+        logDebug('useBLE', 'connectToDevice', 'request the "all" property');
         requestProperty(
           deviceConnected,
           'useBLE',
@@ -503,13 +536,15 @@ export default function useBLE(): BluetoothLowEnergyApi {
         return characteristic;
       }
     } catch (e) {
-      logError(
-        'useBLE',
-        'requestProperty',
-        'Property name: ' + propName + ' Exception: ' + e,
-        'Misslyckades läsa värde från WiRoc enheten',
-      );
-      logErrorForUser('Misslyckades läsa värde från WiRoc enheten');
+      if (!isDisconnecting) {
+        logError(
+          'useBLE',
+          'requestProperty',
+          'Property name: ' + propName + ' Exception: ' + e,
+          'Misslyckades läsa värde från WiRoc enheten',
+        );
+        logErrorForUser('Misslyckades läsa värde från WiRoc enheten');
+      }
       return null;
     }
   };
@@ -936,6 +971,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
     allDevices,
     connectToDevice,
     connectedDevice,
+    isConnecting,
     disconnectDevice,
     requestProperty,
     saveProperty,

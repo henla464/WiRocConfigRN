@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import {Dimensions} from 'react-native';
 import Database from './Database';
@@ -7,10 +7,22 @@ import Status from './Status';
 import Settings from './Settings';
 import Update from './Update';
 import ErrorBanner from './ErrorBanner';
+import {useBLEApiContext} from '../context/BLEApiContext';
+import {useNavigation} from '@react-navigation/native';
 
 const Tab = createMaterialTopTabNavigator();
 
 export default function OtherScreen() {
+  const BLEAPI = useBLEApiContext();
+  const navigation = useNavigation();
+
+  useEffect(() => {
+    if (BLEAPI.connectedDevice === null) {
+      BLEAPI.logDebug('OtherScreen', 'useEffect', 'navigate to ScanForDevices');
+      navigation.navigate('ScanForDevices' as never);
+    }
+  }, [BLEAPI, navigation]);
+
   return (
     <>
       <ErrorBanner />

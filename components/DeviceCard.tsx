@@ -27,11 +27,6 @@ export default function DeviceCard({device}: DeviceCardProps) {
     await BLEAPI.connectToDevice(device);
     setIsConnecting(false);
     console.log('cardConnect: end');
-    /*if (await device?.isConnected()) {
-      setIsConnected(true);
-    } else {
-      setIsConnected(false);
-    }*/
   };
 
   const cardDisconnect = async () => {
@@ -41,14 +36,16 @@ export default function DeviceCard({device}: DeviceCardProps) {
   const navigation = useNavigation();
 
   useEffect(() => {
-    console.log(
+    BLEAPI.logDebug(
+      'DeviceCard',
+      'useEffect',
       'device.id: ' +
         device.id +
         ' BLEAPI.connectedDevice?.id: ' +
         BLEAPI.connectedDevice?.id,
     );
     setIsConnected(device.id === BLEAPI.connectedDevice?.id);
-  }, [device.id, BLEAPI.connectedDevice?.id]);
+  }, [BLEAPI, device.id, BLEAPI.connectedDevice?.id]);
 
   useEffect(() => {
     if (isConnected) {

@@ -1,12 +1,5 @@
-import React, {ReactElement, useRef, useState} from 'react';
-import {
-  Button,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import React, {ReactElement, useEffect, useRef, useState} from 'react';
+import {SafeAreaView, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {Divider, List} from 'react-native-paper';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
@@ -19,6 +12,8 @@ import SRR from './SRR';
 import IRefRetType from '../interface/IRefRetType';
 import SaveBanner from './SaveBanner';
 import ErrorBanner from './ErrorBanner';
+import {useNavigation, useNavigationState} from '@react-navigation/native';
+import {useBLEApiContext} from '../context/BLEApiContext';
 
 interface ISectionComponent {
   Comp: React.JSX.Element;
@@ -30,6 +25,7 @@ interface ISectionComponent {
 }
 
 export default function ConfigurationScreen(): ReactElement<React.FC> {
+  const BLEAPI = useBLEApiContext();
   const [isDirty, setIsDirty] = useState<boolean>(false);
   const usbChildRef = useRef<IRefRetType>(null);
   const serialBluetoothRef = useRef<IRefRetType>(null);
@@ -37,6 +33,7 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
   const loraChildRef = useRef<IRefRetType>(null);
   const RS232ChildRef = useRef<IRefRetType>(null);
   const SIRAPChildRef = useRef<IRefRetType>(null);
+  const navigation = useNavigation();
   const [configurationComponents, setConfigurationComponents] = useState<
     ISectionComponent[]
   >([
@@ -191,6 +188,23 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
       }
     });
   };
+
+  useEffect(() => {
+    if (BLEAPI.connectedDevice === null) {
+      if (navigation.isFocused()) {
+        let screenName =
+          navigation.getState().routes[navigation.getState().index].name;
+        console.log(
+          'ConfigurationScreen:useEffect navigate to ScanForDevices, current screen: ' +
+            screenName +
+            ' isFocused: ' +
+            navigation.isFocused(),
+        );
+
+        navigation.navigate('ScanForDevices' as never);
+      }
+    }
+  }, [BLEAPI, navigation]);
 
   return (
     <SafeAreaView style={Colors.lighter}>
