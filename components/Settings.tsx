@@ -22,14 +22,25 @@ export default function Settings() {
   const updateSettings = useCallback(
     (propName: string, propValue: string) => {
       console.log('Settings:updateSettings start');
-      let settingsObj = JSON.parse(propValue);
-      //console.log('Settings:updateSettings: old ' + JSON.stringify(settings));
-      console.log(
-        'Settings:updateSettings: new ' + JSON.stringify(settingsObj.settings),
-      );
-      setSettings(settingsObj.settings);
+      try {
+        let settingsObj = JSON.parse(propValue);
+        //console.log('Settings:updateSettings: old ' + JSON.stringify(settings));
+        console.log(
+          'Settings:updateSettings: new ' +
+            JSON.stringify(settingsObj.settings),
+        );
+        setSettings(settingsObj.settings);
+      } catch (e) {
+        BLEAPI.logError(
+          'Settings',
+          'updateSettings',
+          'fetch settings exception: ' + e,
+          '',
+        );
+        BLEAPI.logErrorForUser('Kunde inte hämta nyckelvärdelistan');
+      }
     },
-    [setSettings],
+    [setSettings, BLEAPI],
   );
 
   useEffect(() => {

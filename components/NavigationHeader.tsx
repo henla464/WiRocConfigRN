@@ -1,16 +1,20 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 
-import {StyleSheet, Touchable, View} from 'react-native';
+import {Pressable, StyleSheet, View} from 'react-native';
 import {Icon, TouchableRipple} from 'react-native-paper';
 import {useBLEApiContext} from '../context/BLEApiContext';
+import DeviceConnectionModal from './DeviceConnectionModal';
 
 export default function NavigationHeader() {
   const BLEAPI = useBLEApiContext();
 
   const [batteryLevel, setBatteryLevel] = useState<number>(0);
   const [isCharging, setIsCharging] = useState<boolean>(false);
+  const [isConnected, setIsConnected] = useState<boolean>(false);
 
   const [triggerVersion, setTriggerVersion] = useState<number>(0);
+
+  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
 
   const reload = () => {
     setTriggerVersion(currentValue => {
@@ -21,6 +25,7 @@ export default function NavigationHeader() {
   useEffect(() => {
     async function getNavigationHeaderSettings() {
       if (BLEAPI.connectedDevice !== null) {
+        setIsConnected(true);
         let pc = BLEAPI.requestProperty(
           BLEAPI.connectedDevice,
           'NavigationHeader',
@@ -50,32 +55,51 @@ export default function NavigationHeader() {
             setIsCharging(parseInt(propValue, 10) !== 0);
           },
         );
+      } else {
+        setIsConnected(false);
       }
     }
     getNavigationHeaderSettings();
   }, [BLEAPI, triggerVersion]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.iconSpacing}>
-        <Icon source="wifi-settings" size={40} />
+    <>
+      <DeviceConnectionModal
+        closeModal={() => {
+          setIsModalVisible(false);
+        }}
+        modalVisible={isModalVisible}
+      />
+      <View style={styles.container}>
+        <View style={styles.iconSpacing}>
+          <TouchableRipple
+            onPress={() => {
+              if (isConnected) {
+                setIsModalVisible(true);
+              }
+            }}>
+            <Icon
+              source={isConnected ? 'wifi-settings' : 'wifi-off'}
+              size={40}
+            />
+          </TouchableRipple>
+        </View>
+        <TouchableRipple onPress={() => reload()}>
+          <Icon
+            source={
+              !isCharging && batteryLevel === 0
+                ? 'battery-alert-variant-outline'
+                : batteryLevel === 0
+                ? 'battery-charging-10'
+                : !isCharging && batteryLevel === 100
+                ? 'battery'
+                : 'battery-' + (isCharging ? 'charging-' : '') + batteryLevel
+            }
+            size={40}
+          />
+        </TouchableRipple>
       </View>
-
-      <TouchableRipple onPress={() => reload()}>
-        <Icon
-          source={
-            !isCharging && batteryLevel === 0
-              ? 'battery-alert-variant-outline'
-              : batteryLevel === 0
-              ? 'battery-charging-10'
-              : !isCharging && batteryLevel === 100
-              ? 'battery'
-              : 'battery-' + (isCharging ? 'charging-' : '') + batteryLevel
-          }
-          size={40}
-        />
-      </TouchableRipple>
-    </View>
+    </>
   );
 }
 
@@ -91,6 +115,5 @@ const styles = StyleSheet.create({
   iconButton: {
     padding: 0,
     margin: 0,
-    backgroundColor: 'red',
   },
 });

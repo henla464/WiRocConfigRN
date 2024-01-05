@@ -194,32 +194,37 @@ export default function useBLE(): BluetoothLowEnergyApi {
   };
 
   const scanForDevices = () => {
-    bleManager.startDeviceScan([apiService], null, (error, newDevice) => {
-      if (error) {
-        console.log('startDeviceScan: ' + error);
-        logError(
-          'useBLE',
-          'scanForDevices',
-          'Error: ' + error.name + ' ' + error.message,
-          'Fel uppstod vid sökning efter enheter',
-        );
-        logErrorForUser('Fel uppstod vid sökning efter enheter');
-      }
-      if (newDevice) {
-        setAllDevices((prevState: Device[]) => {
-          let index = prevState.findIndex(
-            deviceInArr => newDevice.id === deviceInArr.id,
+    console.log('scanForDevice entry');
+    try {
+      bleManager.startDeviceScan([apiService], null, (error, newDevice) => {
+        if (error) {
+          console.log('startDeviceScan: ' + error);
+          logError(
+            'useBLE',
+            'scanForDevices',
+            'Error: ' + error.name + ' ' + error.message,
+            'Fel uppstod vid sökning efter enheter',
           );
-          if (index > -1) {
-            let newState = [...prevState];
-            newState[index] = newDevice;
-            return newState;
-          } else {
-            return [...prevState, newDevice];
-          }
-        });
-      }
-    });
+          logErrorForUser('Fel uppstod vid sökning efter enheter');
+        }
+        if (newDevice) {
+          setAllDevices((prevState: Device[]) => {
+            let index = prevState.findIndex(
+              deviceInArr => newDevice.id === deviceInArr.id,
+            );
+            if (index > -1) {
+              let newState = [...prevState];
+              newState[index] = newDevice;
+              return newState;
+            } else {
+              return [...prevState, newDevice];
+            }
+          });
+        }
+      });
+    } catch (e) {
+      console.log('scanForDevices exception: ' + e);
+    }
   };
 
   const stopScanningForDevices = () => {

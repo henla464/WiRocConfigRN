@@ -16,5 +16,9 @@
   "srr/bluechannel": "1",
   "srr/redchannellistenonly": "0",
   "srr/bluechannellistenonly": "0",
-  "scanbtaddresses": "[{\"py/object\": \"init.MicroMock\", \"BTAddress\": \"B8:BC:5B:90:A3:A5\", \"Name\": \"[TV] Samsung Q60 Series (55)\", \"Found\": \"False\", \"Status\": \"NotConnected\"}]"
+  "ischarging": true,
+  "batterylevel": 35,
+  "wirocdevicename": "Demo Device",
+  "scanbtaddresses": "[{\"py/object\": \"init.MicroMock\", \"BTAddress\": \"B8:BC:5B:90:A3:A5\", \"Name\": \"[TV] Samsung Q60 Series (55)\", \"Found\": \"False\", \"Status\": \"NotConnected\"}]",
+  "listwifi": "LasePrivate\nno\n72\nDIRECT-2c-HP M15 LaserJet\nno\n60\nTP-Link_F2EB\nno\n55\nWiRoc\nyes\n52\nGhostbusters\nno\n37"
 }

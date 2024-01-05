@@ -1,4 +1,10 @@
-import React, {useEffect, useImperativeHandle, useRef, useState} from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {Button, Checkbox, DataTable, Icon, List} from 'react-native-paper';
 import IConfigComponentProps from '../interface/IConfigComponentProps';
@@ -60,45 +66,48 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
       });
     };
 
-    const updateFromWiRoc = (propName: string, propValue: string) => {
-      console.log('SerialBluetooth:updateFromWiRoc: propName: ' + propName);
-      console.log('SerialBluetooth:updateFromWiRoc: propValue: ' + propValue);
-      switch (propName) {
-        case 'btserialonewayreceive':
-          setIsOneWay(parseInt(propValue, 10) !== 0);
-          setOrigIsOneWay(parseInt(propValue, 10) !== 0);
-          break;
-        case 'scanbtaddresses':
-          let serialBTDevicesArr: IBTSerialDevices[] = [];
-          try {
-            serialBTDevicesArr = JSON.parse(propValue);
-          } catch (e) {
-            BLEAPI.logDebug(
-              'SerialBluetooth',
-              'updateFromWiRoc',
-              'scanbtaddresses reply is probably corrupt',
-            );
-            return;
-          }
-          let connectedDeviceIndex = serialBTDevicesArr.findIndex(item => {
-            return item.Status === 'Connected';
-          });
-          setIsBTDeviceConfigured(connectedDeviceIndex >= 0);
-          setSerialBTDevices(serialBTDevicesArr);
+    const updateFromWiRoc = useCallback(
+      (propName: string, propValue: string) => {
+        console.log('SerialBluetooth:updateFromWiRoc: propName: ' + propName);
+        console.log('SerialBluetooth:updateFromWiRoc: propValue: ' + propValue);
+        switch (propName) {
+          case 'btserialonewayreceive':
+            setIsOneWay(parseInt(propValue, 10) !== 0);
+            setOrigIsOneWay(parseInt(propValue, 10) !== 0);
+            break;
+          case 'scanbtaddresses':
+            let serialBTDevicesArr: IBTSerialDevices[] = [];
+            try {
+              serialBTDevicesArr = JSON.parse(propValue);
+            } catch (e) {
+              BLEAPI.logDebug(
+                'SerialBluetooth',
+                'updateFromWiRoc',
+                'scanbtaddresses reply is probably corrupt',
+              );
+              return;
+            }
+            let connectedDeviceIndex = serialBTDevicesArr.findIndex(item => {
+              return item.Status === 'Connected';
+            });
+            setIsBTDeviceConfigured(connectedDeviceIndex >= 0);
+            setSerialBTDevices(serialBTDevicesArr);
 
-          break;
-        case 'bindrfcomm':
-          let serialBTDevicesObject = JSON.parse(propValue);
-          let serialBTDevicesArr2: IBTSerialDevices[] =
-            serialBTDevicesObject.Value;
-          let connectedDeviceIndex2 = serialBTDevicesArr2.findIndex(item => {
-            return item.Status === 'Connected';
-          });
-          setIsBTDeviceConfigured(connectedDeviceIndex2 >= 0);
-          setSerialBTDevices(serialBTDevicesArr2);
-          break;
-      }
-    };
+            break;
+          case 'bindrfcomm':
+            let serialBTDevicesObject = JSON.parse(propValue);
+            let serialBTDevicesArr2: IBTSerialDevices[] =
+              serialBTDevicesObject.Value;
+            let connectedDeviceIndex2 = serialBTDevicesArr2.findIndex(item => {
+              return item.Status === 'Connected';
+            });
+            setIsBTDeviceConfigured(connectedDeviceIndex2 >= 0);
+            setSerialBTDevices(serialBTDevicesArr2);
+            break;
+        }
+      },
+      [BLEAPI],
+    );
 
     useEffect(() => {
       async function getSerialBTSettings() {
@@ -118,7 +127,7 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
         }
       }
       getSerialBTSettings();
-    }, [BLEAPI, triggerVersion]);
+    }, [BLEAPI, triggerVersion, updateFromWiRoc]);
 
     useEffect(() => {
       if (origIsOneWay == null) {

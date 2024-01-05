@@ -40,8 +40,18 @@ export default function Status() {
         'Status',
         'services',
         (propName, propValue) => {
-          let servicesObj = JSON.parse(propValue);
-          setServices(servicesObj.services);
+          try {
+            let servicesObj = JSON.parse(propValue);
+            setServices(servicesObj.services);
+          } catch (e) {
+            BLEAPI.logError(
+              'Status',
+              'useEffect',
+              'fetch services exception: ' + e,
+              '',
+            );
+            BLEAPI.logErrorForUser('Kunde inte hämta "Services""');
+          }
         },
       );
 
@@ -50,9 +60,21 @@ export default function Status() {
         'Status',
         'status',
         (propName, propValue) => {
-          let statusObj = JSON.parse(propValue);
-          setInData(statusObj.inputAdapters);
-          setOutData(statusObj.subscriberAdapters);
+          try {
+            let statusObj = JSON.parse(propValue);
+            setInData(statusObj.inputAdapters);
+            setOutData(statusObj.subscriberAdapters);
+          } catch (e) {
+            BLEAPI.logError(
+              'Status',
+              'useEffect',
+              'fetch status exception: ' + e,
+              '',
+            );
+            BLEAPI.logErrorForUser(
+              'Kunde inte hämta "Indata" och "Utdata och transformering"',
+            );
+          }
         },
       );
     }
