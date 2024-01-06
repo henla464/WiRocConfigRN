@@ -1,15 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import {
-  Modal,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import {Button, Divider, Icon, List, TextInput} from 'react-native-paper';
+import {Modal, ScrollView, StyleSheet, Text, View} from 'react-native';
+import {Button, Divider, List} from 'react-native-paper';
 import {useBLEApiContext} from '../context/BLEApiContext';
-import ConnectedChip from './ConnectedChip';
 import WifiItem from './WifiItem';
 
 interface IDeviceConnectionModalProps {
@@ -30,6 +22,7 @@ export default function DeviceConnectionModal({
   const BLEAPI = useBLEApiContext();
 
   const [wifiNetworks, setWifiNetworks] = useState<IWifiListItem[]>([]);
+  const [ip, setIp] = useState<string>('');
   const [triggerVersion, setTriggerVersion] = useState<number>(0);
 
   useEffect(() => {
@@ -54,6 +47,17 @@ export default function DeviceConnectionModal({
             }
           },
         );
+
+        let pc2 = BLEAPI.requestProperty(
+          BLEAPI.connectedDevice,
+          'DeviceConnectionModal',
+          'ip',
+          (propName: string, propValue: string) => {
+            if (propName === 'ip') {
+              setIp(propValue);
+            }
+          },
+        );
       }
     }
     getWifiList();
@@ -74,6 +78,58 @@ export default function DeviceConnectionModal({
               ' value: ' +
               propValue,
           );
+          if (propName === 'disconnectwifi' && propValue === 'OK') {
+            refresh();
+          }
+        },
+      );
+    }
+  };
+
+  // should listen to: connectwifi ( value 'OK' )
+  const renewWifiIP = () => {
+    if (BLEAPI.connectedDevice) {
+      BLEAPI.requestProperty(
+        BLEAPI.connectedDevice,
+        'DeviceConnectionModal',
+        'renewip\twifi',
+        (propName: string, propValue: string) => {
+          if (propName === 'renewip\twifi' && propValue === 'OK') {
+            refresh();
+          } else {
+            BLEAPI.logError(
+              'DeviceConnectionModal',
+              'renewWifiIP',
+              'renewWifiIP returned: ' + propValue,
+              '',
+            );
+            BLEAPI.logErrorForUser('Förnya Wifi IP misslyckades: ' + propValue);
+          }
+        },
+      );
+    }
+  };
+
+  const renewEthernetIP = () => {
+    if (BLEAPI.connectedDevice) {
+      BLEAPI.requestProperty(
+        BLEAPI.connectedDevice,
+        'DeviceConnectionModal',
+        'renewip\tethernet',
+        (propName: string, propValue: string) => {
+          if (propName === 'renewip\tethernet' && propValue === 'OK') {
+            refresh();
+          } else {
+            BLEAPI.logError(
+              'DeviceConnectionModal',
+              'renewEthernetIP',
+              'renewEthernetIP returned: ' + propValue,
+              '',
+            );
+            BLEAPI.logErrorForUser(
+              'Förnya ethernet IP misslyckades: ' + propValue,
+            );
+          }
         },
       );
     }
@@ -83,8 +139,24 @@ export default function DeviceConnectionModal({
     if (BLEAPI.connectedDevice) {
       BLEAPI.saveProperty(
         BLEAPI.connectedDevice,
+        'DeviceConnectionModal',
         'connectwifi',
         networkName + '\t' + password,
+        (propName: string, propValue: string) => {
+          if (propName === 'connectwifi' && propValue === 'OK') {
+            refresh();
+          } else {
+            BLEAPI.logError(
+              'DeviceConnectionModal',
+              'wifiConnect',
+              'wifiConnect returned: ' + propValue,
+              '',
+            );
+            BLEAPI.logErrorForUser(
+              'Ansluta till Wifi nätverket misslyckades: ' + propValue,
+            );
+          }
+        },
       );
     }
   };
@@ -103,20 +175,44 @@ export default function DeviceConnectionModal({
       }}>
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          <Divider bold={true} />
-          <Text style={styles.header}>Wifi nätverk</Text>
-          <Button
-            loading={false}
-            icon=""
-            mode="contained"
-            style={styles.button}
-            onPress={() => {
-              refresh();
-            }}>
-            Uppdatera Wifi listan
-          </Button>
-          <Divider bold={true} />
           <ScrollView style={styles.scrollView}>
+            <Text style={styles.header}>IP-adress: {ip}</Text>
+            <View style={styles.containerRow}>
+              <Button
+                loading={false}
+                icon=""
+                mode="contained"
+                style={styles.button2}
+                onPress={() => {
+                  renewWifiIP();
+                }}>
+                Förnya Wifi IP
+              </Button>
+              <Button
+                loading={false}
+                icon=""
+                mode="contained"
+                style={styles.button2}
+                onPress={() => {
+                  renewEthernetIP();
+                }}>
+                Förnya ethernet IP
+              </Button>
+            </View>
+            <Divider bold={true} />
+            <Text style={styles.header}>Wifi nätverk</Text>
+            <Button
+              loading={false}
+              icon=""
+              mode="contained"
+              style={styles.button}
+              onPress={() => {
+                refresh();
+              }}>
+              Uppdatera Wifi listan
+            </Button>
+            <Divider bold={true} />
+
             <List.AccordionGroup>
               <View>
                 {wifiNetworks.map((wifiNetworkItem: IWifiListItem) => {
@@ -134,17 +230,18 @@ export default function DeviceConnectionModal({
               </View>
             </List.AccordionGroup>
           </ScrollView>
-
-          <Button
-            loading={false}
-            icon=""
-            mode="contained"
-            style={styles.button}
-            onPress={() => {
-              closeModal();
-            }}>
-            Stäng
-          </Button>
+          <View style={styles.containerRowRight}>
+            <Button
+              loading={false}
+              icon=""
+              mode="contained"
+              style={styles.button}
+              onPress={() => {
+                closeModal();
+              }}>
+              Stäng
+            </Button>
+          </View>
         </View>
       </View>
     </Modal>
@@ -190,6 +287,14 @@ const styles = StyleSheet.create({
     padding: 10,
     elevation: 2,
   },
+  button2: {
+    borderRadius: 20,
+    paddingTop: 10,
+    paddingBottom: 10,
+    marginLeft: 5,
+    marginRight: 5,
+    elevation: 2,
+  },
   textStyle: {
     color: 'white',
     fontWeight: 'bold',
@@ -220,5 +325,26 @@ const styles = StyleSheet.create({
   },
   textInput: {
     margin: 10,
+  },
+  containerRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    paddingLeft: 0,
+    paddingTop: 0,
+    paddingRight: 0,
+    paddingBottom: 5,
+    backgroundColor: 'white',
+  },
+  containerRowRight: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'flex-end',
+    marginTop: 10,
+    paddingLeft: 0,
+    paddingTop: 0,
+    paddingRight: 0,
+    paddingBottom: 5,
   },
 });

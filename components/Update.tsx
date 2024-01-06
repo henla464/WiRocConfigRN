@@ -169,8 +169,18 @@ export default function Update() {
         if (wiRocBLEAPIVersion) {
           await BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
+            'Update',
             'upgradewirocble',
             wiRocBLEAPIVersion,
+            (propName: string, propValue: string) => {
+              console.log(
+                'Update propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
           );
         }
       }
@@ -185,8 +195,18 @@ export default function Update() {
         if (wiRocVersion) {
           await BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
+            'Update',
             'upgradewirocpython',
             wiRocVersion,
+            (propName: string, propValue: string) => {
+              console.log(
+                'Update propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
           );
         }
       }

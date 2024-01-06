@@ -46,8 +46,18 @@ const SIRAP = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice) {
           BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
+            'SIRAP',
             'onewayreceive',
             isSIRAPSwitchedOn ? '1' : '0',
+            (propName: string, propValue: string) => {
+              console.log(
+                'SIRAP propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
           );
         } else {
           console.log('SIRAP:save:1 not connected to device');
@@ -58,8 +68,18 @@ const SIRAP = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice) {
           BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
+            'SIRAP',
             'force4800baudrate',
             ipAddress,
+            (propName: string, propValue: string) => {
+              console.log(
+                'SIRAP propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
           );
         } else {
           console.log('SIRAP:save:2 not connected to device');
@@ -70,8 +90,18 @@ const SIRAP = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice) {
           BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
+            'SIRAP',
             'force4800baudrate',
             ipPort,
+            (propName: string, propValue: string) => {
+              console.log(
+                'SIRAP propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
           );
         } else {
           console.log('SIRAP:save:3 not connected to device');

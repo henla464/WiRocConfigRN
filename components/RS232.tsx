@@ -40,7 +40,21 @@ const RS232 = React.forwardRef<IRefRetType, IConfigComponentProps>(
     const save = () => {
       if (origSendReceive !== sendReceive) {
         if (BLEAPI.connectedDevice) {
-          BLEAPI.saveProperty(BLEAPI.connectedDevice, 'rs232mode', sendReceive);
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'RS232',
+            'rs232mode',
+            sendReceive,
+            (propName: string, propValue: string) => {
+              console.log(
+                'RS232 propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
+          );
         } else {
           console.log('RS232:save:1 not connected to device');
         }
@@ -50,8 +64,18 @@ const RS232 = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice) {
           BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
+            'RS232',
             'rs232onewayreceive',
             isOneWay ? '1' : '0',
+            (propName: string, propValue: string) => {
+              console.log(
+                'RS232 propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
           );
         } else {
           console.log('RS232:save:2 not connected to device');
@@ -62,8 +86,18 @@ const RS232 = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice) {
           BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
+            'RS232',
             'forcers2324800baudrate',
             is4800bps ? '1' : '0',
+            (propName: string, propValue: string) => {
+              console.log(
+                'RS232 propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
           );
         } else {
           console.log('RS232:save:3 not connected to device');

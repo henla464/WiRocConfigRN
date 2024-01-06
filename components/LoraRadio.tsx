@@ -55,21 +55,63 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
     const save = () => {
       if (origLoraMode !== loraMode) {
         if (BLEAPI.connectedDevice) {
-          BLEAPI.saveProperty(BLEAPI.connectedDevice, 'loramode', loraMode);
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'LoraRadio',
+            'loramode',
+            loraMode,
+            (propName: string, propValue: string) => {
+              console.log(
+                'LoraRadio propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
+          );
         } else {
           console.log('LoraRadio:save:1 not connected to device');
         }
       }
       if (origChannel !== channel) {
         if (BLEAPI.connectedDevice) {
-          BLEAPI.saveProperty(BLEAPI.connectedDevice, 'channel', channel);
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'LoraRadio',
+            'channel',
+            channel,
+            (propName: string, propValue: string) => {
+              console.log(
+                'LoraRadio propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
+          );
         } else {
           console.log('LoraRadio:save:2 not connected to device');
         }
       }
       if (origRadioRange !== radioRange) {
         if (BLEAPI.connectedDevice) {
-          BLEAPI.saveProperty(BLEAPI.connectedDevice, 'lorarange', radioRange);
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'LoraRadio',
+            'lorarange',
+            radioRange,
+            (propName: string, propValue: string) => {
+              console.log(
+                'LoraRadio propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
+          );
         } else {
           console.log('LoraRadio:save:3 not connected to device');
         }
@@ -103,10 +145,10 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
           let pc = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
             'LoraRadio',
-            'loramode',
+            'loramode|channel|lorarange',
             updateFromWiRoc,
           );
-          let pc2 = BLEAPI.requestProperty(
+          /*let pc2 = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
             'LoraRadio',
             'channel',
@@ -117,7 +159,7 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
             'LoraRadio',
             'lorarange',
             updateFromWiRoc,
-          );
+          );*/
         }
       }
       getLoraRadioSettings();

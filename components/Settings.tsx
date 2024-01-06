@@ -87,8 +87,18 @@ export default function Settings() {
       var settingKeyAndValue = keyName + '\t' + keyValue;
       await BLEAPI.saveProperty(
         BLEAPI.connectedDevice,
+        'Settings',
         'setting',
         settingKeyAndValue,
+        (propName: string, propValue: string) => {
+          console.log(
+            'Settings propName: ' +
+              propName +
+              ' propValue: ' +
+              propValue +
+              ' Implement error handling!',
+          );
+        },
       );
       refresh();
     }

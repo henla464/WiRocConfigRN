@@ -53,8 +53,18 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
       if (BLEAPI.connectedDevice !== null) {
         let pc = BLEAPI.saveProperty(
           BLEAPI.connectedDevice,
+          'SerialBluetooth',
           'btserialonewayreceive',
           isOneWay ? '1' : '0',
+          (propName: string, propValue: string) => {
+            console.log(
+              'SerialBluetooth propName: ' +
+                propName +
+                ' propValue: ' +
+                propValue +
+                ' Implement error handling!',
+            );
+          },
         );
       }
       reload();
@@ -244,8 +254,18 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
                           let cmd = 'releaserfcomm';
                           let pc = BLEAPI.saveProperty(
                             BLEAPI.connectedDevice,
+                            'SerialBluetooth',
                             cmd,
                             arg,
+                            (propName: string, propValue: string) => {
+                              console.log(
+                                'SerialBluetooth propName: ' +
+                                  propName +
+                                  ' propValue: ' +
+                                  propValue +
+                                  ' Implement error handling!',
+                              );
+                            },
                           );
                         }
                       } else if (item.Status === 'NotConnected') {
@@ -253,8 +273,18 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
                           let cmd = 'bindrfcomm';
                           let pc2 = BLEAPI.saveProperty(
                             BLEAPI.connectedDevice,
+                            'SerialBluetooth',
                             cmd,
                             arg,
+                            (propName: string, propValue: string) => {
+                              console.log(
+                                'SerialBluetooth propName: ' +
+                                  propName +
+                                  ' propValue: ' +
+                                  propValue +
+                                  ' Implement error handling!',
+                              );
+                            },
                           );
                         }
                       } else if (item.Status === 'ReadError') {

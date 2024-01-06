@@ -33,8 +33,10 @@ export interface BluetoothLowEnergyApi {
   ) => Promise<Characteristic | null>;
   saveProperty: (
     device: Device | IDemoDevice,
+    componentRequesting: string,
     propName: string,
     propValue: string,
+    callback: callbackFn,
   ) => Promise<Characteristic | null>;
   enablePunchesNotification: (
     device: Device | IDemoDevice,
@@ -512,11 +514,15 @@ export default function useBLE(): BluetoothLowEnergyApi {
   ): Promise<Characteristic | null> => {
     try {
       console.log('requestProperty: ' + propName);
-      addOrUpdatePropertyNotifiticationSubscription({
-        componentRequesting: componentRequesting,
-        propName: propName,
-        callback: callback,
+      let propNames = propName.split('|');
+      propNames.forEach(pName => {
+        addOrUpdatePropertyNotifiticationSubscription({
+          componentRequesting: componentRequesting,
+          propName: pName,
+          callback: callback,
+        });
       });
+
       if (instanceOfIDemoDevice(device)) {
         sendPropertyValueToDemoDevice(propName);
         return null; // maybe should return someting else?
@@ -550,13 +556,20 @@ export default function useBLE(): BluetoothLowEnergyApi {
 
   const saveProperty = async (
     device: Device | IDemoDevice,
+    componentRequesting: string,
     propName: string,
     propValue: string,
+    callback: callbackFn,
   ): Promise<Characteristic | null> => {
     try {
       console.log('saveProperty:deviceName: ' + device.name);
       console.log('saveProperty:propName: ' + propName);
       console.log('saveProperty:propValue: ' + propValue);
+      addOrUpdatePropertyNotifiticationSubscription({
+        componentRequesting: componentRequesting,
+        propName: propName,
+        callback: callback,
+      });
       if (instanceOfIDemoDevice(device)) {
         demoDeviceData[propName] = propValue;
         return null;

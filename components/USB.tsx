@@ -34,8 +34,18 @@ const USB = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice) {
           BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
+            'USB',
             'onewayreceive',
             isOneWay ? '1' : '0',
+            (propName: string, propValue: string) => {
+              console.log(
+                'USB propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
           );
         } else {
           console.log('USB:save:1 not connected to device');
@@ -46,8 +56,18 @@ const USB = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice) {
           BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
+            'USB',
             'force4800baudrate',
             is4800bps ? '1' : '0',
+            (propName: string, propValue: string) => {
+              console.log(
+                'USB propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
           );
         } else {
           console.log('USB:save:2 not connected to device');

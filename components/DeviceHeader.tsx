@@ -51,8 +51,18 @@ export default function DeviceHeader() {
           if (BLEAPI.connectedDevice !== null) {
             BLEAPI.saveProperty(
               BLEAPI.connectedDevice,
+              'DeviceHeader',
               'wirocdevicename',
               newDeviceName,
+              (propName: string, propValue: string) => {
+                console.log(
+                  'DeviceHeader propName: ' +
+                    propName +
+                    ' propValue: ' +
+                    propValue +
+                    ' Implement error handling!',
+                );
+              },
             );
             setIsDeviceNameModalVisiable(false);
           }

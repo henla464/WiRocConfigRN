@@ -60,8 +60,18 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice) {
           BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
+            'SRR',
             'srr/enabled',
             isSRREnabled ? '1' : '0',
+            (propName: string, propValue: string) => {
+              console.log(
+                'SRR propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
           );
         } else {
           console.log('SRR:save:1 not connected to device');
@@ -70,7 +80,21 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
 
       if (origSRRMode !== SRRMode) {
         if (BLEAPI.connectedDevice) {
-          BLEAPI.saveProperty(BLEAPI.connectedDevice, 'srr/mode', SRRMode);
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'SRR',
+            'srr/mode',
+            SRRMode,
+            (propName: string, propValue: string) => {
+              console.log(
+                'SRR propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
+          );
         } else {
           console.log('SRR:save:2 not connected to device');
         }
@@ -80,8 +104,18 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice) {
           BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
+            'SRR',
             'srr/redchannel',
             isRedChannelEnabled ? '1' : '0',
+            (propName: string, propValue: string) => {
+              console.log(
+                'SIRAP propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
           );
         } else {
           console.log('SRR:save:3 not connected to device');
@@ -92,8 +126,18 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice) {
           BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
+            'SRR',
             'srr/bluechannel',
             isBlueChannelEnabled ? '1' : '0',
+            (propName: string, propValue: string) => {
+              console.log(
+                'SRR propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
           );
         } else {
           console.log('SRR:save:4 not connected to device');
@@ -104,8 +148,18 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice) {
           BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
+            'SRR',
             'srr/redchannellistenonly',
             isRedChannelListenOnly ? '1' : '0',
+            (propName: string, propValue: string) => {
+              console.log(
+                'SRR propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
           );
         } else {
           console.log('SRR:save:5 not connected to device');
@@ -116,8 +170,18 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
         if (BLEAPI.connectedDevice) {
           BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
+            'SRR',
             'srr/bluechannellistenonly',
             isBlueChannelListenOnly ? '1' : '0',
+            (propName: string, propValue: string) => {
+              console.log(
+                'SRR propName: ' +
+                  propName +
+                  ' propValue: ' +
+                  propValue +
+                  ' Implement error handling!',
+              );
+            },
           );
         } else {
           console.log('SRR:save:6 not connected to device');
