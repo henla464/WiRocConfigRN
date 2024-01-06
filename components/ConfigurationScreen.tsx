@@ -1,10 +1,4 @@
-import React, {
-  ReactElement,
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, {ReactElement, useEffect, useRef, useState} from 'react';
 import {SafeAreaView, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {Divider, List} from 'react-native-paper';
 
@@ -52,9 +46,6 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
         'ConfigurationScreen',
         'hashw/srr',
         (propName: string, propValue: string) => {
-          console.log(
-            '**********************************************************************************************',
-          );
           if (propName === 'hashw/srr') {
             setHasSRR(parseInt(propValue, 10) !== 0);
           }
@@ -146,23 +137,23 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
       },
     ];
 
-    if (hasSRR) {
-      configComps.push({
-        Comp: (
-          <SRR
-            id={3}
-            setIsDirtyFunction={setIsDirtyOnComponent}
-            key={3}
-            ref={SRRChildRef}
-          />
-        ),
-        Name: 'SRR',
-        SectionName: 'Input',
-        id: 3,
-        isDirty: false,
-        childRef: SRRChildRef,
-      });
-    }
+    //if (hasSRR) {
+    configComps.push({
+      Comp: (
+        <SRR
+          id={3}
+          setIsDirtyFunction={setIsDirtyOnComponent}
+          key={3}
+          ref={SRRChildRef}
+        />
+      ),
+      Name: 'SRR',
+      SectionName: 'Input',
+      id: 3,
+      isDirty: false,
+      childRef: SRRChildRef,
+    });
+    //}
 
     configComps.push(
       {

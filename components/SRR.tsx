@@ -1,6 +1,6 @@
 import React, {useEffect, useImperativeHandle, useState} from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
-import {Icon, List, SegmentedButtons} from 'react-native-paper';
+import {Checkbox, Icon, List, SegmentedButtons} from 'react-native-paper';
 import IConfigComponentProps from '../interface/IConfigComponentProps';
 import OnOffChip from './OnOffChip';
 import IRefRetType from '../interface/IRefRetType';
@@ -329,6 +329,7 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
               onValueChange={val => setIsSRREnabled(val)}
             />
           </View>
+
           <SegmentedButtons
             value={SRRMode}
             onValueChange={setSRRMode}
@@ -337,14 +338,67 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
                 icon: 'login',
                 value: 'RECEIVE',
                 label: 'Ta emot',
+                disabled: !isSRREnabled,
               },
               {
                 icon: 'pan-horizontal',
                 value: 'SEND',
                 label: 'Skicka',
+                disabled: true,
               },
             ]}
           />
+        </View>
+        <View style={styles.containerRow}>
+          <Checkbox
+            disabled={!isSRREnabled}
+            status={isRedChannelEnabled ? 'checked' : 'unchecked'}
+            onPress={() => {
+              setIsRedChannelEnabled(!isRedChannelEnabled);
+            }}
+          />
+          <Text>Röd kanal</Text>
+        </View>
+        <View style={styles.containerRow2}>
+          <Checkbox
+            disabled={
+              !isSRREnabled || !isRedChannelEnabled || SRRMode === 'SEND'
+            }
+            status={isRedChannelListenOnly ? 'checked' : 'unchecked'}
+            onPress={() => {
+              setIsRedChannelListenOnly(!isRedChannelListenOnly);
+            }}
+          />
+          <Text>Lyssna endast (röd kanal)</Text>
+        </View>
+        <View style={styles.containerRow3}>
+          <Text>(bekräfta inte stämplingar)</Text>
+        </View>
+
+        <View style={styles.containerRow}>
+          <Checkbox
+            disabled={!isSRREnabled}
+            status={isBlueChannelEnabled ? 'checked' : 'unchecked'}
+            onPress={() => {
+              setIsBlueChannelEnabled(!isBlueChannelEnabled);
+            }}
+          />
+          <Text>Blå kanal</Text>
+        </View>
+        <View style={styles.containerRow2}>
+          <Checkbox
+            disabled={
+              !isSRREnabled || !isBlueChannelEnabled || SRRMode === 'SEND'
+            }
+            status={isBlueChannelListenOnly ? 'checked' : 'unchecked'}
+            onPress={() => {
+              SetIsBlueChannelListenOnly(!isBlueChannelListenOnly);
+            }}
+          />
+          <Text>Lyssna endast (blå kanal)</Text>
+        </View>
+        <View style={styles.containerRow3}>
+          <Text>(bekräfta inte stämplingar)</Text>
         </View>
       </List.Accordion>
     );
@@ -376,8 +430,52 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     paddingBottom: 1,
     backgroundColor: 'lightgray',
-    height: 100,
+
     alignItems: 'center',
+  },
+  containerColumnLeft: {
+    flex: 1,
+    flexDirection: 'column',
+    paddingLeft: 10,
+    paddingTop: 10,
+    paddingRight: 10,
+    paddingBottom: 1,
+    backgroundColor: 'blue',
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+  },
+  containerRow: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingLeft: 18,
+    paddingTop: 1,
+    paddingRight: 10,
+    paddingBottom: 1,
+    backgroundColor: 'lightgray',
+  },
+  containerRow2: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingLeft: 30,
+    paddingTop: 1,
+    paddingRight: 10,
+    paddingBottom: 1,
+    backgroundColor: 'lightgray',
+  },
+  containerRow3: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    paddingLeft: 70,
+    paddingTop: 1,
+    paddingRight: 10,
+    paddingBottom: 10,
+    backgroundColor: 'lightgray',
   },
   switch: {
     marginLeft: 10,
