@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import React, {useEffect, useState} from 'react';
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import {Dimensions} from 'react-native';
 import Database from './Database';
@@ -15,6 +15,7 @@ const Tab = createMaterialTopTabNavigator();
 export default function OtherScreen() {
   const BLEAPI = useBLEApiContext();
   const navigation = useNavigation();
+  const [hasRTC, setHasRTC] = useState<boolean>(false);
 
   useEffect(() => {
     if (BLEAPI.connectedDevice === null) {
@@ -22,6 +23,21 @@ export default function OtherScreen() {
       navigation.navigate('ScanForDevices' as never);
     }
   }, [BLEAPI, navigation]);
+
+  useEffect(() => {
+    if (BLEAPI.connectedDevice !== null) {
+      let pc = BLEAPI.requestProperty(
+        BLEAPI.connectedDevice,
+        'OtherScreen',
+        'hashw/rtc',
+        (propName: string, propValue: string) => {
+          if (propName === 'hashw/rtc') {
+            setHasRTC(parseInt(propValue, 10) !== 0);
+          }
+        },
+      );
+    }
+  }, [BLEAPI]);
 
   return (
     <>
@@ -40,7 +56,7 @@ export default function OtherScreen() {
           width: Dimensions.get('window').width,
         }}>
         <Tab.Screen name="Databas" component={Database} />
-        <Tab.Screen name="Väckning" component={WakeUp} />
+        {hasRTC ? <Tab.Screen name="Väckning" component={WakeUp} /> : null}
         <Tab.Screen name="Status" component={Status} />
         <Tab.Screen name="Settings" component={Settings} />
         <Tab.Screen name="Update" component={Update} />

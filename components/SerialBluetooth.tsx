@@ -20,7 +20,10 @@ interface IBTSerialDevices {
   Found: string;
 }
 const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
-  (compProps: IConfigComponentProps, ref: React.ForwardedRef<IRefRetType>) => {
+  (
+    {id, setIsDirtyFunction}: IConfigComponentProps,
+    ref: React.ForwardedRef<IRefRetType>,
+  ) => {
     const [isBTDeviceConfigured, setIsBTDeviceConfigured] =
       useState<boolean>(false);
     const [isScanning, setIsScanning] = useState<boolean>(false);
@@ -128,27 +131,30 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
             'btserialonewayreceive',
             updateFromWiRoc,
           );
-          let pc2 = BLEAPI.requestProperty(
-            BLEAPI.connectedDevice,
-            'SerialBluetooth',
-            'scanbtaddresses',
-            updateFromWiRoc,
-          );
+          if (triggerVersion > 0) {
+            let pc2 = BLEAPI.requestProperty(
+              BLEAPI.connectedDevice,
+              'SerialBluetooth',
+              'scanbtaddresses',
+              updateFromWiRoc,
+            );
+          }
         }
       }
       getSerialBTSettings();
     }, [BLEAPI, triggerVersion, updateFromWiRoc]);
 
     useEffect(() => {
+      console.log('serialbluetooth useeffect');
       if (origIsOneWay == null) {
         return;
       }
       if (origIsOneWay !== isOneWay) {
-        compProps.setIsDirtyFunction(compProps.id, true);
+        setIsDirtyFunction(id, true);
       } else {
-        compProps.setIsDirtyFunction(compProps.id, false);
+        setIsDirtyFunction(id, false);
       }
-    }, [isOneWay, compProps, origIsOneWay]);
+    }, [isOneWay, id, origIsOneWay, setIsDirtyFunction]);
 
     let noOfScans = useRef<number>(0);
     function startScan() {
@@ -186,7 +192,7 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
     return (
       <List.Accordion
         title="Seriell Bluetooth"
-        id={compProps.id}
+        id={id}
         right={({isExpanded}) => (
           <View style={styles.accordionHeader}>
             <OnOffChip on={isBTDeviceConfigured} />

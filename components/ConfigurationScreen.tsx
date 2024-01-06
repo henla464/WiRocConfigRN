@@ -1,4 +1,10 @@
-import React, {ReactElement, useEffect, useRef, useState} from 'react';
+import React, {
+  ReactElement,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import {SafeAreaView, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {Divider, List} from 'react-native-paper';
 
@@ -12,7 +18,7 @@ import SRR from './SRR';
 import IRefRetType from '../interface/IRefRetType';
 import SaveBanner from './SaveBanner';
 import ErrorBanner from './ErrorBanner';
-import {useNavigation, useNavigationState} from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import {useBLEApiContext} from '../context/BLEApiContext';
 
 interface ISectionComponent {
@@ -33,101 +39,181 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
   const loraChildRef = useRef<IRefRetType>(null);
   const RS232ChildRef = useRef<IRefRetType>(null);
   const SIRAPChildRef = useRef<IRefRetType>(null);
+  const [hasSRR, setHasSRR] = useState<boolean>(false);
   const navigation = useNavigation();
   const [configurationComponents, setConfigurationComponents] = useState<
     ISectionComponent[]
-  >([
-    {
-      Comp: (
-        <USB
-          id={1}
-          setIsDirtyFunction={setIsDirtyOnComponent}
-          key={1}
-          ref={usbChildRef}
-        />
-      ),
-      Name: 'USB',
-      SectionName: 'Input',
-      id: 1,
-      isDirty: false,
-      childRef: usbChildRef,
+  >([]);
+
+  useEffect(() => {
+    if (BLEAPI.connectedDevice !== null) {
+      let pc = BLEAPI.requestProperty(
+        BLEAPI.connectedDevice,
+        'ConfigurationScreen',
+        'hashw/srr',
+        (propName: string, propValue: string) => {
+          console.log(
+            '**********************************************************************************************',
+          );
+          if (propName === 'hashw/srr') {
+            setHasSRR(parseInt(propValue, 10) !== 0);
+          }
+        },
+      );
+    }
+  }, [BLEAPI]);
+
+  /*const setIsDirtyOnComponent = useCallback(
+    (id: number, isDirty2: boolean): void => {
+      console.log('setIsDirtyOnComponent: ' + id + ' isDirty: ' + isDirty2);
+      let newCompArray = [...configurationComponents];
+      let theCompIndex = newCompArray.findIndex(comp => {
+        return comp.id === id;
+      });
+      if (theCompIndex >= 0) {
+        newCompArray[theCompIndex].isDirty = isDirty2;
+      }
+      setConfigurationComponents(newCompArray);
+      let firstIsDirtyCompIndex = newCompArray.findIndex(comp => {
+        return comp.isDirty;
+      });
+
+      if (firstIsDirtyCompIndex >= 0) {
+        setIsDirty(true);
+      } else {
+        setIsDirty(false);
+      }
     },
-    {
-      Comp: (
-        <SerialBluetooth
-          id={2}
-          setIsDirtyFunction={setIsDirtyOnComponent}
-          key={2}
-          ref={serialBluetoothRef}
-        />
-      ),
-      Name: 'SerialBluetooth',
-      SectionName: 'Input',
-      id: 2,
-      isDirty: false,
-      childRef: serialBluetoothRef,
-    },
-    {
-      Comp: (
-        <SRR
-          id={3}
-          setIsDirtyFunction={setIsDirtyOnComponent}
-          key={3}
-          ref={SRRChildRef}
-        />
-      ),
-      Name: 'SRR',
-      SectionName: 'Input',
-      id: 3,
-      isDirty: false,
-      childRef: SRRChildRef,
-    },
-    {
-      Comp: (
-        <LoraRadio
-          id={4}
-          setIsDirtyFunction={setIsDirtyOnComponent}
-          key={4}
-          ref={loraChildRef}
-        />
-      ),
-      Name: 'LoraRadio',
-      SectionName: 'InputOutput',
-      id: 4,
-      isDirty: false,
-      childRef: loraChildRef,
-    },
-    {
-      Comp: (
-        <RS232
-          id={5}
-          setIsDirtyFunction={setIsDirtyOnComponent}
-          key={5}
-          ref={RS232ChildRef}
-        />
-      ),
-      Name: 'RS232',
-      SectionName: 'InputOutput',
-      id: 5,
-      isDirty: false,
-      childRef: RS232ChildRef,
-    },
-    {
-      Comp: (
-        <SIRAP
-          id={6}
-          setIsDirtyFunction={setIsDirtyOnComponent}
-          key={6}
-          ref={SIRAPChildRef}
-        />
-      ),
-      Name: 'SIRAP',
-      SectionName: 'Output',
-      id: 6,
-      isDirty: false,
-      childRef: SIRAPChildRef,
-    },
-  ]);
+    [configurationComponents],
+  );*/
+
+  useEffect(() => {
+    const setIsDirtyOnComponent = (id: number, isDirty2: boolean): void => {
+      console.log('setIsDirtyOnComponent: ' + id + ' isDirty: ' + isDirty2);
+      setConfigurationComponents(prevComponents => {
+        let newCompArray = [...prevComponents];
+        let theCompIndex = newCompArray.findIndex(comp => {
+          return comp.id === id;
+        });
+        if (theCompIndex >= 0) {
+          newCompArray[theCompIndex].isDirty = isDirty2;
+        }
+
+        let firstIsDirtyCompIndex = newCompArray.findIndex(comp => {
+          return comp.isDirty;
+        });
+
+        if (firstIsDirtyCompIndex >= 0) {
+          setIsDirty(true);
+        } else {
+          setIsDirty(false);
+        }
+
+        return newCompArray;
+      });
+    };
+
+    let configComps: ISectionComponent[] = [
+      {
+        Comp: (
+          <USB
+            id={1}
+            setIsDirtyFunction={setIsDirtyOnComponent}
+            key={1}
+            ref={usbChildRef}
+          />
+        ),
+        Name: 'USB',
+        SectionName: 'Input',
+        id: 1,
+        isDirty: false,
+        childRef: usbChildRef,
+      },
+      {
+        Comp: (
+          <SerialBluetooth
+            id={2}
+            setIsDirtyFunction={setIsDirtyOnComponent}
+            key={2}
+            ref={serialBluetoothRef}
+          />
+        ),
+        Name: 'SerialBluetooth',
+        SectionName: 'Input',
+        id: 2,
+        isDirty: false,
+        childRef: serialBluetoothRef,
+      },
+    ];
+
+    if (hasSRR) {
+      configComps.push({
+        Comp: (
+          <SRR
+            id={3}
+            setIsDirtyFunction={setIsDirtyOnComponent}
+            key={3}
+            ref={SRRChildRef}
+          />
+        ),
+        Name: 'SRR',
+        SectionName: 'Input',
+        id: 3,
+        isDirty: false,
+        childRef: SRRChildRef,
+      });
+    }
+
+    configComps.push(
+      {
+        Comp: (
+          <LoraRadio
+            id={4}
+            setIsDirtyFunction={setIsDirtyOnComponent}
+            key={4}
+            ref={loraChildRef}
+          />
+        ),
+        Name: 'LoraRadio',
+        SectionName: 'InputOutput',
+        id: 4,
+        isDirty: false,
+        childRef: loraChildRef,
+      },
+      {
+        Comp: (
+          <RS232
+            id={5}
+            setIsDirtyFunction={setIsDirtyOnComponent}
+            key={5}
+            ref={RS232ChildRef}
+          />
+        ),
+        Name: 'RS232',
+        SectionName: 'InputOutput',
+        id: 5,
+        isDirty: false,
+        childRef: RS232ChildRef,
+      },
+      {
+        Comp: (
+          <SIRAP
+            id={6}
+            setIsDirtyFunction={setIsDirtyOnComponent}
+            key={6}
+            ref={SIRAPChildRef}
+          />
+        ),
+        Name: 'SIRAP',
+        SectionName: 'Output',
+        id: 6,
+        isDirty: false,
+        childRef: SIRAPChildRef,
+      },
+    );
+
+    setConfigurationComponents(configComps);
+  }, [hasSRR]);
 
   function saveConfigurationScreen() {
     configurationComponents.forEach(sectionComp => {
@@ -147,27 +233,6 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
       }
     });
     reloadConfigurationScreen();
-  }
-
-  function setIsDirtyOnComponent(id: number, isDirty2: boolean): void {
-    console.log('setIsDirtyOnComponent: ' + id + ' isDirty: ' + isDirty2);
-    let newCompArray = [...configurationComponents];
-    let theCompIndex = newCompArray.findIndex(comp => {
-      return comp.id === id;
-    });
-    if (theCompIndex >= 0) {
-      newCompArray[theCompIndex].isDirty = isDirty2;
-    }
-    setConfigurationComponents(newCompArray);
-    let firstIsDirtyCompIndex = newCompArray.findIndex(comp => {
-      return comp.isDirty;
-    });
-
-    if (firstIsDirtyCompIndex >= 0) {
-      setIsDirty(true);
-    } else {
-      setIsDirty(false);
-    }
   }
 
   const reloadConfigurationScreen = () => {
