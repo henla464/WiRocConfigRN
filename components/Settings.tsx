@@ -1,5 +1,5 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import React, {useCallback, useState} from 'react';
+import {StyleSheet, View} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {Button, DataTable} from 'react-native-paper';
 import {useBLEApiContext} from '../context/BLEApiContext';
@@ -17,7 +17,6 @@ export default function Settings() {
   const [currentKey, setCurrentKey] = useState<string>('');
   const [currentValue, setCurrentValue] = useState<string>('');
   const [newSetting, setNewSetting] = useState<boolean>(false);
-  const [versionTrigger, setVersionTrigger] = useState<number>(0);
 
   const updateSettings = useCallback(
     (propName: string, propValue: string) => {
@@ -43,18 +42,6 @@ export default function Settings() {
     [BLEAPI],
   );
 
-  useEffect(() => {
-    if (BLEAPI.connectedDevice) {
-      console.log('Settings:useEffect start');
-      BLEAPI.requestProperty(
-        BLEAPI.connectedDevice,
-        'Settings',
-        'settings',
-        updateSettings,
-      );
-    }
-  }, [BLEAPI, updateSettings, versionTrigger]);
-
   const editSetting = (keyName: string, keyValue: string) => {
     setCurrentKey(keyName);
     setCurrentValue(keyValue);
@@ -73,10 +60,16 @@ export default function Settings() {
     setShowModal(false);
   };
 
-  const refresh = () => {
-    setVersionTrigger(curState => {
-      return curState + 1;
-    });
+  const fetchOrRefresh = () => {
+    if (BLEAPI.connectedDevice) {
+      console.log('Settings:useEffect start');
+      BLEAPI.requestProperty(
+        BLEAPI.connectedDevice,
+        'Settings',
+        'settings',
+        updateSettings,
+      );
+    }
   };
 
   const saveSetting = async (
@@ -91,16 +84,21 @@ export default function Settings() {
         'setting',
         settingKeyAndValue,
         (propName: string, propValue: string) => {
-          console.log(
-            'Settings propName: ' +
-              propName +
-              ' propValue: ' +
-              propValue +
-              ' Implement error handling!',
-          );
+          if (propName === 'setting') {
+            let keyAndValue = propValue.split('\t');
+            let newSettings = [...settings];
+            let idx = newSettings.findIndex(sett => {
+              return sett.Key === keyAndValue[0];
+            });
+            if (idx >= 0) {
+              newSettings[idx].Value = keyAndValue[1];
+            } else {
+              newSettings.push({Key: keyAndValue[0], Value: keyAndValue[1]});
+            }
+            setSettings(newSettings);
+          }
         },
       );
-      refresh();
     }
     setShowModal(false);
   };
@@ -116,6 +114,9 @@ export default function Settings() {
         newSetting={newSetting}
       />
       <View style={styles.container}>
+        <Button mode="contained" style={styles.button} onPress={fetchOrRefresh}>
+          Hämta/Uppdatera listan
+        </Button>
         <Button mode="contained" style={styles.button} onPress={addSetting}>
           Lägg till nytt nyckelvärde
         </Button>

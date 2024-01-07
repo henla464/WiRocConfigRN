@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {Button, DataTable, Divider} from 'react-native-paper';
@@ -31,8 +31,7 @@ export default function Status() {
   const [outData, setOutData] = useState<IOutData[]>([]);
   const [logs, setLogs] = useState<string>('');
 
-  useEffect(() => {
-    console.log('Status:useEffect start ' + BLEAPI.connectedDevice);
+  const fetchRefreshStatusData = () => {
     if (BLEAPI.connectedDevice) {
       console.log('Status:useEffect 2');
       BLEAPI.requestProperty(
@@ -73,33 +72,8 @@ export default function Status() {
           }
         },
       );
-
-      /*
-      BLEAPI.requestProperty(
-        BLEAPI.connectedDevice,
-        'Status',
-        'status',
-        (propName, propValue) => {
-          try {
-            let statusObj = JSON.parse(propValue);
-            setInData(statusObj.inputAdapters);
-            setOutData(statusObj.subscriberAdapters);
-          } catch (e) {
-            BLEAPI.logError(
-              'Status',
-              'useEffect',
-              'fetch status exception: ' + e,
-              '',
-            );
-            BLEAPI.logErrorForUser(
-              'Kunde inte hämta "Indata" och "Utdata och transformering"',
-            );
-          }
-        },
-      );
-      */
     }
-  }, [BLEAPI]);
+  };
 
   const loadLogs = () => {
     let newLogs = BLEAPI.getLogs();
@@ -124,15 +98,20 @@ export default function Status() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.containerRow}>
-        <Button
-          icon=""
-          mode="contained"
-          onPress={uploadDatabaseAndLogs}
-          style={[styles.button, {flex: 1, marginRight: 0, marginTop: 30}]}>
-          Ladda upp enhetes databas och loggar
-        </Button>
-      </View>
+      <Button
+        icon=""
+        mode="contained"
+        onPress={uploadDatabaseAndLogs}
+        style={[styles.button]}>
+        Ladda upp enhetens databas och loggar
+      </Button>
+      <Button
+        icon=""
+        mode="contained"
+        onPress={fetchRefreshStatusData}
+        style={[styles.button]}>
+        Hämta status information
+      </Button>
       <ScrollView>
         <Text style={styles.header}>Services</Text>
         <View style={styles.tableContainer}>
@@ -261,5 +240,6 @@ const styles = StyleSheet.create({
     padding: 10,
     margin: 10,
     marginLeft: 0,
+    marginRight: 0,
   },
 });

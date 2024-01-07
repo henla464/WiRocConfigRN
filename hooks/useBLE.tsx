@@ -309,9 +309,9 @@ export default function useBLE(): BluetoothLowEnergyApi {
       //propAndValueStrings = propAndValueStrings.trimEnd();
       let propAndValuesArray = propAndValueStrings.split('|');
       for (const propAndValue of propAndValuesArray) {
-        let propAndValueArray = propAndValue.split('\t', 2);
+        let propAndValueArray = propAndValue.split('\t');
         let propName = propAndValueArray[0];
-        let propValue = propAndValueArray[1];
+        let propValue = propAndValueArray.slice(1).join('\t');
         console.log('propertyNotify: propName: ' + propName);
         console.log('propertyNotify: propValue: ' + propValue);
         // Find all subscribers and call them

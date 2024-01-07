@@ -60,15 +60,7 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
             'LoraRadio',
             'loramode',
             loraMode,
-            (propName: string, propValue: string) => {
-              console.log(
-                'LoraRadio propName: ' +
-                  propName +
-                  ' propValue: ' +
-                  propValue +
-                  ' Implement error handling!',
-              );
-            },
+            updateFromWiRoc,
           );
         } else {
           console.log('LoraRadio:save:1 not connected to device');
@@ -81,15 +73,7 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
             'LoraRadio',
             'channel',
             channel,
-            (propName: string, propValue: string) => {
-              console.log(
-                'LoraRadio propName: ' +
-                  propName +
-                  ' propValue: ' +
-                  propValue +
-                  ' Implement error handling!',
-              );
-            },
+            updateFromWiRoc,
           );
         } else {
           console.log('LoraRadio:save:2 not connected to device');
@@ -102,15 +86,7 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
             'LoraRadio',
             'lorarange',
             radioRange,
-            (propName: string, propValue: string) => {
-              console.log(
-                'LoraRadio propName: ' +
-                  propName +
-                  ' propValue: ' +
-                  propValue +
-                  ' Implement error handling!',
-              );
-            },
+            updateFromWiRoc,
           );
         } else {
           console.log('LoraRadio:save:3 not connected to device');

@@ -52,6 +52,47 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
 
     const BLEAPI = useBLEApiContext();
 
+    const updateFromWiRoc = (propName: string, propValue: string) => {
+      console.log('SerialBluetooth:updateFromWiRoc: propName: ' + propName);
+      console.log('SerialBluetooth:updateFromWiRoc: propValue: ' + propValue);
+      switch (propName) {
+        case 'btserialonewayreceive':
+          setIsOneWay(parseInt(propValue, 10) !== 0);
+          setOrigIsOneWay(parseInt(propValue, 10) !== 0);
+          break;
+        case 'scanbtaddresses':
+          let serialBTDevicesArr: IBTSerialDevices[] = [];
+          try {
+            serialBTDevicesArr = JSON.parse(propValue);
+          } catch (e) {
+            //BLEAPI.logDebug(
+            //  'SerialBluetooth',
+            //  'updateFromWiRoc',
+            //  'scanbtaddresses reply is probably corrupt',
+            //);
+            console.log('' + e);
+            break;
+          }
+          let connectedDeviceIndex = serialBTDevicesArr.findIndex(item => {
+            return item.Status === 'Connected';
+          });
+          setIsBTDeviceConfigured(connectedDeviceIndex >= 0);
+          setSerialBTDevices(serialBTDevicesArr);
+
+          break;
+        case 'bindrfcomm':
+          let serialBTDevicesObject = JSON.parse(propValue);
+          let serialBTDevicesArr2: IBTSerialDevices[] =
+            serialBTDevicesObject.Value;
+          let connectedDeviceIndex2 = serialBTDevicesArr2.findIndex(item => {
+            return item.Status === 'Connected';
+          });
+          setIsBTDeviceConfigured(connectedDeviceIndex2 >= 0);
+          setSerialBTDevices(serialBTDevicesArr2);
+          break;
+      }
+    };
+
     const save = () => {
       if (BLEAPI.connectedDevice !== null) {
         let pc = BLEAPI.saveProperty(
@@ -59,18 +100,10 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
           'SerialBluetooth',
           'btserialonewayreceive',
           isOneWay ? '1' : '0',
-          (propName: string, propValue: string) => {
-            console.log(
-              'SerialBluetooth propName: ' +
-                propName +
-                ' propValue: ' +
-                propValue +
-                ' Implement error handling!',
-            );
-          },
+          updateFromWiRoc,
         );
       }
-      reload();
+      //reload();
     };
 
     const reload = () => {
@@ -79,51 +112,8 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
       });
     };
 
-    const updateFromWiRoc = useCallback(
-      (propName: string, propValue: string) => {
-        console.log('SerialBluetooth:updateFromWiRoc: propName: ' + propName);
-        console.log('SerialBluetooth:updateFromWiRoc: propValue: ' + propValue);
-        switch (propName) {
-          case 'btserialonewayreceive':
-            setIsOneWay(parseInt(propValue, 10) !== 0);
-            setOrigIsOneWay(parseInt(propValue, 10) !== 0);
-            break;
-          case 'scanbtaddresses':
-            let serialBTDevicesArr: IBTSerialDevices[] = [];
-            try {
-              serialBTDevicesArr = JSON.parse(propValue);
-            } catch (e) {
-              BLEAPI.logDebug(
-                'SerialBluetooth',
-                'updateFromWiRoc',
-                'scanbtaddresses reply is probably corrupt',
-              );
-              return;
-            }
-            let connectedDeviceIndex = serialBTDevicesArr.findIndex(item => {
-              return item.Status === 'Connected';
-            });
-            setIsBTDeviceConfigured(connectedDeviceIndex >= 0);
-            setSerialBTDevices(serialBTDevicesArr);
-
-            break;
-          case 'bindrfcomm':
-            let serialBTDevicesObject = JSON.parse(propValue);
-            let serialBTDevicesArr2: IBTSerialDevices[] =
-              serialBTDevicesObject.Value;
-            let connectedDeviceIndex2 = serialBTDevicesArr2.findIndex(item => {
-              return item.Status === 'Connected';
-            });
-            setIsBTDeviceConfigured(connectedDeviceIndex2 >= 0);
-            setSerialBTDevices(serialBTDevicesArr2);
-            break;
-        }
-      },
-      [BLEAPI],
-    );
-
     useEffect(() => {
-      async function getSerialBTSettings() {
+      /*    async function getSerialBTSettings() {
         if (BLEAPI.connectedDevice !== null) {
           let pc = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
@@ -134,7 +124,16 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
         }
       }
       getSerialBTSettings();
-    }, [BLEAPI, triggerVersion, updateFromWiRoc]);
+*/
+      if (BLEAPI.connectedDevice !== null) {
+        let pc = BLEAPI.requestProperty(
+          BLEAPI.connectedDevice,
+          'SerialBluetooth',
+          'btserialonewayreceive',
+          updateFromWiRoc,
+        );
+      }
+    }, [BLEAPI, triggerVersion]);
 
     useEffect(() => {
       console.log('serialbluetooth useeffect');

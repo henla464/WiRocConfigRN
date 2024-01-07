@@ -54,15 +54,7 @@ export default function DeviceHeader() {
               'DeviceHeader',
               'wirocdevicename',
               newDeviceName,
-              (propName: string, propValue: string) => {
-                console.log(
-                  'DeviceHeader propName: ' +
-                    propName +
-                    ' propValue: ' +
-                    propValue +
-                    ' Implement error handling!',
-                );
-              },
+              updateFromWiRoc,
             );
             setIsDeviceNameModalVisiable(false);
           }
