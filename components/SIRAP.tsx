@@ -41,74 +41,6 @@ const SIRAP = React.forwardRef<IRefRetType, IConfigComponentProps>(
       });
     };
 
-    const save = () => {
-      if (origIsSIRAPSwitchedOn !== isSIRAPSwitchedOn) {
-        if (BLEAPI.connectedDevice) {
-          BLEAPI.saveProperty(
-            BLEAPI.connectedDevice,
-            'SIRAP',
-            'onewayreceive',
-            isSIRAPSwitchedOn ? '1' : '0',
-            (propName: string, propValue: string) => {
-              console.log(
-                'SIRAP propName: ' +
-                  propName +
-                  ' propValue: ' +
-                  propValue +
-                  ' Implement error handling!',
-              );
-            },
-          );
-        } else {
-          console.log('SIRAP:save:1 not connected to device');
-        }
-      }
-
-      if (origIpAddress !== ipAddress) {
-        if (BLEAPI.connectedDevice) {
-          BLEAPI.saveProperty(
-            BLEAPI.connectedDevice,
-            'SIRAP',
-            'force4800baudrate',
-            ipAddress,
-            (propName: string, propValue: string) => {
-              console.log(
-                'SIRAP propName: ' +
-                  propName +
-                  ' propValue: ' +
-                  propValue +
-                  ' Implement error handling!',
-              );
-            },
-          );
-        } else {
-          console.log('SIRAP:save:2 not connected to device');
-        }
-      }
-
-      if (origIpPort !== ipPort) {
-        if (BLEAPI.connectedDevice) {
-          BLEAPI.saveProperty(
-            BLEAPI.connectedDevice,
-            'SIRAP',
-            'force4800baudrate',
-            ipPort,
-            (propName: string, propValue: string) => {
-              console.log(
-                'SIRAP propName: ' +
-                  propName +
-                  ' propValue: ' +
-                  propValue +
-                  ' Implement error handling!',
-              );
-            },
-          );
-        } else {
-          console.log('SIRAP:save:3 not connected to device');
-        }
-      }
-    };
-
     const updateFromWiRoc = (propName: string, propValue: string) => {
       console.log('SIRAP:updateFromWiRoc: propName: ' + propName);
       console.log('SIRAP:updateFromWiRoc: propValue: ' + propValue);
@@ -128,16 +60,60 @@ const SIRAP = React.forwardRef<IRefRetType, IConfigComponentProps>(
       }
     };
 
+    const save = () => {
+      if (origIsSIRAPSwitchedOn !== isSIRAPSwitchedOn) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'SIRAP',
+            'onewayreceive',
+            isSIRAPSwitchedOn ? '1' : '0',
+            updateFromWiRoc,
+          );
+        } else {
+          console.log('SIRAP:save:1 not connected to device');
+        }
+      }
+
+      if (origIpAddress !== ipAddress) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'SIRAP',
+            'force4800baudrate',
+            ipAddress,
+            updateFromWiRoc,
+          );
+        } else {
+          console.log('SIRAP:save:2 not connected to device');
+        }
+      }
+
+      if (origIpPort !== ipPort) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'SIRAP',
+            'force4800baudrate',
+            ipPort,
+            updateFromWiRoc,
+          );
+        } else {
+          console.log('SIRAP:save:3 not connected to device');
+        }
+      }
+    };
+
     useEffect(() => {
       async function getSIRAPSettings() {
         if (BLEAPI.connectedDevice !== null) {
           let pc = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
             'SIRAP',
-            'sendtosirapenabled',
+            'sendtosirapenabled|sendtosirapip|sendtosirapipport',
             updateFromWiRoc,
           );
-          let pc2 = BLEAPI.requestProperty(
+          /*let pc2 = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
             'SIRAP',
             'sendtosirapip',
@@ -148,7 +124,7 @@ const SIRAP = React.forwardRef<IRefRetType, IConfigComponentProps>(
             'SIRAP',
             'sendtosirapipport',
             updateFromWiRoc,
-          );
+          );*/
         }
       }
       getSIRAPSettings();

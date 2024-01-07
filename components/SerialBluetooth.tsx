@@ -131,14 +131,6 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
             'btserialonewayreceive',
             updateFromWiRoc,
           );
-          if (triggerVersion > 0) {
-            let pc2 = BLEAPI.requestProperty(
-              BLEAPI.connectedDevice,
-              'SerialBluetooth',
-              'scanbtaddresses',
-              updateFromWiRoc,
-            );
-          }
         }
       }
       getSerialBTSettings();
@@ -157,6 +149,7 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
     }, [isOneWay, id, origIsOneWay, setIsDirtyFunction]);
 
     let noOfScans = useRef<number>(0);
+
     function startScan() {
       console.log('startScan: noOfScans: ' + noOfScans.current);
       if (BLEAPI.connectedDevice !== null) {

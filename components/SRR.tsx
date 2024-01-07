@@ -226,9 +226,10 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
           let pc = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
             'SRR',
-            'srr/enabled',
+            'srr/enabled|srr/mode|srr/redchannel|srr/bluechannel|srr/redchannellistenonly|srr/bluechannellistenonly',
             updateFromWiRoc,
           );
+          /*
           let pc1 = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
             'SRR',
@@ -259,6 +260,7 @@ const SRR = React.forwardRef<IRefRetType, IConfigComponentProps>(
             'srr/bluechannellistenonly',
             updateFromWiRoc,
           );
+          */
         }
       }
       getSRRSettings();

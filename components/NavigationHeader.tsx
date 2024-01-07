@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 
-import {Pressable, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {Icon, TouchableRipple} from 'react-native-paper';
 import {useBLEApiContext} from '../context/BLEApiContext';
 import DeviceConnectionModal from './DeviceConnectionModal';
@@ -22,6 +22,21 @@ export default function NavigationHeader() {
     });
   };
 
+  const updateFromWiRoc = (propName: string, propValue: string) => {
+    console.log('NavigationHeader:updateFromWiRoc: propName: ' + propName);
+    console.log('NavigationHeader:updateFromWiRoc: propValue: ' + propValue);
+    switch (propName) {
+      case 'batterylevel':
+        let batteryLevel1 = parseInt(propValue, 10);
+        let battLevel10 = Math.round(batteryLevel1 / 10) * 10;
+        setBatteryLevel(battLevel10);
+        break;
+      case 'ischarging':
+        setIsCharging(parseInt(propValue, 10) !== 0);
+        break;
+    }
+  };
+
   useEffect(() => {
     async function getNavigationHeaderSettings() {
       if (BLEAPI.connectedDevice !== null) {
@@ -30,18 +45,9 @@ export default function NavigationHeader() {
           BLEAPI.connectedDevice,
           'NavigationHeader',
           'batterylevel',
-          (propName: string, propValue: string) => {
-            BLEAPI.logDebug(
-              'NavigationHeader',
-              'useEffect',
-              'propName: ' + propName + ' propValue: ' + propValue,
-            );
-
-            let batteryLevel1 = parseInt(propValue, 10);
-            let battLevel10 = Math.round(batteryLevel1 / 10) * 10;
-            setBatteryLevel(battLevel10);
-          },
+          updateFromWiRoc,
         );
+        /*
         let pc2 = BLEAPI.requestProperty(
           BLEAPI.connectedDevice,
           'NavigationHeader',
@@ -54,7 +60,7 @@ export default function NavigationHeader() {
             );
             setIsCharging(parseInt(propValue, 10) !== 0);
           },
-        );
+        );*/
       } else {
         setIsConnected(false);
       }

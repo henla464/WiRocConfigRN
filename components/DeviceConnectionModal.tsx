@@ -27,37 +27,39 @@ export default function DeviceConnectionModal({
 
   useEffect(() => {
     async function getWifiList() {
-      if (BLEAPI.connectedDevice !== null) {
-        let pc = BLEAPI.requestProperty(
-          BLEAPI.connectedDevice,
-          'DeviceConnectionModal',
-          'listwifi',
-          (propName: string, propValue: string) => {
-            if (propName === 'listwifi') {
-              let wifiList: IWifiListItem[] = [];
-              let rowList = propValue.split(/\r?\n/);
-              for (let i = 0; i < rowList.length; i += 3) {
-                wifiList.push({
-                  networkName: rowList[i],
-                  isConnected: rowList[i + 1] === 'yes',
-                  signalStrength: rowList[i + 2],
-                });
+      if (modalVisible) {
+        if (BLEAPI.connectedDevice !== null) {
+          let pc = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'DeviceConnectionModal',
+            'listwifi',
+            (propName: string, propValue: string) => {
+              if (propName === 'listwifi') {
+                let wifiList: IWifiListItem[] = [];
+                let rowList = propValue.split(/\r?\n/);
+                for (let i = 0; i < rowList.length; i += 3) {
+                  wifiList.push({
+                    networkName: rowList[i],
+                    isConnected: rowList[i + 1] === 'yes',
+                    signalStrength: rowList[i + 2],
+                  });
+                }
+                setWifiNetworks(wifiList);
               }
-              setWifiNetworks(wifiList);
-            }
-          },
-        );
+            },
+          );
 
-        let pc2 = BLEAPI.requestProperty(
-          BLEAPI.connectedDevice,
-          'DeviceConnectionModal',
-          'ip',
-          (propName: string, propValue: string) => {
-            if (propName === 'ip') {
-              setIp(propValue);
-            }
-          },
-        );
+          let pc2 = BLEAPI.requestProperty(
+            BLEAPI.connectedDevice,
+            'DeviceConnectionModal',
+            'ip',
+            (propName: string, propValue: string) => {
+              if (propName === 'ip') {
+                setIp(propValue);
+              }
+            },
+          );
+        }
       }
     }
     getWifiList();

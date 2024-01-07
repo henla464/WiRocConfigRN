@@ -46,7 +46,7 @@ export default function SendPunches() {
   ];
 
   useEffect(() => {
-    let ackReq = true; // todo: use real value
+    let ackReq = true; // todo: use real value?
     let noOfPunchesToSend: number = parseInt(numberOfPunches, 10);
     let completedPunches = punches.filter(punch => {
       return (

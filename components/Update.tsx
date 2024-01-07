@@ -49,22 +49,34 @@ export default function Update() {
     ISelectItem[]
   >([]);
 
+  const updateFromWiRoc = (propName: string, propValue: string) => {
+    console.log('Update:updateFromWiRoc: propName: ' + propName);
+    console.log('Update:updateFromWiRoc: propValue: ' + propValue);
+    switch (propName) {
+      case 'wirochwversion':
+        let revAndRel = propValue.substring(1).split('Rev');
+        setHWVersion(revAndRel[0]);
+        setHWRevision(revAndRel[1]);
+        break;
+      case 'wirocpythonversion':
+        setCurrentWiRocVersion(propValue);
+        break;
+      case 'wirocbleversion':
+        setCurrentWiRocBLEAPIVersion(propValue);
+        break;
+    }
+  };
+
   useEffect(() => {
     if (BLEAPI.connectedDevice) {
       // wirochwversion
       BLEAPI.requestProperty(
         BLEAPI.connectedDevice,
         'Update',
-        'wirochwversion',
-        (propName: string, propValue: string) => {
-          if (propName === 'wirochwversion') {
-            let revAndRel = propValue.substring(1).split('Rev');
-            setHWVersion(revAndRel[0]);
-            setHWRevision(revAndRel[1]);
-          }
-        },
+        'wirochwversion|wirocpythonversion|wirocbleversion',
+        updateFromWiRoc,
       );
-
+      /*
       BLEAPI.requestProperty(
         BLEAPI.connectedDevice,
         'Update',
@@ -86,6 +98,7 @@ export default function Update() {
           }
         },
       );
+      */
     }
   }, [BLEAPI]);
 
