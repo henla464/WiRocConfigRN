@@ -40,7 +40,7 @@ export default function Settings() {
         BLEAPI.logErrorForUser('Kunde inte hämta nyckelvärdelistan');
       }
     },
-    [setSettings, BLEAPI],
+    [BLEAPI],
   );
 
   useEffect(() => {

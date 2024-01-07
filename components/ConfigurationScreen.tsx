@@ -137,23 +137,23 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
       },
     ];
 
-    //if (hasSRR) {
-    configComps.push({
-      Comp: (
-        <SRR
-          id={3}
-          setIsDirtyFunction={setIsDirtyOnComponent}
-          key={3}
-          ref={SRRChildRef}
-        />
-      ),
-      Name: 'SRR',
-      SectionName: 'Input',
-      id: 3,
-      isDirty: false,
-      childRef: SRRChildRef,
-    });
-    //}
+    if (hasSRR) {
+      configComps.push({
+        Comp: (
+          <SRR
+            id={3}
+            setIsDirtyFunction={setIsDirtyOnComponent}
+            key={3}
+            ref={SRRChildRef}
+          />
+        ),
+        Name: 'SRR',
+        SectionName: 'Input',
+        id: 3,
+        isDirty: false,
+        childRef: SRRChildRef,
+      });
+    }
 
     configComps.push(
       {

@@ -38,23 +38,43 @@ export default function Status() {
       BLEAPI.requestProperty(
         BLEAPI.connectedDevice,
         'Status',
-        'services',
+        'services|status',
         (propName, propValue) => {
-          try {
-            let servicesObj = JSON.parse(propValue);
-            setServices(servicesObj.services);
-          } catch (e) {
-            BLEAPI.logError(
-              'Status',
-              'useEffect',
-              'fetch services exception: ' + e,
-              '',
-            );
-            BLEAPI.logErrorForUser('Kunde inte hämta "Services""');
+          if (propName === 'services') {
+            try {
+              let servicesObj = JSON.parse(propValue);
+              setServices(servicesObj.services);
+            } catch (e) {
+              BLEAPI.logError(
+                'Status',
+                'useEffect',
+                'fetch services exception: ' + e,
+                '',
+              );
+              BLEAPI.logErrorForUser('Kunde inte hämta "Services""');
+            }
+          }
+          if (propName === 'status') {
+            try {
+              let statusObj = JSON.parse(propValue);
+              setInData(statusObj.inputAdapters);
+              setOutData(statusObj.subscriberAdapters);
+            } catch (e) {
+              BLEAPI.logError(
+                'Status',
+                'useEffect',
+                'fetch status exception: ' + e,
+                '',
+              );
+              BLEAPI.logErrorForUser(
+                'Kunde inte hämta "Indata" och "Utdata och transformering"',
+              );
+            }
           }
         },
       );
 
+      /*
       BLEAPI.requestProperty(
         BLEAPI.connectedDevice,
         'Status',
@@ -77,6 +97,7 @@ export default function Status() {
           }
         },
       );
+      */
     }
   }, [BLEAPI]);
 

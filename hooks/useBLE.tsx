@@ -35,7 +35,7 @@ export interface BluetoothLowEnergyApi {
     device: Device | IDemoDevice,
     componentRequesting: string,
     propName: string,
-    propValue: string,
+    propValue: string | null,
     callback: callbackFn,
   ) => Promise<Characteristic | null>;
   enablePunchesNotification: (
@@ -305,8 +305,8 @@ export default function useBLE(): BluetoothLowEnergyApi {
         // This is not the full value, wait for the next fragment
         return;
       }
-      console.log('propertyNotify: ' + propAndValueStrings);
-      propAndValueStrings = propAndValueStrings.trimEnd();
+      console.log('propertyNotify: "' + propAndValueStrings + '"');
+      //propAndValueStrings = propAndValueStrings.trimEnd();
       let propAndValuesArray = propAndValueStrings.split('|');
       for (const propAndValue of propAndValuesArray) {
         let propAndValueArray = propAndValue.split('\t', 2);
@@ -484,8 +484,11 @@ export default function useBLE(): BluetoothLowEnergyApi {
   };
 
   const sendPropertyValueToDemoDevice = (propName: string): void => {
-    let propValue = demoDeviceData[propName];
-    propertyNotify2(propName, propValue);
+    let propNames = propName.split('|');
+    propNames.forEach(pName => {
+      let propValue = demoDeviceData[pName];
+      propertyNotify2(pName, propValue);
+    });
   };
 
   const addOrUpdatePropertyNotifiticationSubscription = (
@@ -531,6 +534,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
         if (Buffer.from(propNameToSend, 'utf-8').length === chunkLengthToUse) {
           propNameToSend += ' ';
         }
+        console.log('requestProperty "' + propNameToSend + '"');
         let characteristic =
           await device.writeCharacteristicWithResponseForService(
             apiService,
@@ -571,10 +575,15 @@ export default function useBLE(): BluetoothLowEnergyApi {
         callback: callback,
       });
       if (instanceOfIDemoDevice(device)) {
-        demoDeviceData[propName] = propValue;
+        if (propValue) {
+          demoDeviceData[propName] = propValue;
+        }
+        sendPropertyValueToDemoDevice(propName);
         return null;
       } else {
-        var propNameAndPropValue = propName + '\t' + propValue;
+        var propNameAndPropValue = propValue
+          ? propName + '\t' + propValue
+          : propName;
         let characteristic =
           await device.writeCharacteristicWithResponseForService(
             apiService,

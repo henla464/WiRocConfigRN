@@ -56,7 +56,7 @@ export default function OtherScreen() {
           width: Dimensions.get('window').width,
         }}>
         <Tab.Screen name="Databas" component={Database} />
-        {hasRTC ? <Tab.Screen name="Väckning" component={WakeUp} /> : null}
+        {!hasRTC ? <Tab.Screen name="Väckning" component={WakeUp} /> : null}
         <Tab.Screen name="Status" component={Status} />
         <Tab.Screen name="Settings" component={Settings} />
         <Tab.Screen name="Update" component={Update} />
