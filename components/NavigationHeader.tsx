@@ -53,7 +53,7 @@ export default function NavigationHeader() {
           'NavigationHeader',
           'ischarging',
           (propName: string, propValue: string) => {
-            BLEAPI.logDebug(
+            logger.debug(
               'NavigationHeader',
               'useEffect',
               'propName: ' + propName + ' propValue: ' + propValue,

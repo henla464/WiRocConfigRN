@@ -12,6 +12,7 @@ import {StyleSheet} from 'react-native';
 import {Device} from 'react-native-ble-plx';
 import {useBLEApiContext} from '../context/BLEApiContext';
 import {useNavigation} from '@react-navigation/native';
+import {useLogger} from '../hooks/useLogger';
 
 interface DeviceCardProps {
   device: Device;
@@ -20,6 +21,7 @@ interface DeviceCardProps {
 export default function DeviceCard({device}: DeviceCardProps) {
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isConnecting, setIsConnecting] = useState<boolean>(false);
+  const logger = useLogger();
   const BLEAPI = useBLEApiContext();
 
   const cardConnect = async () => {
@@ -36,7 +38,7 @@ export default function DeviceCard({device}: DeviceCardProps) {
   const navigation = useNavigation();
 
   useEffect(() => {
-    BLEAPI.logDebug(
+    logger.debug(
       'DeviceCard',
       'useEffect',
       'device.id: ' +
@@ -45,7 +47,7 @@ export default function DeviceCard({device}: DeviceCardProps) {
         BLEAPI.connectedDevice?.id,
     );
     setIsConnected(device.id === BLEAPI.connectedDevice?.id);
-  }, [BLEAPI, device.id, BLEAPI.connectedDevice?.id]);
+  }, [BLEAPI, logger, device.id, BLEAPI.connectedDevice?.id]);
 
   useEffect(() => {
     if (isConnected) {

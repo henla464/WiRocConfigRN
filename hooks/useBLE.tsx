@@ -9,6 +9,7 @@ import {
 } from 'react-native-ble-plx';
 import DeviceInfo from 'react-native-device-info';
 import {PERMISSIONS, requestMultiple} from 'react-native-permissions';
+import {useLogger} from './useLogger';
 
 let demoDeviceData = require('./demoDeviceData.json');
 
@@ -53,23 +54,6 @@ export interface BluetoothLowEnergyApi {
     propName: string,
     propValue: string,
   ) => Promise<Characteristic | null>;
-  logDebug: (
-    componentName: string,
-    functionName: string,
-    message: string,
-  ) => void;
-  logInformation: (
-    componentName: string,
-    functionName: string,
-    message: string,
-  ) => void;
-  logError: (
-    componentName: string,
-    functionName: string,
-    message: string,
-    messageToUser: string,
-  ) => void;
-  getLogs: () => string[];
   hasErrorsForUser: boolean;
   getErrorsForUser: () => IErrorsForUser[];
   logErrorForUser: (log: string) => void;
@@ -157,6 +141,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
   >(null);
   const [isDisconnecting, setIsDisconnecting] = useState<boolean>(false);
   const [hasErrorsForUser, setHasErrorsForUser] = useState<boolean>(false);
+  const logger = useLogger();
 
   const requestPermissions = async (callback: PermissionCallback) => {
     if (Platform.OS === 'android') {
@@ -201,11 +186,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
       bleManager.startDeviceScan([apiService], null, (error, newDevice) => {
         if (error) {
           console.log('startDeviceScan: ' + error);
-          logError(
+          logger.error(
             'useBLE',
             'scanForDevices',
             'Error: ' + error.name + ' ' + error.message,
-            'Fel uppstod vid sökning efter enheter',
           );
           logErrorForUser('Fel uppstod vid sökning efter enheter');
         }
@@ -251,7 +235,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
     // Find all subscribers and call them
     for (const propNotificationSub of propertyNotificationSubscriptions) {
       if (propNotificationSub.propName === propName) {
-        logDebug(
+        logger.debug(
           'useBLE',
           'propertyNotify2',
           'Found sub to notify: ' +
@@ -273,11 +257,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
     if (error !== null) {
       if (!isDisconnecting) {
         if (connectedDevice) {
-          logError(
+          logger.error(
             'useBLE',
             'propertyNotify',
             'Error: ' + error.name + ' ' + error.message,
-            'Fel uppstod vid hämtning av värde',
           );
           logErrorForUser('Fel uppstod vid hämtning av värde');
         }
@@ -330,12 +313,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
       );
     } catch (e) {
       console.log('exception enablePropertyNotification: ' + e);
-      logError(
-        'useBLE',
-        'enablePropertyNotification',
-        'Exception ' + e,
-        'Fel uppstod vid uppsättnignen av lyssning till värden',
-      );
+      logger.error('useBLE', 'enablePropertyNotification', 'Exception ' + e);
       logErrorForUser('Fel uppstod vid uppsättnignen av lyssning till värden');
     }
     console.log('enablepropertyNotification');
@@ -344,7 +322,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
   const connectToDevice = async (device: Device | IDemoDevice) => {
     try {
       if (connectedDevice !== null && device.id === connectedDevice.id) {
-        logDebug(
+        logger.debug(
           'useBLE',
           'connectToDevice',
           'Already connected to this device: ' + device.name,
@@ -352,30 +330,34 @@ export default function useBLE(): BluetoothLowEnergyApi {
         return;
       }
 
-      logDebug('useBLE', 'connectToDevice', 'Connecting to: ' + device.name);
+      logger.debug(
+        'useBLE',
+        'connectToDevice',
+        'Connecting to: ' + device.name,
+      );
       if (instanceOfIDemoDevice(device)) {
         device.isConnected = true;
         setConnectedDevice(device);
-        logInformation(
-          'useBLE',
-          'connectToDevice',
-          'Connected to DEMO Device!',
-        );
+        logger.info('useBLE', 'connectToDevice', 'Connected to DEMO Device!');
       } else {
         let deviceConnected = await bleManager.connectToDevice(device.id, {
           requestMTU: chunkLengthToUse + 3,
         });
-        logDebug(
+        logger.debug(
           'useBLE',
           'connectToDevice',
           ' isConnected: ' + (await deviceConnected.isConnected()),
         );
-        logDebug('useBLE', 'connectToDevice', 'MTU: ' + deviceConnected.mtu);
+        logger.debug(
+          'useBLE',
+          'connectToDevice',
+          'MTU: ' + deviceConnected.mtu,
+        );
 
         deviceConnected.onDisconnected(
           (error: BleError | null, disconnectedDevice: Device) => {
             console.log('OnDisconnect!');
-            logDebug(
+            logger.debug(
               'useBLE',
               'onDisconnected',
               'Disconnected from: ' + disconnectedDevice.name,
@@ -390,7 +372,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
         await deviceConnected.discoverAllServicesAndCharacteristics();
         enablePropertyNotification(device);
         setConnectedDevice(deviceConnected);
-        logDebug('useBLE', 'connectToDevice', 'request the "all" property');
+        logger.debug('useBLE', 'connectToDevice', 'request the "all" property');
         requestProperty(
           deviceConnected,
           'useBLE',
@@ -407,12 +389,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
         //bleManager.stopDeviceScan();
       }
     } catch (e) {
-      logError(
-        'useBLE',
-        'connectToDevice',
-        'Exception ' + e,
-        'Fel uppstod vid anslutning till enheten',
-      );
+      logger.error('useBLE', 'connectToDevice', 'Exception ' + e);
       logErrorForUser('Fel uppstod vid anslutning till enheten');
     }
   };
@@ -423,7 +400,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
       setIsDisconnecting(true);
       let deviceToDisconnect = device === null ? connectedDevice : device;
       if (deviceToDisconnect === null) {
-        logDebug('useBLE', 'disconnectDevice', 'Not connected to a device');
+        logger.debug('useBLE', 'disconnectDevice', 'Not connected to a device');
         return;
       }
       if (instanceOfIDemoDevice(deviceToDisconnect)) {
@@ -473,12 +450,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
     } catch (e) {
       setConnectedDevice(null);
       setIsDisconnecting(false);
-      logError(
-        'useBLE',
-        'disconnectDevice',
-        'Exception ' + e,
-        'Fel uppstod vid bortkoppling',
-      );
+      logger.error('useBLE', 'disconnectDevice', 'Exception ' + e);
       logErrorForUser('Fel uppstod vid bortkoppling');
     }
   };
@@ -546,11 +518,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
       }
     } catch (e) {
       if (!isDisconnecting) {
-        logError(
+        logger.error(
           'useBLE',
           'requestProperty',
           'Property name: ' + propName + ' Exception: ' + e,
-          'Misslyckades läsa värde från WiRoc enheten',
         );
         logErrorForUser('Misslyckades läsa värde från WiRoc enheten');
       }
@@ -594,7 +565,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
         return characteristic;
       }
     } catch (e) {
-      logError(
+      logger.error(
         'useBLE',
         'saveProperty',
         'Property name: ' +
@@ -603,7 +574,6 @@ export default function useBLE(): BluetoothLowEnergyApi {
           propValue +
           ' Exception: ' +
           e,
-        'Misslyckades spara värde till WiRoc enheten',
       );
       logErrorForUser('Misslyckades spara värde till WiRoc enheten');
       return null;
@@ -616,11 +586,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
   ): void => {
     if (error !== null) {
       if (!(isDisconnecting && error.message === 'Operation was cancelled')) {
-        logError(
+        logger.error(
           'useBLE',
           'punchesNotify',
           'Error: ' + error.name + ' ' + error.message,
-          'Fel uppstod vid updatering av stämplingslistan',
         );
         logErrorForUser('Fel uppstod vid updatering av stämplingslistan');
       }
@@ -677,12 +646,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
         );
       }
     } catch (e) {
-      logError(
-        'useBLE',
-        'enablePunchesNotification',
-        'Exception: ' + e,
-        'Fel uppstod vid start av lyssning av stämplingar',
-      );
+      logger.error('useBLE', 'enablePunchesNotification', 'Exception: ' + e);
       logErrorForUser('Fel uppstod vid start av lyssning av stämplingar');
     }
     console.log('enablePunchesNotification');
@@ -710,12 +674,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
         console.log('setting isdisconnectingpunches to false');
       }
     } catch (e) {
-      logError(
-        'useBLE',
-        'disablePunchesNotification',
-        'Exception: ' + e,
-        'Fel uppstod vid stop av lyssning av stämplingar',
-      );
+      logger.error('useBLE', 'disablePunchesNotification', 'Exception: ' + e);
       logErrorForUser('Fel uppstod vid stop av lyssning av stämplingar');
     }
     console.log('enablePunchesNotification');
@@ -816,11 +775,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
       }
     } catch (e) {
       console.log('exception enableTestPunchesNotification: ' + e);
-      logError(
+      logger.error(
         'useBLE',
         'enableTestPunchesNotification',
         'Exception: ' + e,
-        'Fel uppstod vid start av lyssning av teststämplingar',
       );
       logErrorForUser('Fel uppstod vid start av lyssning av teststämplingar');
     }
@@ -849,11 +807,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
         }
       }
     } catch (e) {
-      logError(
+      logger.error(
         'useBLE',
         'disableTestPunchesNotification',
         'Exception: ' + e,
-        'Fel uppstod vid stop av skickning av teststämplingar',
       );
       logErrorForUser('Fel uppstod vid stop av skickning av teststämplingar');
     }
@@ -883,77 +840,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
         return characteristic;
       }
     } catch (e) {
-      logError(
-        'useBLE',
-        'startSendTestPunches',
-        'Exception: ' + e,
-        'Fel uppstod vid start av skickning av teststämplingar',
-      );
+      logger.error('useBLE', 'startSendTestPunches', 'Exception: ' + e);
       logErrorForUser('Fel uppstod vid start av skickning av teststämplingar');
       return null;
     }
-  };
-
-  const logDebug = (
-    componentName: string,
-    functionName: string,
-    message: string,
-  ) => {
-    let newLog =
-      new Date().toISOString() +
-      ' DEBUG ' +
-      componentName +
-      ':' +
-      functionName +
-      ': ' +
-      message;
-    console.log(newLog);
-    let newLogs = [...logs, newLog];
-    logs = newLogs;
-  };
-
-  const logInformation = (
-    componentName: string,
-    functionName: string,
-    message: string,
-  ) => {
-    let newLog =
-      new Date().toISOString() +
-      ' INFO  ' +
-      componentName +
-      ':' +
-      functionName +
-      ': ' +
-      message;
-    console.log(newLog);
-    let newLogs = [...logs, newLog];
-    logs = newLogs;
-  };
-
-  const logError = (
-    componentName: string,
-    functionName: string,
-    message: string,
-    messageToUser: string,
-  ) => {
-    let newLog =
-      new Date().toISOString() +
-      ' ERROR ' +
-      componentName +
-      ':' +
-      functionName +
-      ': ' +
-      message +
-      ' (' +
-      messageToUser +
-      ')';
-    console.log(newLog);
-    let newLogs = [...logs, newLog];
-    logs = newLogs;
-  };
-
-  const getLogs = () => {
-    return logs;
   };
 
   const getErrorsForUser = () => {
@@ -967,6 +857,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
       message: msg,
     };
     errorsForUsers.push(log);
+    logger.error('useBLE', 'logErrorForUser', msg);
     setHasErrorsForUser(true);
   };
 
@@ -1000,10 +891,6 @@ export default function useBLE(): BluetoothLowEnergyApi {
     enableTestPunchesNotification,
     disableTestPunchesNotification,
     startSendTestPunches,
-    logDebug,
-    logInformation,
-    logError,
-    getLogs,
     hasErrorsForUser,
     getErrorsForUser,
     logErrorForUser,
