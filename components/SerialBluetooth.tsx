@@ -65,7 +65,7 @@ const SerialBluetooth = React.forwardRef<IRefRetType, IConfigComponentProps>(
           try {
             serialBTDevicesArr = JSON.parse(propValue);
           } catch (e) {
-            //BLEAPI.logDebug(
+            //logger.debug(
             //  'SerialBluetooth',
             //  'updateFromWiRoc',
             //  'scanbtaddresses reply is probably corrupt',

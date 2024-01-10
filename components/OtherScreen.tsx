@@ -9,20 +9,22 @@ import Update from './Update';
 import ErrorBanner from './ErrorBanner';
 import {useBLEApiContext} from '../context/BLEApiContext';
 import {useNavigation} from '@react-navigation/native';
+import {useLogger} from '../hooks/useLogger';
 
 const Tab = createMaterialTopTabNavigator();
 
 export default function OtherScreen() {
+  const logger = useLogger();
   const BLEAPI = useBLEApiContext();
   const navigation = useNavigation();
   const [hasRTC, setHasRTC] = useState<boolean>(false);
 
   useEffect(() => {
     if (BLEAPI.connectedDevice === null) {
-      BLEAPI.logDebug('OtherScreen', 'useEffect', 'navigate to ScanForDevices');
+      logger.debug('OtherScreen', 'useEffect', 'navigate to ScanForDevices');
       navigation.navigate('ScanForDevices' as never);
     }
-  }, [BLEAPI, navigation]);
+  }, [BLEAPI, navigation, logger]);
 
   useEffect(() => {
     if (BLEAPI.connectedDevice !== null) {

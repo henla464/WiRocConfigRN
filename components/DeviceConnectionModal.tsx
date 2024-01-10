@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import {Modal, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {Button, Divider, List} from 'react-native-paper';
 import {useBLEApiContext} from '../context/BLEApiContext';
+import {useLogger} from '../hooks/useLogger';
 import WifiItem from './WifiItem';
 
 interface IDeviceConnectionModalProps {
@@ -19,6 +20,7 @@ export default function DeviceConnectionModal({
   modalVisible,
   closeModal,
 }: IDeviceConnectionModalProps) {
+  const logger = useLogger();
   const BLEAPI = useBLEApiContext();
 
   const [wifiNetworks, setWifiNetworks] = useState<IWifiListItem[]>([]);
@@ -99,11 +101,10 @@ export default function DeviceConnectionModal({
           if (propName === 'renewip\twifi' && propValue === 'OK') {
             refresh();
           } else {
-            BLEAPI.logError(
+            logger.error(
               'DeviceConnectionModal',
               'renewWifiIP',
               'renewWifiIP returned: ' + propValue,
-              '',
             );
             BLEAPI.logErrorForUser('Förnya Wifi IP misslyckades: ' + propValue);
           }
@@ -122,11 +123,10 @@ export default function DeviceConnectionModal({
           if (propName === 'renewip\tethernet' && propValue === 'OK') {
             refresh();
           } else {
-            BLEAPI.logError(
+            logger.error(
               'DeviceConnectionModal',
               'renewEthernetIP',
               'renewEthernetIP returned: ' + propValue,
-              '',
             );
             BLEAPI.logErrorForUser(
               'Förnya ethernet IP misslyckades: ' + propValue,
@@ -148,11 +148,10 @@ export default function DeviceConnectionModal({
           if (propName === 'connectwifi' && propValue === 'OK') {
             refresh();
           } else {
-            BLEAPI.logError(
+            logger.error(
               'DeviceConnectionModal',
               'wifiConnect',
               'wifiConnect returned: ' + propValue,
-              '',
             );
             BLEAPI.logErrorForUser(
               'Ansluta till Wifi nätverket misslyckades: ' + propValue,

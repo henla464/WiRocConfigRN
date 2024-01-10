@@ -3,6 +3,7 @@ import {StyleSheet, View} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {Button, DataTable} from 'react-native-paper';
 import {useBLEApiContext} from '../context/BLEApiContext';
+import {useLogger} from '../hooks/useLogger';
 import AddEditSettingsModal from './AddEditSettingsModal';
 
 interface ISettings {
@@ -11,6 +12,7 @@ interface ISettings {
 }
 
 export default function Settings() {
+  const logger = useLogger();
   const BLEAPI = useBLEApiContext();
   const [settings, setSettings] = useState<ISettings[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -30,16 +32,15 @@ export default function Settings() {
         );
         setSettings(settingsObj.settings);
       } catch (e) {
-        BLEAPI.logError(
+        logger.error(
           'Settings',
           'updateSettings',
           'fetch settings exception: ' + e,
-          '',
         );
         BLEAPI.logErrorForUser('Kunde inte hämta nyckelvärdelistan');
       }
     },
-    [BLEAPI],
+    [BLEAPI, logger],
   );
 
   const editSetting = (keyName: string, keyValue: string) => {

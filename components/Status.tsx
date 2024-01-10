@@ -3,6 +3,9 @@ import {StyleSheet, Text, View} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {Button, DataTable, Divider} from 'react-native-paper';
 import {useBLEApiContext} from '../context/BLEApiContext';
+import {useLogger} from '../hooks/useLogger';
+import {useLoggerStore} from '../stores/loggerStore';
+import {formatLog} from '../utils/formatLog';
 
 interface IServices {
   Name: string;
@@ -25,11 +28,13 @@ interface IOutData {
 }
 
 export default function Status() {
+  const logger = useLogger();
+  const logs = useLoggerStore(state => state.logs);
   const BLEAPI = useBLEApiContext();
   const [services, setServices] = useState<IServices[]>([]);
   const [inData, setInData] = useState<IInData[]>([]);
   const [outData, setOutData] = useState<IOutData[]>([]);
-  const [logs, setLogs] = useState<string>('');
+  const [isLogsVisible, setLogsVisible] = useState(false);
 
   const fetchRefreshStatusData = () => {
     if (BLEAPI.connectedDevice) {
@@ -44,11 +49,10 @@ export default function Status() {
               let servicesObj = JSON.parse(propValue);
               setServices(servicesObj.services);
             } catch (e) {
-              BLEAPI.logError(
+              logger.error(
                 'Status',
                 'useEffect',
                 'fetch services exception: ' + e,
-                '',
               );
               BLEAPI.logErrorForUser('Kunde inte hämta "Services""');
             }
@@ -59,11 +63,10 @@ export default function Status() {
               setInData(statusObj.inputAdapters);
               setOutData(statusObj.subscriberAdapters);
             } catch (e) {
-              BLEAPI.logError(
+              logger.error(
                 'Status',
                 'useEffect',
                 'fetch status exception: ' + e,
-                '',
               );
               BLEAPI.logErrorForUser(
                 'Kunde inte hämta "Indata" och "Utdata och transformering"',
@@ -73,12 +76,6 @@ export default function Status() {
         },
       );
     }
-  };
-
-  const loadLogs = () => {
-    let newLogs = BLEAPI.getLogs();
-    console.log('logs: ' + newLogs);
-    setLogs(newLogs.join('\n'));
   };
 
   const uploadDatabaseAndLogs = async () => {
@@ -189,11 +186,11 @@ export default function Status() {
           mode="contained"
           style={styles.button}
           onPress={() => {
-            loadLogs();
+            setLogsVisible(state => !state);
           }}>
-          Ladda loggar
+          {isLogsVisible ? 'Göm loggar' : 'Visa loggar'}
         </Button>
-        <Text>{logs}</Text>
+        {isLogsVisible && <Text>{logs.map(formatLog).join('\n')}</Text>}
       </ScrollView>
     </View>
   );
