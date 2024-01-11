@@ -3,6 +3,7 @@ import {Modal, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {Button, Divider, List} from 'react-native-paper';
 import {useBLEApiContext} from '../context/BLEApiContext';
 import {useLogger} from '../hooks/useLogger';
+import {useNotify} from '../hooks/useNotify';
 import WifiItem from './WifiItem';
 
 interface IDeviceConnectionModalProps {
@@ -21,6 +22,7 @@ export default function DeviceConnectionModal({
   closeModal,
 }: IDeviceConnectionModalProps) {
   const logger = useLogger();
+  const notify = useNotify();
   const BLEAPI = useBLEApiContext();
 
   const [wifiNetworks, setWifiNetworks] = useState<IWifiListItem[]>([]);
@@ -106,7 +108,10 @@ export default function DeviceConnectionModal({
               'renewWifiIP',
               'renewWifiIP returned: ' + propValue,
             );
-            BLEAPI.logErrorForUser('Förnya Wifi IP misslyckades: ' + propValue);
+            notify({
+              type: 'error',
+              message: `Förnya Wifi IP misslyckades: ${propValue}`,
+            });
           }
         },
       );
@@ -128,9 +133,10 @@ export default function DeviceConnectionModal({
               'renewEthernetIP',
               'renewEthernetIP returned: ' + propValue,
             );
-            BLEAPI.logErrorForUser(
-              'Förnya ethernet IP misslyckades: ' + propValue,
-            );
+            notify({
+              type: 'error',
+              message: `Förnya ethernet IP misslyckades: ${propValue}`,
+            });
           }
         },
       );
@@ -153,9 +159,10 @@ export default function DeviceConnectionModal({
               'wifiConnect',
               'wifiConnect returned: ' + propValue,
             );
-            BLEAPI.logErrorForUser(
-              'Ansluta till Wifi nätverket misslyckades: ' + propValue,
-            );
+            notify({
+              type: 'error',
+              message: 'Ansluta till Wifi nätverket misslyckades: ' + propValue,
+            });
           }
         },
       );

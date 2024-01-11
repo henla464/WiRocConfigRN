@@ -11,9 +11,9 @@ import LoraRadio from './LoraRadio';
 import SRR from './SRR';
 import IRefRetType from '../interface/IRefRetType';
 import SaveBanner from './SaveBanner';
-import ErrorBanner from './ErrorBanner';
 import {useNavigation} from '@react-navigation/native';
 import {useBLEApiContext} from '../context/BLEApiContext';
+import {Notifications} from './Notifications';
 
 interface ISectionComponent {
   Comp: React.JSX.Element;
@@ -264,7 +264,7 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
 
   return (
     <SafeAreaView style={Colors.lighter}>
-      <ErrorBanner />
+      <Notifications />
       <SaveBanner
         visible={isDirty}
         save={saveConfigurationScreen}

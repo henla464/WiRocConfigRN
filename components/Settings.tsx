@@ -4,6 +4,7 @@ import {ScrollView} from 'react-native-gesture-handler';
 import {Button, DataTable} from 'react-native-paper';
 import {useBLEApiContext} from '../context/BLEApiContext';
 import {useLogger} from '../hooks/useLogger';
+import {useNotify} from '../hooks/useNotify';
 import AddEditSettingsModal from './AddEditSettingsModal';
 
 interface ISettings {
@@ -13,6 +14,7 @@ interface ISettings {
 
 export default function Settings() {
   const logger = useLogger();
+  const notify = useNotify();
   const BLEAPI = useBLEApiContext();
   const [settings, setSettings] = useState<ISettings[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
@@ -37,10 +39,10 @@ export default function Settings() {
           'updateSettings',
           'fetch settings exception: ' + e,
         );
-        BLEAPI.logErrorForUser('Kunde inte hämta nyckelvärdelistan');
+        notify({type: 'error', message: 'Kunde inte hämta nyckelvärdelistan'});
       }
     },
-    [BLEAPI, logger],
+    [notify, logger],
   );
 
   const editSetting = (keyName: string, keyValue: string) => {

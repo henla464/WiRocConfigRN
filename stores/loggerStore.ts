@@ -24,7 +24,7 @@ export const useLoggerStore = create<LoggerStore>(set => ({
         functionName,
         message,
       };
-      console.log(formatLog(newLog));
+      console[type](formatLog(newLog));
       set(state => ({
         logs: [...state.logs, newLog],
       }));

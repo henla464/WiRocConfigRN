@@ -4,8 +4,8 @@ import SendPunches from './SendPunches';
 import ViewPunches from './ViewPunches';
 import {useBLEApiContext} from '../context/BLEApiContext';
 import {useNavigation} from '@react-navigation/native';
-import ErrorBanner from './ErrorBanner';
 import {useLogger} from '../hooks/useLogger';
+import {Notifications} from './Notifications';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -23,7 +23,7 @@ export default function TestScreen() {
 
   return (
     <>
-      <ErrorBanner />
+      <Notifications />
       <Tab.Navigator
         screenOptions={{
           //tabBarActiveTintColor: Colors.white,

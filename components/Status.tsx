@@ -4,6 +4,7 @@ import {ScrollView} from 'react-native-gesture-handler';
 import {Button, DataTable, Divider} from 'react-native-paper';
 import {useBLEApiContext} from '../context/BLEApiContext';
 import {useLogger} from '../hooks/useLogger';
+import {useNotify} from '../hooks/useNotify';
 import {useLoggerStore} from '../stores/loggerStore';
 import {formatLog} from '../utils/formatLog';
 
@@ -30,6 +31,7 @@ interface IOutData {
 export default function Status() {
   const logger = useLogger();
   const logs = useLoggerStore(state => state.logs);
+  const notify = useNotify();
   const BLEAPI = useBLEApiContext();
   const [services, setServices] = useState<IServices[]>([]);
   const [inData, setInData] = useState<IInData[]>([]);
@@ -54,7 +56,7 @@ export default function Status() {
                 'useEffect',
                 'fetch services exception: ' + e,
               );
-              BLEAPI.logErrorForUser('Kunde inte hämta "Services""');
+              notify({type: 'error', message: 'Kunde inte hämta "Services""'});
             }
           }
           if (propName === 'status') {
@@ -68,9 +70,11 @@ export default function Status() {
                 'useEffect',
                 'fetch status exception: ' + e,
               );
-              BLEAPI.logErrorForUser(
-                'Kunde inte hämta "Indata" och "Utdata och transformering"',
-              );
+              notify({
+                type: 'error',
+                message:
+                  'Kunde inte hämta "Indata" och "Utdata och transformering"',
+              });
             }
           }
         },

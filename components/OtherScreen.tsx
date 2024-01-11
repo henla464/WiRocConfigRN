@@ -6,10 +6,10 @@ import WakeUp from './WakeUp';
 import Status from './Status';
 import Settings from './Settings';
 import Update from './Update';
-import ErrorBanner from './ErrorBanner';
 import {useBLEApiContext} from '../context/BLEApiContext';
 import {useNavigation} from '@react-navigation/native';
 import {useLogger} from '../hooks/useLogger';
+import {Notifications} from './Notifications';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -43,7 +43,7 @@ export default function OtherScreen() {
 
   return (
     <>
-      <ErrorBanner />
+      <Notifications />
       <Tab.Navigator
         key="otherScreen"
         screenOptions={{

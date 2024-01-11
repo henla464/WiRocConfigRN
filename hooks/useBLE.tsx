@@ -10,6 +10,7 @@ import {
 import DeviceInfo from 'react-native-device-info';
 import {PERMISSIONS, requestMultiple} from 'react-native-permissions';
 import {useLogger} from './useLogger';
+import {useNotify} from './useNotify';
 
 let demoDeviceData = require('./demoDeviceData.json');
 
@@ -54,11 +55,6 @@ export interface BluetoothLowEnergyApi {
     propName: string,
     propValue: string,
   ) => Promise<Characteristic | null>;
-  hasErrorsForUser: boolean;
-  getErrorsForUser: () => IErrorsForUser[];
-  logErrorForUser: (log: string) => void;
-  removeErrorForUser: (id: number) => void;
-  removeErrorsForUser: () => void;
 }
 
 interface IDemoDevice {
@@ -125,11 +121,8 @@ let propertyNotificationBufferReceived: Buffer = Buffer.from('');
 let punchesNotificationBufferReceived: Buffer = Buffer.from('');
 let testPunchesNotificationBufferReceived: Buffer = Buffer.from('');
 
-let logs: string[] = [''];
-let errorsForUsers: IErrorsForUser[] = [];
-let currentErrorsForUsersId: number = 0;
-
 export default function useBLE(): BluetoothLowEnergyApi {
+  const notify = useNotify();
   const apiService = 'fb880900-4ab2-40a2-a8f0-14cc1c2e5608';
   const propertyCharacteristic = 'fb880912-4ab2-40a2-a8f0-14cc1c2e5608';
   const punchesCharacteristic = 'fb880901-4ab2-40a2-a8f0-14cc1c2e5608'; //N: subscribe to punches
@@ -140,7 +133,6 @@ export default function useBLE(): BluetoothLowEnergyApi {
     Device | IDemoDevice | null
   >(null);
   const [isDisconnecting, setIsDisconnecting] = useState<boolean>(false);
-  const [hasErrorsForUser, setHasErrorsForUser] = useState<boolean>(false);
   const logger = useLogger();
 
   const requestPermissions = async (callback: PermissionCallback) => {
@@ -191,7 +183,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
             'scanForDevices',
             'Error: ' + error.name + ' ' + error.message,
           );
-          logErrorForUser('Fel uppstod vid sökning efter enheter');
+          notify({
+            type: 'error',
+            message: 'Fel uppstod vid sökning efter enheter',
+          });
         }
         if (newDevice) {
           setAllDevices((prevState: Device[]) => {
@@ -262,7 +257,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
             'propertyNotify',
             'Error: ' + error.name + ' ' + error.message,
           );
-          logErrorForUser('Fel uppstod vid hämtning av värde');
+          notify({type: 'error', message: 'Fel uppstod vid hämtning av värde'});
         }
       }
     } else if (characteristic !== null && characteristic.value !== null) {
@@ -314,7 +309,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
     } catch (e) {
       console.log('exception enablePropertyNotification: ' + e);
       logger.error('useBLE', 'enablePropertyNotification', 'Exception ' + e);
-      logErrorForUser('Fel uppstod vid uppsättnignen av lyssning till värden');
+      notify({
+        type: 'error',
+        message: 'Fel uppstod vid uppsättnignen av lyssning till värden',
+      });
     }
     console.log('enablepropertyNotification');
   };
@@ -390,7 +388,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
       }
     } catch (e) {
       logger.error('useBLE', 'connectToDevice', 'Exception ' + e);
-      logErrorForUser('Fel uppstod vid anslutning till enheten');
+      notify({
+        type: 'error',
+        message: 'Fel uppstod vid anslutning till enheten',
+      });
     }
   };
 
@@ -451,7 +452,7 @@ export default function useBLE(): BluetoothLowEnergyApi {
       setConnectedDevice(null);
       setIsDisconnecting(false);
       logger.error('useBLE', 'disconnectDevice', 'Exception ' + e);
-      logErrorForUser('Fel uppstod vid bortkoppling');
+      notify({type: 'error', message: 'Fel uppstod vid bortkoppling'});
     }
   };
 
@@ -523,7 +524,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
           'requestProperty',
           'Property name: ' + propName + ' Exception: ' + e,
         );
-        logErrorForUser('Misslyckades läsa värde från WiRoc enheten');
+        notify({
+          type: 'error',
+          message: 'Misslyckades läsa värde från WiRoc enheten',
+        });
       }
       return null;
     }
@@ -575,7 +579,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
           ' Exception: ' +
           e,
       );
-      logErrorForUser('Misslyckades spara värde till WiRoc enheten');
+      notify({
+        type: 'error',
+        message: 'Misslyckades spara värde till WiRoc enheten',
+      });
       return null;
     }
   };
@@ -591,7 +598,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
           'punchesNotify',
           'Error: ' + error.name + ' ' + error.message,
         );
-        logErrorForUser('Fel uppstod vid updatering av stämplingslistan');
+        notify({
+          type: 'error',
+          message: 'Fel uppstod vid updatering av stämplingslistan',
+        });
       }
     } else if (characteristic !== null && characteristic.value !== null) {
       let bufferOfReceivedNow = Buffer.from(characteristic.value, 'base64');
@@ -647,7 +657,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
       }
     } catch (e) {
       logger.error('useBLE', 'enablePunchesNotification', 'Exception: ' + e);
-      logErrorForUser('Fel uppstod vid start av lyssning av stämplingar');
+      notify({
+        type: 'error',
+        message: 'Fel uppstod vid start av lyssning av stämplingar',
+      });
     }
     console.log('enablePunchesNotification');
   };
@@ -675,7 +688,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
       }
     } catch (e) {
       logger.error('useBLE', 'disablePunchesNotification', 'Exception: ' + e);
-      logErrorForUser('Fel uppstod vid stop av lyssning av stämplingar');
+      notify({
+        type: 'error',
+        message: 'Fel uppstod vid stop av lyssning av stämplingar',
+      });
     }
     console.log('enablePunchesNotification');
   };
@@ -780,7 +796,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
         'enableTestPunchesNotification',
         'Exception: ' + e,
       );
-      logErrorForUser('Fel uppstod vid start av lyssning av teststämplingar');
+      notify({
+        type: 'error',
+        message: 'Fel uppstod vid start av lyssning av teststämplingar',
+      });
     }
     console.log('enableTestPunchesNotification');
   };
@@ -812,7 +831,10 @@ export default function useBLE(): BluetoothLowEnergyApi {
         'disableTestPunchesNotification',
         'Exception: ' + e,
       );
-      logErrorForUser('Fel uppstod vid stop av skickning av teststämplingar');
+      notify({
+        type: 'error',
+        message: 'Fel uppstod vid stop av skickning av teststämplingar',
+      });
     }
     console.log('enablePunchesNotification');
   };
@@ -841,39 +863,12 @@ export default function useBLE(): BluetoothLowEnergyApi {
       }
     } catch (e) {
       logger.error('useBLE', 'startSendTestPunches', 'Exception: ' + e);
-      logErrorForUser('Fel uppstod vid start av skickning av teststämplingar');
+      notify({
+        type: 'error',
+        message: 'Fel uppstod vid start av skickning av teststämplingar',
+      });
       return null;
     }
-  };
-
-  const getErrorsForUser = () => {
-    return errorsForUsers;
-  };
-
-  const logErrorForUser = (msg: string) => {
-    currentErrorsForUsersId++;
-    let log: IErrorsForUser = {
-      id: currentErrorsForUsersId,
-      message: msg,
-    };
-    errorsForUsers.push(log);
-    logger.error('useBLE', 'logErrorForUser', msg);
-    setHasErrorsForUser(true);
-  };
-
-  const removeErrorForUser = (id: number) => {
-    currentErrorsForUsersId++;
-    let idx = errorsForUsers.findIndex((log: IErrorsForUser) => {
-      return log.id === id;
-    });
-    errorsForUsers.splice(idx, 1);
-    setHasErrorsForUser(errorsForUsers.length > 0);
-  };
-
-  const removeErrorsForUser = () => {
-    currentErrorsForUsersId = 0;
-    errorsForUsers = [];
-    setHasErrorsForUser(false);
   };
 
   return {
@@ -891,10 +886,5 @@ export default function useBLE(): BluetoothLowEnergyApi {
     enableTestPunchesNotification,
     disableTestPunchesNotification,
     startSendTestPunches,
-    hasErrorsForUser,
-    getErrorsForUser,
-    logErrorForUser,
-    removeErrorForUser,
-    removeErrorsForUser,
   };
 }

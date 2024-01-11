@@ -7,7 +7,7 @@ import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {Device} from 'react-native-ble-plx';
 import DeviceCard from './DeviceCard';
 import {useBLEApiContext} from '../context/BLEApiContext';
-import ErrorBanner from './ErrorBanner';
+import {Notifications} from './Notifications';
 
 export default function ScanForDevicesScreen() {
   const [isSearching, setIsSearching] = useState<boolean>(false);
@@ -35,7 +35,7 @@ export default function ScanForDevicesScreen() {
   return (
     <SafeAreaView style={Colors.lighter}>
       <StatusBar barStyle={'dark-content'} backgroundColor={Colors.lighter} />
-      <ErrorBanner />
+      <Notifications />
       <ScrollView>
         <Button
           icon=""
