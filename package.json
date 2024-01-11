@@ -18,6 +18,7 @@
     "@react-navigation/stack": "^6.3.20",
     "expo-file-system": "^15.6.0",
     "expo-font": "^11.6.0",
+    "immer": "^10.0.3",
     "react": "18.2.0",
     "react-art": "^18.2.0",
     "react-dom": "^18.2.0",
