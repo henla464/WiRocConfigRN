@@ -257,7 +257,7 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
             navigation.isFocused(),
         );
 
-        navigation.navigate('ScanForDevices' as never);
+        navigation.navigate('ScanForDevices');
       }
     }
   }, [BLEAPI, navigation]);

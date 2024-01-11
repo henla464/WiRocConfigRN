@@ -11,8 +11,9 @@ import {BLEApiContext} from './context/BLEApiContext';
 import useBLE from './hooks/useBLE';
 
 import {DrawerContent} from './components/DrawerContent';
+import {RootStackParamList} from './types/navigation';
 
-const Drawer2 = createDrawerNavigator();
+const Drawer2 = createDrawerNavigator<RootStackParamList>();
 
 function App(): JSX.Element {
   const BLEAPI = useBLE();

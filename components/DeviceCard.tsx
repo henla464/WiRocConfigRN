@@ -51,7 +51,7 @@ export default function DeviceCard({device}: DeviceCardProps) {
 
   useEffect(() => {
     if (isConnected) {
-      navigation.navigate('Device' as never);
+      navigation.navigate('Device');
     }
   }, [isConnected, navigation]);
 

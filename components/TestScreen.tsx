@@ -17,7 +17,7 @@ export default function TestScreen() {
   useEffect(() => {
     if (BLEAPI.connectedDevice === null) {
       logger.debug('TestScreen', 'useEffect', 'navigate to ScanForDevices');
-      navigation.navigate('ScanForDevices' as never);
+      navigation.navigate('ScanForDevices');
     }
   }, [logger, BLEAPI, navigation]);
 

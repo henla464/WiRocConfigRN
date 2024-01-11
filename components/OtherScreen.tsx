@@ -22,7 +22,7 @@ export default function OtherScreen() {
   useEffect(() => {
     if (BLEAPI.connectedDevice === null) {
       logger.debug('OtherScreen', 'useEffect', 'navigate to ScanForDevices');
-      navigation.navigate('ScanForDevices' as never);
+      navigation.navigate('ScanForDevices');
     }
   }, [BLEAPI, navigation, logger]);
 
