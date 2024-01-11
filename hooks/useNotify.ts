@@ -1,5 +1,5 @@
-import {useNotificationStore} from '../stores/notificationStore';
+import {useStore} from '../store';
 
 export const useNotify = () => {
-  return useNotificationStore(state => state.notify);
+  return useStore(state => state.addNotification);
 };

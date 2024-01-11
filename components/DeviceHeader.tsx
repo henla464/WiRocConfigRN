@@ -1,44 +1,21 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Icon, Text, TouchableRipple} from 'react-native-paper';
 import EditDeviceNameModal from './EditDeviceNameModal';
-import {useBLEApiContext} from '../context/BLEApiContext';
+import {
+  useWiRocPropertyMutation,
+  useWiRocPropertyQuery,
+} from '../hooks/useWiRocPropertyQuery';
 
-export default function DeviceHeader() {
-  const BLEAPI = useBLEApiContext();
+export default function DeviceHeader({deviceId}: {deviceId: string}) {
+  const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'wirocdevicename');
+  const {mutate: mutateDeviceName} = useWiRocPropertyMutation(
+    deviceId,
+    'wirocdevicename',
+  );
 
   const [isDeviceNameModalVisiable, setIsDeviceNameModalVisiable] =
     useState<boolean>(false);
-  const [deviceName, setDeviceName] = useState<string>('');
-
-  const updateFromWiRoc = (propName: string, propValue: string) => {
-    console.log(
-      'DeviceHeader:updateFromWiRoc: propName: ' +
-        propName +
-        ' propValue: ' +
-        propValue,
-    );
-    switch (propName) {
-      case 'wirocdevicename':
-        setDeviceName(propValue);
-        break;
-    }
-  };
-
-  useEffect(() => {
-    async function getDeviceHeaderSettings() {
-      if (BLEAPI.connectedDevice !== null) {
-        let pc = BLEAPI.requestProperty(
-          BLEAPI.connectedDevice,
-          'DeviceHeader',
-          'wirocdevicename',
-          updateFromWiRoc,
-        );
-      }
-    }
-
-    getDeviceHeaderSettings();
-  }, [BLEAPI]);
 
   return (
     <View style={styles.headerRow}>
@@ -48,20 +25,12 @@ export default function DeviceHeader() {
           setIsDeviceNameModalVisiable(false);
         }}
         saveSetting={function (newDeviceName: string): void {
-          if (BLEAPI.connectedDevice !== null) {
-            BLEAPI.saveProperty(
-              BLEAPI.connectedDevice,
-              'DeviceHeader',
-              'wirocdevicename',
-              newDeviceName,
-              updateFromWiRoc,
-            );
-            setIsDeviceNameModalVisiable(false);
-          }
+          mutateDeviceName(newDeviceName);
+          setIsDeviceNameModalVisiable(false);
         }}
-        deviceName={deviceName}
+        deviceName={deviceName ?? ''}
       />
-      <Text style={styles.headerText}>{deviceName}</Text>
+      <Text style={styles.headerText}>{deviceName ?? ''}</Text>
       <View style={styles.iconSpacing}>
         <TouchableRipple
           onPress={() => {

@@ -1,76 +1,31 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 
 import {StyleSheet, View} from 'react-native';
 import {Icon, TouchableRipple} from 'react-native-paper';
-import {useBLEApiContext} from '../context/BLEApiContext';
+import {useWiRocPropertyQuery} from '../hooks/useWiRocPropertyQuery';
 import DeviceConnectionModal from './DeviceConnectionModal';
 
-export default function NavigationHeader() {
-  const BLEAPI = useBLEApiContext();
+export default function NavigationHeader({deviceId}: {deviceId: string}) {
+  const {data: batteryLevel = 0, refetch: refetchBatteryLevel} =
+    useWiRocPropertyQuery(deviceId, 'batterylevel');
 
-  const [batteryLevel, setBatteryLevel] = useState<number>(0);
-  const [isCharging, setIsCharging] = useState<boolean>(false);
-  const [isConnected, setIsConnected] = useState<boolean>(false);
+  const {data: isCharging, refetch: refetchIsCharging} = useWiRocPropertyQuery(
+    deviceId,
+    'ischarging',
+  );
 
-  const [triggerVersion, setTriggerVersion] = useState<number>(0);
+  const {data: ip} = useWiRocPropertyQuery(deviceId, 'ip');
+
+  const isConnected = (ip?.length ?? 0) > 0;
+
+  const batteryLevelRounded = Math.round(batteryLevel / 10) * 10;
 
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-
-  const reload = () => {
-    setTriggerVersion(currentValue => {
-      return currentValue + 1;
-    });
-  };
-
-  const updateFromWiRoc = (propName: string, propValue: string) => {
-    console.log('NavigationHeader:updateFromWiRoc: propName: ' + propName);
-    console.log('NavigationHeader:updateFromWiRoc: propValue: ' + propValue);
-    switch (propName) {
-      case 'batterylevel':
-        let batteryLevel1 = parseInt(propValue, 10);
-        let battLevel10 = Math.round(batteryLevel1 / 10) * 10;
-        setBatteryLevel(battLevel10);
-        break;
-      case 'ischarging':
-        setIsCharging(parseInt(propValue, 10) !== 0);
-        break;
-    }
-  };
-
-  useEffect(() => {
-    async function getNavigationHeaderSettings() {
-      if (BLEAPI.connectedDevice !== null) {
-        setIsConnected(true);
-        let pc = BLEAPI.requestProperty(
-          BLEAPI.connectedDevice,
-          'NavigationHeader',
-          'batterylevel',
-          updateFromWiRoc,
-        );
-        /*
-        let pc2 = BLEAPI.requestProperty(
-          BLEAPI.connectedDevice,
-          'NavigationHeader',
-          'ischarging',
-          (propName: string, propValue: string) => {
-            logger.debug(
-              'NavigationHeader',
-              'useEffect',
-              'propName: ' + propName + ' propValue: ' + propValue,
-            );
-            setIsCharging(parseInt(propValue, 10) !== 0);
-          },
-        );*/
-      } else {
-        setIsConnected(false);
-      }
-    }
-    getNavigationHeaderSettings();
-  }, [BLEAPI, triggerVersion]);
 
   return (
     <>
       <DeviceConnectionModal
+        deviceId={deviceId}
         closeModal={() => {
           setIsModalVisible(false);
         }}
@@ -80,9 +35,7 @@ export default function NavigationHeader() {
         <View style={styles.iconSpacing}>
           <TouchableRipple
             onPress={() => {
-              if (isConnected) {
-                setIsModalVisible(true);
-              }
+              setIsModalVisible(true);
             }}>
             <Icon
               source={isConnected ? 'wifi-settings' : 'wifi-off'}
@@ -90,16 +43,22 @@ export default function NavigationHeader() {
             />
           </TouchableRipple>
         </View>
-        <TouchableRipple onPress={() => reload()}>
+        <TouchableRipple
+          onPress={() => {
+            refetchBatteryLevel();
+            refetchIsCharging();
+          }}>
           <Icon
             source={
-              !isCharging && batteryLevel === 0
+              !isCharging && batteryLevelRounded === 0
                 ? 'battery-alert-variant-outline'
-                : batteryLevel === 0
+                : batteryLevelRounded === 0
                 ? 'battery-charging-10'
-                : !isCharging && batteryLevel === 100
+                : !isCharging && batteryLevelRounded === 100
                 ? 'battery'
-                : 'battery-' + (isCharging ? 'charging-' : '') + batteryLevel
+                : 'battery-' +
+                  (isCharging ? 'charging-' : '') +
+                  batteryLevelRounded
             }
             size={40}
           />

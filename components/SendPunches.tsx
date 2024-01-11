@@ -2,17 +2,29 @@ import React, {useEffect, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {SelectList} from 'react-native-dropdown-select-list';
 import {Button, DataTable, Icon, TextInput} from 'react-native-paper';
-import {ITestPunch} from '../hooks/useBLE';
-import {useBLEApiContext} from '../context/BLEApiContext';
+import {wiRocBleManager} from '../App';
+import {useActiveWiRocDevice} from '../hooks/useActiveWiRocDevice';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
+import {TestPunch} from '../api/types';
 
 export default function SendPunches() {
-  const BLEAPI = useBLEApiContext();
+  const deviceId = useActiveWiRocDevice();
+  const queryClient = useQueryClient();
   const [siCardNo, setSiCardNo] = useState<string>('');
-  const [numberOfPunches, setNumberOfPunches] = useState<string>('1');
-  const [isSending, setIsSending] = useState<boolean>(false);
-  const [sendInterval, setSendInterval] = useState<string>('1000');
-  const [punches, setPunches] = useState<ITestPunch[]>([]);
-  const stateRef = useRef<ITestPunch[]>();
+  const [numberOfPunches, setNumberOfPunches] = useState(1);
+  const [isSending, setIsSending] = useState(false);
+  const [sendInterval, setSendInterval] = useState(1000);
+  const stateRef = useRef<TestPunch[]>();
+
+  const {data: punches = []} = useQuery<unknown, unknown, TestPunch[]>({
+    queryKey: [deviceId, 'testPunches'],
+    queryFn: async () => {
+      // The device will stream punches to us.
+      // Managed inside useReactQuerySubscription.
+      return [];
+    },
+    staleTime: Infinity,
+  });
 
   // make stateRef always have the current punches
   stateRef.current = punches;
@@ -47,7 +59,6 @@ export default function SendPunches() {
 
   useEffect(() => {
     let ackReq = true; // todo: use real value?
-    let noOfPunchesToSend: number = parseInt(numberOfPunches, 10);
     let completedPunches = punches.filter(punch => {
       return (
         (punch.Status === 'Acked' && ackReq) ||
@@ -64,76 +75,43 @@ export default function SendPunches() {
         ' no of punches in table: ' +
         punches.length +
         ' no of punches to send: ' +
-        noOfPunchesToSend,
+        numberOfPunches,
     );
     if (
-      punches.length === noOfPunchesToSend &&
-      noOfPunchesToSend === noOfCompletedRows
+      punches.length === numberOfPunches &&
+      numberOfPunches === noOfCompletedRows
     ) {
       // all received, stop listening
-      if (BLEAPI.connectedDevice) {
-        BLEAPI.disableTestPunchesNotification(BLEAPI.connectedDevice);
-      }
+      wiRocBleManager.disableTestPunchesNotification(deviceId);
       setIsSending(false);
     }
-  }, [punches, numberOfPunches, BLEAPI]);
-
-  const displayTestPunches = (propName: string, propValue: string) => {
-    if (propName === 'testpunches') {
-      let testPunchObj = JSON.parse(propValue);
-      console.log('displayTestPunches: length of punches: ' + punches.length);
-      if (stateRef.current) {
-        let currentPunches: ITestPunch[] = stateRef.current;
-        let newPunchArray = [...currentPunches];
-        testPunchObj.punches.forEach(function (changedPunch: ITestPunch) {
-          let idx = newPunchArray.findIndex((oldPunch: ITestPunch) => {
-            return oldPunch.Id === changedPunch.Id;
-          });
-          if (idx >= 0) {
-            console.log('displayTestPunches: update punch');
-            newPunchArray[idx] = changedPunch;
-          } else {
-            console.log('displayTestPunches: add punch');
-            newPunchArray.push(changedPunch);
-          }
-        });
-        console.log('displayTestPunches: ' + JSON.stringify(newPunchArray));
-        setPunches(newPunchArray);
-      }
-    }
-  };
+  }, [punches, numberOfPunches, deviceId]);
 
   const startStopSendPunches = async () => {
     if (isSending) {
-      if (BLEAPI.connectedDevice) {
-        BLEAPI.disableTestPunchesNotification(BLEAPI.connectedDevice);
-      }
+      wiRocBleManager.disableTestPunchesNotification(deviceId);
       setIsSending(false);
     } else {
       if (!siCardNo || siCardNo.length === 0 || isNaN(parseInt(siCardNo, 10))) {
         // error, show message?
         console.log(
           'SendPunches:startStopSendPunches: SI Card no is not an integer number',
+          siCardNo,
         );
         return;
       }
 
-      if (BLEAPI.connectedDevice) {
-        console.log('startStopSendPunches: start send punches');
-        setPunches([]);
-        console.log('startStopSendPunches: emptied punches');
-        let param = numberOfPunches + '\t' + sendInterval + '\t' + siCardNo;
-        BLEAPI.startSendTestPunches(
-          BLEAPI.connectedDevice,
-          'testpunches',
-          param,
-        );
-        BLEAPI.enableTestPunchesNotification(
-          BLEAPI.connectedDevice,
-          displayTestPunches,
-        );
-        setIsSending(true);
-      }
+      console.log('startStopSendPunches: start send punches');
+      queryClient.setQueryData([deviceId, 'testPpunches'], []);
+      console.log('startStopSendPunches: emptied punches');
+      wiRocBleManager.enableTestPunchesNotification(deviceId);
+      wiRocBleManager.startSendTestPunches(deviceId, {
+        numberOfPunches,
+        sendInterval,
+        siCardNo,
+      });
+
+      setIsSending(true);
     }
   };
 
@@ -158,7 +136,7 @@ export default function SendPunches() {
         <SelectList
           setSelected={(val: string) => {
             console.log(val);
-            setNumberOfPunches(val);
+            setNumberOfPunches(parseInt(val, 10));
           }}
           data={sendNumberList}
           save="key"
@@ -185,7 +163,7 @@ export default function SendPunches() {
         <SelectList
           setSelected={(val: string) => {
             console.log(val);
-            setSendInterval(val);
+            setSendInterval(parseInt(val, 10));
           }}
           data={sendIntervalList}
           save="key"

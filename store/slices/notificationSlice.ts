@@ -1,9 +1,8 @@
-import {create} from 'zustand';
-import {immer} from 'zustand/middleware/immer';
+import {ImmerStateCreator} from '../types';
 
-export interface NotificationStore {
+export interface NotificationSliceState {
   notifications: Notification[];
-  notify: (notification: Omit<Notification, 'id'>) => void;
+  addNotification: (notification: Omit<Notification, 'id'>) => void;
   removeNotification: (id: number) => void;
   removeAllNotifications: () => void;
 }
@@ -16,10 +15,12 @@ interface Notification {
 
 let nextId = 0;
 
-export const useNotificationStore = create<NotificationStore>()(
-  immer(set => ({
+export const createNotificationSlice: ImmerStateCreator<
+  NotificationSliceState
+> = set => {
+  return {
     notifications: [],
-    notify: notification => {
+    addNotification: notification => {
       set(state => {
         state.notifications.push({
           ...notification,
@@ -39,5 +40,5 @@ export const useNotificationStore = create<NotificationStore>()(
         state.notifications = [];
       });
     },
-  })),
-);
+  };
+};

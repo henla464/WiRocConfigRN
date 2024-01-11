@@ -2,114 +2,74 @@ import React, {useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {Button, DataTable, Divider} from 'react-native-paper';
-import {useBLEApiContext} from '../context/BLEApiContext';
-import {useLogger} from '../hooks/useLogger';
+import {useActiveWiRocDevice} from '../hooks/useActiveWiRocDevice';
 import {useNotify} from '../hooks/useNotify';
-import {useLoggerStore} from '../stores/loggerStore';
+import {
+  useWiRocPropertyMutation,
+  useWiRocPropertyQuery,
+} from '../hooks/useWiRocPropertyQuery';
+import {useStore} from '../store';
 import {formatLog} from '../utils/formatLog';
 
-interface IServices {
-  Name: string;
-  Status: string;
-}
-
-interface IInData {
-  TypeName: string;
-  InstanceName: string;
-}
-
-interface IOutData {
-  TypeName: string;
-  InstanceName: string;
-  MessageInName: string;
-  MessageInSubTypeName: string;
-  MessageOutName: string;
-  MessageOutSubTypeName: string;
-  Enabled: string;
-}
-
 export default function Status() {
-  const logger = useLogger();
-  const logs = useLoggerStore(state => state.logs);
+  const logs = useStore(state => state.logs);
   const notify = useNotify();
-  const BLEAPI = useBLEApiContext();
-  const [services, setServices] = useState<IServices[]>([]);
-  const [inData, setInData] = useState<IInData[]>([]);
-  const [outData, setOutData] = useState<IOutData[]>([]);
   const [isLogsVisible, setLogsVisible] = useState(false);
 
-  const fetchRefreshStatusData = () => {
-    if (BLEAPI.connectedDevice) {
-      console.log('Status:useEffect 2');
-      BLEAPI.requestProperty(
-        BLEAPI.connectedDevice,
-        'Status',
-        'services|status',
-        (propName, propValue) => {
-          if (propName === 'services') {
-            try {
-              let servicesObj = JSON.parse(propValue);
-              setServices(servicesObj.services);
-            } catch (e) {
-              logger.error(
-                'Status',
-                'useEffect',
-                'fetch services exception: ' + e,
-              );
-              notify({type: 'error', message: 'Kunde inte hämta "Services""'});
-            }
-          }
-          if (propName === 'status') {
-            try {
-              let statusObj = JSON.parse(propValue);
-              setInData(statusObj.inputAdapters);
-              setOutData(statusObj.subscriberAdapters);
-            } catch (e) {
-              logger.error(
-                'Status',
-                'useEffect',
-                'fetch status exception: ' + e,
-              );
-              notify({
-                type: 'error',
-                message:
-                  'Kunde inte hämta "Indata" och "Utdata och transformering"',
-              });
-            }
-          }
-        },
-      );
-    }
-  };
+  const deviceId = useActiveWiRocDevice();
+  const {data: {services} = {services: []}, refetch: refetchServices} =
+    useWiRocPropertyQuery(deviceId, 'services', {
+      enabled: false,
+    });
+  const {data: status, refetch: refetchStatus} = useWiRocPropertyQuery(
+    deviceId,
+    'status',
+    {
+      enabled: false,
+    },
+  );
 
-  const uploadDatabaseAndLogs = async () => {
-    if (BLEAPI.connectedDevice) {
-      BLEAPI.requestProperty(
-        BLEAPI.connectedDevice,
-        'Status',
-        'uploadlogarchive',
-        (propName, propValue) => {
-          if (propName === 'uploadlogarchive') {
-            console.log('Database:uploadlogarchive: ' + propValue);
-          }
-        },
-      );
-    }
-  };
+  const inData = status?.inputAdapters;
+  const outData = status?.subscriberAdapters;
+
+  const {mutate: uploadDatabaseAndLogs} = useWiRocPropertyMutation(
+    deviceId,
+    'uploadlogarchive',
+  );
 
   return (
     <View style={styles.container}>
       <Button
         icon=""
         mode="contained"
-        onPress={uploadDatabaseAndLogs}
+        onPress={() => {
+          uploadDatabaseAndLogs();
+        }}
         style={[styles.button]}>
         Ladda upp enhetens databas och loggar
       </Button>
       <Button
         icon=""
         mode="contained"
-        onPress={fetchRefreshStatusData}
+        onPress={() => {
+          try {
+            refetchServices({throwOnError: true});
+          } catch (err) {
+            notify({
+              type: 'error',
+              message: 'Kunde inte hämta "Services"',
+            });
+          }
+          try {
+            refetchStatus({throwOnError: true});
+          } catch (err) {
+            notify({
+              type: 'error',
+              message:
+                'Kunde inte hämta "Indata" och "Utdata och transformering"',
+            });
+          }
+        }}
         style={[styles.button]}>
         Hämta status information
       </Button>
@@ -121,7 +81,7 @@ export default function Status() {
               <DataTable.Title>Namn</DataTable.Title>
               <DataTable.Title>Status</DataTable.Title>
             </DataTable.Header>
-            {services.map(service => (
+            {services?.map(service => (
               <DataTable.Row key={service.Name} style={styles.row}>
                 <DataTable.Cell>{service.Name}</DataTable.Cell>
                 <DataTable.Cell>{service.Status}</DataTable.Cell>
@@ -141,7 +101,7 @@ export default function Status() {
               <DataTable.Title>Indata adapter</DataTable.Title>
               <DataTable.Title>Instans</DataTable.Title>
             </DataTable.Header>
-            {inData.map(inD => (
+            {inData?.map(inD => (
               <DataTable.Row key={inD.TypeName} style={styles.row}>
                 <DataTable.Cell>{inD.TypeName}</DataTable.Cell>
                 <DataTable.Cell>{inD.InstanceName}</DataTable.Cell>
@@ -167,7 +127,7 @@ export default function Status() {
                 <DataTable.Title>Utmed. undertyp</DataTable.Title>
                 <DataTable.Title>Aktiv</DataTable.Title>
               </DataTable.Header>
-              {outData.map((outD, idx) => (
+              {outData?.map((outD, idx) => (
                 <DataTable.Row key={idx} style={styles.row}>
                   <DataTable.Cell>{outD.TypeName}</DataTable.Cell>
                   <DataTable.Cell>{outD.InstanceName}</DataTable.Cell>

@@ -6,8 +6,8 @@ import ConnectedChip from './ConnectedChip';
 interface IWifiItem {
   networkName: string;
   isConnected: boolean;
-  signalStrength: string;
-  wifiConnect: (networkName: string, password: string) => void;
+  signalStrength: number;
+  wifiConnect: (args: {networkName: string; password: string}) => void;
   wifiDisconnect: (networkName: string) => void;
 }
 
@@ -66,7 +66,7 @@ const WifiItem = ({
             onPress={() => {
               isConnected
                 ? wifiDisconnect(networkName)
-                : wifiConnect(networkName, password);
+                : wifiConnect({networkName, password});
             }}>
             {isConnected ? 'Koppla från' : 'Anslut'}
           </Button>

@@ -1,52 +1,32 @@
+import {useQuery, useQueryClient} from '@tanstack/react-query';
 import React, {useState} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {Button, DataTable} from 'react-native-paper';
-import {useBLEApiContext} from '../context/BLEApiContext';
-import {IPunch} from '../hooks/useBLE';
+import {Punch} from '../api/types';
+import {wiRocBleManager} from '../App';
+import {useActiveWiRocDevice} from '../hooks/useActiveWiRocDevice';
 
 export default function ViewPunches() {
-  const BLEAPI = useBLEApiContext();
+  const deviceId = useActiveWiRocDevice();
   const [isListening, setIsListening] = useState<boolean>(false);
-  const [punches, setPunches] = useState<IPunch[]>([
-    {
-      Id: 1,
-      StationNumber: 250,
-      SICardNumber: 102121,
-      Time: '20:30',
+
+  const {data: punches = []} = useQuery<unknown, unknown, Punch[]>({
+    queryKey: [deviceId, 'punches'],
+    queryFn: async () => {
+      // The device will stream punches to us.
+      // Managed inside useReactQuerySubscription.
+      return [];
     },
-  ]);
-
-  const updatePunches = (propName: string, propValue: string) => {
-    if (propName === 'punches') {
-      var punchesObj = JSON.parse(propValue);
-
-      let newPunchArray = punchesObj.punches.map(
-        (punch: IPunch, idx: number) => {
-          return {
-            Id: idx,
-            StationNumber: punch.StationNumber,
-            SICardNumber: punch.SICardNumber,
-            Time: punch.Time,
-          };
-        },
-      );
-
-      setPunches(newPunchArray);
-    } else {
-      console.log('ViewPunches:updatePunches propName unknown: ' + propName);
-    }
-  };
+    staleTime: Infinity,
+  });
+  const queryClient = useQueryClient();
 
   const startStopViewPunches = async () => {
     if (isListening) {
-      if (BLEAPI.connectedDevice) {
-        BLEAPI.disablePunchesNotification(BLEAPI.connectedDevice);
-      }
+      wiRocBleManager.disablePunchesNotification(deviceId);
       setIsListening(false);
     } else {
-      if (BLEAPI.connectedDevice) {
-        BLEAPI.enablePunchesNotification(BLEAPI.connectedDevice, updatePunches);
-      }
+      wiRocBleManager.enablePunchesNotification(deviceId);
       setIsListening(true);
     }
   };
@@ -68,7 +48,7 @@ export default function ViewPunches() {
           icon=""
           mode="contained"
           onPress={() => {
-            setPunches([]);
+            queryClient.setQueryData([deviceId, 'punches'], []);
           }}
           style={[styles.button, {flex: 1, marginRight: 0}]}>
           Rensa
@@ -82,8 +62,8 @@ export default function ViewPunches() {
             <DataTable.Title>Tid</DataTable.Title>
           </DataTable.Header>
           <ScrollView>
-            {punches.map(punch => (
-              <DataTable.Row key={punch.Id} style={styles.row}>
+            {punches.map((punch, idx) => (
+              <DataTable.Row key={idx} style={styles.row}>
                 <DataTable.Cell>{punch.StationNumber}</DataTable.Cell>
                 <DataTable.Cell>{punch.SICardNumber}</DataTable.Cell>
                 <DataTable.Cell>{punch.Time}</DataTable.Cell>

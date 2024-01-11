@@ -10,13 +10,13 @@ interface ISaveBannerProps {
   onShowAnimationFinished: Animated.EndCallback;
 }
 
-const SaveBanner = ({
+export default function SaveBanner({
   visible,
   save,
   reload,
   onHideAnimationFinished,
   onShowAnimationFinished,
-}: ISaveBannerProps) => {
+}: ISaveBannerProps) {
   return (
     <Banner
       style={{
@@ -47,6 +47,4 @@ const SaveBanner = ({
       uppdatera från enheten?
     </Banner>
   );
-};
-
-export default SaveBanner;
+}
