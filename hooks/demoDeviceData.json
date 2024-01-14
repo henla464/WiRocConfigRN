@@ -33,5 +33,7 @@
   "wirochwversion": "v7Rev1",
   "wirocpythonversion": "0.210",
   "rtc/datetime": "2024-01-01 10:10:00",
-  "rtc/wakeup": "10:15"
+  "rtc/wakeup": "10:15",
+  "power": "22",
+  "coderate": "0"
 }

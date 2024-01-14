@@ -13,6 +13,8 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
     const [loraMode, setLoraMode] = useState<string>('RECEIVER');
     const [channel, setChannel] = useState<string>('1');
     const [radioRange, setRadioRange] = useState<string>('L');
+    const [codeRate, setCodeRate] = useState<string>('0');
+    const [loraPower, setLoraPower] = useState<string>('22');
 
     const [origIsLoraRadioEnabled, setOrigIsLoraRadioEnabled] = useState<
       boolean | null
@@ -20,17 +22,79 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
     const [origLoraMode, setOrigLoraMode] = useState<string | null>(null);
     const [origChannel, setOrigChannel] = useState<string | null>(null);
     const [origRadioRange, setOrigRadioRange] = useState<string | null>(null);
+    const [origCodeRate, setOrigCodeRate] = useState<string | null>(null);
+    const [origLoraPower, setOrigLoraPower] = useState<string | null>(null);
 
     const [triggerVersion, setTriggerVersion] = useState<number>(0);
 
     const channelList = [
-      {key: '1', value: '1'},
-      {key: '2', value: '2'},
-      {key: '3', value: '3'},
-      {key: '4', value: '4'},
-      {key: '5', value: '5'},
-      {key: '6', value: '6'},
-      {key: '7', value: '7'},
+      {key: '1', value: '1', disabled: !isLoraRadioEnabled},
+      {key: '2', value: '2', disabled: !isLoraRadioEnabled},
+      {key: '3', value: '3', disabled: !isLoraRadioEnabled},
+      {key: '4', value: '4', disabled: !isLoraRadioEnabled},
+      {key: '5', value: '5', disabled: !isLoraRadioEnabled},
+      {key: '6', value: '6', disabled: !isLoraRadioEnabled},
+      {key: '7', value: '7', disabled: !isLoraRadioEnabled},
+    ];
+
+    const codeRateList = [
+      {
+        key: '0',
+        value: '4/5 (1 ECC bit, 4 data bits)',
+        disabled: !isLoraRadioEnabled,
+      },
+      {
+        key: '1',
+        value: '4/6 (2 ECC bits, 4 data bits)',
+        disabled: !isLoraRadioEnabled,
+      },
+      {
+        key: '2',
+        value: '4/7 (3 ECC bits, 4 data bits)',
+        disabled: !isLoraRadioEnabled,
+      },
+      {
+        key: '3',
+        value: '4/8 (4 ECC bits, 4 data bits)',
+        disabled: !isLoraRadioEnabled,
+      },
+    ];
+
+    const loraPowerList = [
+      {key: '1', value: '1 dBm', disabled: !isLoraRadioEnabled},
+      {key: '2', value: '2 dBm', disabled: !isLoraRadioEnabled},
+      {key: '3', value: '3 dbm', disabled: !isLoraRadioEnabled},
+      {key: '4', value: '4 dbm', disabled: !isLoraRadioEnabled},
+      {key: '5', value: '5 dbm', disabled: !isLoraRadioEnabled},
+      {key: '6', value: '6 dbm', disabled: !isLoraRadioEnabled},
+      {key: '7', value: '7 dbm', disabled: !isLoraRadioEnabled},
+      {key: '8', value: '8 dbm', disabled: !isLoraRadioEnabled},
+      {key: '9', value: '9 dbm', disabled: !isLoraRadioEnabled},
+      {key: '10', value: '10 dbm', disabled: !isLoraRadioEnabled},
+      {key: '11', value: '11 dbm', disabled: !isLoraRadioEnabled},
+      {key: '12', value: '12 dbm', disabled: !isLoraRadioEnabled},
+      {key: '13', value: '13 dbm', disabled: !isLoraRadioEnabled},
+      {key: '14', value: '14 dbm', disabled: !isLoraRadioEnabled},
+      {key: '15', value: '15 dbm', disabled: !isLoraRadioEnabled},
+      {
+        key: '16',
+        value: '16 dbm (max 11 element yagi)',
+        disabled: !isLoraRadioEnabled,
+      },
+      {key: '17', value: '17 dbm', disabled: !isLoraRadioEnabled},
+      {key: '18', value: '18 dbm', disabled: !isLoraRadioEnabled},
+      {
+        key: '19',
+        value: '19 dbm (max 7 element yagi)',
+        disabled: !isLoraRadioEnabled,
+      },
+      {key: '20', value: '20 dbm', disabled: !isLoraRadioEnabled},
+      {key: '21', value: '21 dbm', disabled: !isLoraRadioEnabled},
+      {
+        key: '22',
+        value: '22 dbm (max 4 element yagi)',
+        disabled: !isLoraRadioEnabled,
+      },
     ];
 
     useImperativeHandle(ref, () => {
@@ -53,6 +117,20 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
     };
 
     const save = () => {
+      if (origIsLoraRadioEnabled !== isLoraRadioEnabled) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'LoraRadio',
+            'lora/enabled',
+            isLoraRadioEnabled ? '1' : '0',
+            updateFromWiRoc,
+          );
+        } else {
+          console.log('LoraRadio:save:0 not connected to device');
+        }
+      }
+
       if (origLoraMode !== loraMode) {
         if (BLEAPI.connectedDevice) {
           BLEAPI.saveProperty(
@@ -92,12 +170,42 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
           console.log('LoraRadio:save:3 not connected to device');
         }
       }
+      if (origLoraPower !== loraPower) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'LoraRadio',
+            'power',
+            loraPower,
+            updateFromWiRoc,
+          );
+        } else {
+          console.log('LoraRadio:save:4 not connected to device');
+        }
+      }
+      if (origCodeRate !== codeRate) {
+        if (BLEAPI.connectedDevice) {
+          BLEAPI.saveProperty(
+            BLEAPI.connectedDevice,
+            'LoraRadio',
+            'coderate',
+            codeRate,
+            updateFromWiRoc,
+          );
+        } else {
+          console.log('LoraRadio:save:5 not connected to device');
+        }
+      }
     };
 
     const updateFromWiRoc = (propName: string, propValue: string) => {
       console.log('LoraRadio:updateFromWiRoc: propName: ' + propName);
       console.log('LoraRadio:updateFromWiRoc: propValue: ' + propValue);
       switch (propName) {
+        case 'lora/enabled':
+          setIsLoraRadioEnabled(parseInt(propValue, 10) !== 0);
+          setOrigIsLoraRadioEnabled(parseInt(propValue, 10) !== 0);
+          break;
         case 'loramode':
           setLoraMode(propValue);
           setOrigLoraMode(propValue);
@@ -110,6 +218,14 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
           setRadioRange(propValue);
           setOrigRadioRange(propValue);
           break;
+        case 'power':
+          setLoraPower(propValue);
+          setOrigLoraPower(propValue);
+          break;
+        case 'coderate':
+          setCodeRate(propValue);
+          setOrigCodeRate(propValue);
+          break;
       }
     };
     useEffect(() => {
@@ -121,21 +237,9 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
           let pc = BLEAPI.requestProperty(
             BLEAPI.connectedDevice,
             'LoraRadio',
-            'loramode|channel|lorarange',
+            'loramode|channel|lorarange|power|coderate|lora/enabled',
             updateFromWiRoc,
           );
-          /*let pc2 = BLEAPI.requestProperty(
-            BLEAPI.connectedDevice,
-            'LoraRadio',
-            'channel',
-            updateFromWiRoc,
-          );
-          let pc3 = BLEAPI.requestProperty(
-            BLEAPI.connectedDevice,
-            'LoraRadio',
-            'lorarange',
-            updateFromWiRoc,
-          );*/
         }
       }
       getLoraRadioSettings();
@@ -143,18 +247,22 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
 
     useEffect(() => {
       if (
-        //origIsLoraRadioEnabled === null ||
-        origLoraMode == null ||
+        origIsLoraRadioEnabled === null ||
+        origLoraMode === null ||
         origChannel === null ||
-        origRadioRange == null
+        origRadioRange === null ||
+        origCodeRate === null ||
+        origLoraPower === null
       ) {
         return;
       }
       if (
-        //origIsLoraRadioEnabled !== isLoraRadioEnabled ||
+        origIsLoraRadioEnabled !== isLoraRadioEnabled ||
         origLoraMode !== loraMode ||
         origChannel !== channel ||
-        origRadioRange !== radioRange
+        origRadioRange !== radioRange ||
+        origCodeRate !== codeRate ||
+        origLoraPower !== loraPower
       ) {
         compProps.setIsDirtyFunction(compProps.id, true);
       } else {
@@ -165,11 +273,15 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
       loraMode,
       channel,
       radioRange,
+      codeRate,
+      loraPower,
       compProps,
       origIsLoraRadioEnabled,
       origLoraMode,
       origChannel,
       origRadioRange,
+      origCodeRate,
+      origLoraPower,
     ]);
 
     return (
@@ -225,13 +337,20 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
                 icon: 'login',
                 value: 'RECEIVER',
                 label: 'Mottagare',
+                disabled: !isLoraRadioEnabled,
               },
               {
                 icon: 'pan-horizontal',
                 value: 'REPEATER',
                 label: 'Repeater',
+                disabled: !isLoraRadioEnabled,
               },
-              {icon: 'logout', value: 'SENDER', label: 'Sändare'},
+              {
+                icon: 'logout',
+                value: 'SENDER',
+                label: 'Sändare',
+                disabled: !isLoraRadioEnabled,
+              },
             ]}
           />
 
@@ -247,17 +366,30 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
             save="key"
             search={false}
             placeholder={' '}
+            disabledItemStyles={{backgroundColor: 'gray'}}
+            disabledTextStyles={{fontSize: 30}}
             dropdownTextStyles={{fontSize: 30}}
             dropdownStyles={{backgroundColor: 'gray'}}
             inputStyles={{
               fontSize: 60,
               fontWeight: '900',
+              color: isLoraRadioEnabled
+                ? 'rgb(100,100,100)'
+                : 'rgb(155,155,155)',
             }}
             boxStyles={{
               width: 120,
               alignItems: 'center',
             }}
-            arrowicon={<Icon source="chevron-down" size={35} color={'black'} />}
+            arrowicon={
+              <Icon
+                source="chevron-down"
+                size={35}
+                color={
+                  isLoraRadioEnabled ? 'rgb(100,100,100)' : 'rgb(155,155,155)'
+                }
+              />
+            }
             defaultOption={{key: channel, value: channel}}
           />
 
@@ -271,6 +403,7 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
               label="Ultra Long 73 bps"
               value="UL"
               labelVariant="titleLarge"
+              disabled={!isLoraRadioEnabled}
               style={{
                 flexDirection: 'row-reverse',
                 paddingBottom: 3,
@@ -281,6 +414,7 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
               label="eXtra Long 134 bps"
               value="XL"
               labelVariant="titleLarge"
+              disabled={!isLoraRadioEnabled}
               style={{
                 flexDirection: 'row-reverse',
                 paddingBottom: 3,
@@ -291,6 +425,7 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
               label="Long 244 bps"
               value="L"
               labelVariant="titleLarge"
+              disabled={!isLoraRadioEnabled}
               style={{
                 flexDirection: 'row-reverse',
                 paddingBottom: 3,
@@ -301,6 +436,7 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
               label="Medium Long 439 bps"
               value="ML"
               labelVariant="titleLarge"
+              disabled={!isLoraRadioEnabled}
               style={{
                 flexDirection: 'row-reverse',
                 paddingBottom: 3,
@@ -311,6 +447,7 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
               label="Medium Long 781 bps"
               value="MS"
               labelVariant="titleLarge"
+              disabled={!isLoraRadioEnabled}
               style={{
                 flexDirection: 'row-reverse',
                 paddingBottom: 3,
@@ -321,6 +458,7 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
               label="Short 1367 bps"
               value="S"
               labelVariant="titleLarge"
+              disabled={!isLoraRadioEnabled}
               style={{
                 flexDirection: 'row-reverse',
                 paddingBottom: 3,
@@ -328,6 +466,88 @@ const LoraRadio = React.forwardRef<IRefRetType, IConfigComponentProps>(
               }}
             />
           </RadioButton.Group>
+
+          <Text style={{fontSize: 30, fontWeight: 'bold', paddingTop: 14}}>
+            Code Rate
+          </Text>
+          <SelectList
+            setSelected={(val: string) => {
+              console.log(val);
+              setCodeRate(val);
+            }}
+            data={codeRateList}
+            save="key"
+            search={false}
+            placeholder={' '}
+            disabledItemStyles={{backgroundColor: 'gray'}}
+            disabledTextStyles={{fontSize: 20}}
+            dropdownTextStyles={{fontSize: 20}}
+            dropdownStyles={{backgroundColor: 'gray'}}
+            inputStyles={{
+              fontSize: 20,
+              fontWeight: '900',
+              color: isLoraRadioEnabled
+                ? 'rgb(100,100,100)'
+                : 'rgb(155,155,155)',
+            }}
+            boxStyles={{
+              alignItems: 'center',
+            }}
+            arrowicon={
+              <Icon
+                source="chevron-down"
+                size={35}
+                color={
+                  isLoraRadioEnabled ? 'rgb(100,100,100)' : 'rgb(155,155,155)'
+                }
+              />
+            }
+            defaultOption={codeRateList.find(item => {
+              return item.key === codeRate;
+            })}
+          />
+
+          <Text style={{fontSize: 30, fontWeight: 'bold', paddingTop: 14}}>
+            Uteffekt
+          </Text>
+
+          <SelectList
+            setSelected={(val: string) => {
+              console.log(val);
+              setLoraPower(val);
+            }}
+            data={loraPowerList}
+            save="key"
+            search={false}
+            placeholder={' '}
+            dropdownShown={isLoraRadioEnabled ? undefined : false}
+            disabledItemStyles={{backgroundColor: 'gray'}}
+            disabledTextStyles={{fontSize: 20}}
+            dropdownTextStyles={{fontSize: 20}}
+            dropdownStyles={{backgroundColor: 'gray'}}
+            inputStyles={{
+              fontSize: 20,
+              fontWeight: '900',
+              color: isLoraRadioEnabled
+                ? 'rgb(100,100,100)'
+                : 'rgb(155,155,155)',
+            }}
+            boxStyles={{
+              alignItems: 'center',
+            }}
+            arrowicon={
+              <Icon
+                source="chevron-down"
+                size={35}
+                color={
+                  isLoraRadioEnabled ? 'rgb(100,100,100)' : 'rgb(155,155,155)'
+                }
+              />
+            }
+            defaultOption={loraPowerList.find(item => {
+              return item.key === loraPower;
+            })}
+          />
         </View>
       </List.Accordion>
     );
@@ -357,9 +577,9 @@ const styles = StyleSheet.create({
     paddingLeft: 10,
     paddingTop: 10,
     paddingRight: 10,
-    paddingBottom: 1,
+    paddingBottom: 10,
     backgroundColor: 'lightgray',
-    height: 600,
+
     alignItems: 'center',
   },
   switch: {
