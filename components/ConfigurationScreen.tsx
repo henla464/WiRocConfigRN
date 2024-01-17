@@ -39,6 +39,8 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
     ISectionComponent[]
   >([]);
 
+  const [scrollViewRef, setScrollViewRef] = useState<ScrollView | null>(null);
+
   useEffect(() => {
     if (BLEAPI.connectedDevice !== null) {
       let pc = BLEAPI.requestProperty(
@@ -262,6 +264,20 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
     }
   }, [BLEAPI, navigation]);
 
+  const [mTop, setMTop] = useState(0);
+  const [currentScrollPosition, setCurrentScrollPosition] = useState(0);
+  /*
+  useEffect(() => {
+    if (isDirty) {
+      setMTop(130);
+      scrollViewRef?.scrollTo({x: 0, y: 130, animated: false});
+    } else {
+      setMTop(0);
+      scrollViewRef?.scrollTo({x: 0, y: 0, animated: false});
+    }
+    console.log('hej hej');
+  }, [isDirty, scrollViewRef]);
+*/
   return (
     <SafeAreaView style={Colors.lighter}>
       <Notifications />
@@ -269,8 +285,31 @@ export default function ConfigurationScreen(): ReactElement<React.FC> {
         visible={isDirty}
         save={saveConfigurationScreen}
         reload={reloadConfigurationScreen}
+        onHideAnimationFinished={() => {
+          setMTop(0);
+          scrollViewRef?.scrollTo({
+            x: 0,
+            y: currentScrollPosition - 133,
+            animated: false,
+          });
+        }}
+        onShowAnimationFinished={() => {
+          setMTop(133);
+          scrollViewRef?.scrollTo({
+            x: 0,
+            y: currentScrollPosition + 133,
+            animated: false,
+          });
+        }}
       />
-      <ScrollView>
+      <ScrollView
+        ref={ref => {
+          setScrollViewRef(ref);
+        }}
+        onScroll={e => {
+          setCurrentScrollPosition(e.nativeEvent.contentOffset.y);
+        }}
+        style={{marginTop: mTop}}>
         <List.AccordionGroup>
           <View>
             <Divider bold={true} />

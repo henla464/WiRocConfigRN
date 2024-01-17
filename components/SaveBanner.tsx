@@ -1,16 +1,34 @@
 import * as React from 'react';
-import {Image} from 'react-native';
+import {Animated, Image} from 'react-native';
 import {Banner, Icon} from 'react-native-paper';
 
 interface ISaveBannerProps {
   visible: boolean;
   save: () => void;
   reload: () => void;
+  onHideAnimationFinished: Animated.EndCallback;
+  onShowAnimationFinished: Animated.EndCallback;
 }
 
-const SaveBanner = ({visible, save, reload}: ISaveBannerProps) => {
+const SaveBanner = ({
+  visible,
+  save,
+  reload,
+  onHideAnimationFinished,
+  onShowAnimationFinished,
+}: ISaveBannerProps) => {
   return (
     <Banner
+      style={{
+        flex: 1,
+        position: 'absolute',
+        left: 0,
+        right: 0,
+        top: 0,
+        zIndex: 2,
+      }}
+      onHideAnimationFinished={onHideAnimationFinished}
+      onShowAnimationFinished={onShowAnimationFinished}
       visible={visible}
       actions={[
         {
