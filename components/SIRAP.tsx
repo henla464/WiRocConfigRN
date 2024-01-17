@@ -66,7 +66,7 @@ const SIRAP = React.forwardRef<IRefRetType, IConfigComponentProps>(
           BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
             'SIRAP',
-            'onewayreceive',
+            'sendtosirapenabled',
             isSIRAPSwitchedOn ? '1' : '0',
             updateFromWiRoc,
           );
@@ -80,7 +80,7 @@ const SIRAP = React.forwardRef<IRefRetType, IConfigComponentProps>(
           BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
             'SIRAP',
-            'force4800baudrate',
+            'sendtosirapip',
             ipAddress,
             updateFromWiRoc,
           );
@@ -94,7 +94,7 @@ const SIRAP = React.forwardRef<IRefRetType, IConfigComponentProps>(
           BLEAPI.saveProperty(
             BLEAPI.connectedDevice,
             'SIRAP',
-            'force4800baudrate',
+            'sendtosirapipport',
             ipPort,
             updateFromWiRoc,
           );
