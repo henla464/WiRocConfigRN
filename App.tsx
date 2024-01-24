@@ -11,31 +11,20 @@ import NavigationHeader from './components/NavigationHeader';
 import {DrawerContent} from './components/DrawerContent';
 import {RootDrawerParamList} from './types/navigation';
 import {createWiRocBleManager} from './utils/wiRocBleManager';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {useStore} from './store';
 import {useReactQuerySubscription} from './hooks/useReactQuerySubscription';
-
-const queryClient = new QueryClient();
 
 const Drawer2 = createDrawerNavigator<RootDrawerParamList>();
 
 export const wiRocBleManager = createWiRocBleManager();
 
-function App(): JSX.Element {
+export function App() {
   const syncKnownDevices = useStore(state => state.syncKnownDevices);
 
   useEffect(() => {
     syncKnownDevices();
   }, [syncKnownDevices]);
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <Tmp />
-    </QueryClientProvider>
-  );
-}
-
-const Tmp = () => {
   const activeDeviceId = useStore(state => state.activeDeviceId);
   useReactQuerySubscription(wiRocBleManager);
 
@@ -77,6 +66,6 @@ const Tmp = () => {
       </Drawer2.Navigator>
     </NavigationContainer>
   );
-};
+}
 
 export default App;
