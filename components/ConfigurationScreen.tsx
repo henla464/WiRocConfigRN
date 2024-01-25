@@ -1,6 +1,6 @@
-import React, {ReactElement, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {SafeAreaView, ScrollView, StyleSheet, Text, View} from 'react-native';
-import {Divider, List} from 'react-native-paper';
+import {Divider, List, MaterialBottomTabScreenProps} from 'react-native-paper';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 import SIRAP from './SIRAP';
@@ -9,341 +9,145 @@ import USB from './USB';
 import SerialBluetooth from './SerialBluetooth';
 import LoraRadio from './LoraRadio';
 import SRR from './SRR';
-import IRefRetType from '../interface/IRefRetType';
 import SaveBanner from './SaveBanner';
-import {useNavigation} from '@react-navigation/native';
-import {useBLEApiContext} from '../context/BLEApiContext';
 import {Notifications} from './Notifications';
+import {ConfigurationTabParamList} from '../types/navigation';
+import {
+  useWiRocPropertiesMutation,
+  useWiRocPropertyQuery,
+} from '../hooks/useWiRocPropertyQuery';
+import {SettablePropName, SettableValues} from '../api/transformers';
+import {FormProvider, useForm} from 'react-hook-form';
+import {useActiveWiRocDevice} from '../hooks/useActiveWiRocDevice';
 
-interface ISectionComponent {
-  Comp: React.JSX.Element;
-  Name: String;
-  SectionName: string;
-  id: number;
-  isDirty: boolean;
-  childRef: React.RefObject<IRefRetType>;
+type ConfigurationScreenProps = MaterialBottomTabScreenProps<
+  ConfigurationTabParamList,
+  'configuration'
+>;
+
+type OnDefaultValuesChangeHandler = (values: Partial<SettableValues>) => void;
+
+export interface SectionComponentProps {
+  deviceId: string;
+  onDefaultValuesChange: OnDefaultValuesChangeHandler;
 }
 
-export default function ConfigurationScreen(): ReactElement<React.FC> {
-  const BLEAPI = useBLEApiContext();
-  const [isDirty, setIsDirty] = useState<boolean>(false);
-  const usbChildRef = useRef<IRefRetType>(null);
-  const serialBluetoothRef = useRef<IRefRetType>(null);
-  const SRRChildRef = useRef<IRefRetType>(null);
-  const loraChildRef = useRef<IRefRetType>(null);
-  const RS232ChildRef = useRef<IRefRetType>(null);
-  const SIRAPChildRef = useRef<IRefRetType>(null);
-  const [hasSRR, setHasSRR] = useState<boolean>(false);
-  const navigation = useNavigation();
-  const [configurationComponents, setConfigurationComponents] = useState<
-    ISectionComponent[]
-  >([]);
+export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
+  const deviceId = useActiveWiRocDevice();
+  const [defaultValues, setDefaultValues] = useState<Partial<SettableValues>>(
+    {},
+  );
+
+  const form = useForm<Partial<SettableValues>>({
+    defaultValues: {},
+  });
 
   const [scrollViewRef, setScrollViewRef] = useState<ScrollView | null>(null);
 
-  useEffect(() => {
-    if (BLEAPI.connectedDevice !== null) {
-      let pc = BLEAPI.requestProperty(
-        BLEAPI.connectedDevice,
-        'ConfigurationScreen',
-        'hashw/srr',
-        (propName: string, propValue: string) => {
-          if (propName === 'hashw/srr') {
-            setHasSRR(parseInt(propValue, 10) !== 0);
-          }
-        },
-      );
-    }
-  }, [BLEAPI]);
+  const {reset, formState, handleSubmit} = form;
 
-  /*const setIsDirtyOnComponent = useCallback(
-    (id: number, isDirty2: boolean): void => {
-      console.log('setIsDirtyOnComponent: ' + id + ' isDirty: ' + isDirty2);
-      let newCompArray = [...configurationComponents];
-      let theCompIndex = newCompArray.findIndex(comp => {
-        return comp.id === id;
-      });
-      if (theCompIndex >= 0) {
-        newCompArray[theCompIndex].isDirty = isDirty2;
-      }
-      setConfigurationComponents(newCompArray);
-      let firstIsDirtyCompIndex = newCompArray.findIndex(comp => {
-        return comp.isDirty;
-      });
-
-      if (firstIsDirtyCompIndex >= 0) {
-        setIsDirty(true);
-      } else {
-        setIsDirty(false);
-      }
+  const onDefaultValuesChange: OnDefaultValuesChangeHandler = useCallback(
+    data => {
+      setDefaultValues(prevState => ({
+        ...prevState,
+        ...data,
+      }));
     },
-    [configurationComponents],
-  );*/
+    [],
+  );
 
   useEffect(() => {
-    const setIsDirtyOnComponent = (id: number, isDirty2: boolean): void => {
-      console.log('setIsDirtyOnComponent: ' + id + ' isDirty: ' + isDirty2);
-      setConfigurationComponents(prevComponents => {
-        let newCompArray = [...prevComponents];
-        let theCompIndex = newCompArray.findIndex(comp => {
-          return comp.id === id;
-        });
-        if (theCompIndex >= 0) {
-          newCompArray[theCompIndex].isDirty = isDirty2;
-        }
+    reset(defaultValues);
+  }, [reset, defaultValues]);
 
-        let firstIsDirtyCompIndex = newCompArray.findIndex(comp => {
-          return comp.isDirty;
-        });
+  const {mutate} = useWiRocPropertiesMutation(deviceId);
 
-        if (firstIsDirtyCompIndex >= 0) {
-          setIsDirty(true);
-        } else {
-          setIsDirty(false);
-        }
-
-        return newCompArray;
-      });
-    };
-
-    let configComps: ISectionComponent[] = [
-      {
-        Comp: (
-          <USB
-            id={1}
-            setIsDirtyFunction={setIsDirtyOnComponent}
-            key={1}
-            ref={usbChildRef}
-          />
-        ),
-        Name: 'USB',
-        SectionName: 'Input',
-        id: 1,
-        isDirty: false,
-        childRef: usbChildRef,
-      },
-      {
-        Comp: (
-          <SerialBluetooth
-            id={2}
-            setIsDirtyFunction={setIsDirtyOnComponent}
-            key={2}
-            ref={serialBluetoothRef}
-          />
-        ),
-        Name: 'SerialBluetooth',
-        SectionName: 'Input',
-        id: 2,
-        isDirty: false,
-        childRef: serialBluetoothRef,
-      },
-    ];
-
-    if (hasSRR) {
-      configComps.push({
-        Comp: (
-          <SRR
-            id={3}
-            setIsDirtyFunction={setIsDirtyOnComponent}
-            key={3}
-            ref={SRRChildRef}
-          />
-        ),
-        Name: 'SRR',
-        SectionName: 'Input',
-        id: 3,
-        isDirty: false,
-        childRef: SRRChildRef,
-      });
-    }
-
-    configComps.push(
-      {
-        Comp: (
-          <LoraRadio
-            id={4}
-            setIsDirtyFunction={setIsDirtyOnComponent}
-            key={4}
-            ref={loraChildRef}
-          />
-        ),
-        Name: 'LoraRadio',
-        SectionName: 'InputOutput',
-        id: 4,
-        isDirty: false,
-        childRef: loraChildRef,
-      },
-      {
-        Comp: (
-          <RS232
-            id={5}
-            setIsDirtyFunction={setIsDirtyOnComponent}
-            key={5}
-            ref={RS232ChildRef}
-          />
-        ),
-        Name: 'RS232',
-        SectionName: 'InputOutput',
-        id: 5,
-        isDirty: false,
-        childRef: RS232ChildRef,
-      },
-      {
-        Comp: (
-          <SIRAP
-            id={6}
-            setIsDirtyFunction={setIsDirtyOnComponent}
-            key={6}
-            ref={SIRAPChildRef}
-          />
-        ),
-        Name: 'SIRAP',
-        SectionName: 'Output',
-        id: 6,
-        isDirty: false,
-        childRef: SIRAPChildRef,
-      },
+  const onSubmit = (data: Partial<SettableValues>) => {
+    const changedData = Object.fromEntries(
+      Object.entries(data).filter(([key]) => {
+        return formState.dirtyFields[key as SettablePropName];
+      }),
     );
-
-    setConfigurationComponents(configComps);
-  }, [hasSRR]);
-
-  function saveConfigurationScreen() {
-    configurationComponents.forEach(sectionComp => {
-      if (sectionComp.isDirty) {
-        console.log(
-          'ConfigurationScreen:saveConfigurationScreen ' +
-            sectionComp.Name +
-            ' Is dirty -> Save it',
-        );
-        if (sectionComp.childRef && sectionComp.childRef.current) {
-          sectionComp.childRef.current.save();
-        } else {
-          console.log(
-            'ConfigurationScreen:saveConfigurationScreen: childRef not set',
-          );
-        }
-      }
-    });
-    reloadConfigurationScreen();
-  }
-
-  const reloadConfigurationScreen = () => {
-    configurationComponents.forEach(sectionComp => {
-      if (sectionComp.isDirty) {
-        console.log(
-          'ConfigurationScreen:reloadConfigurationScreen: ' +
-            sectionComp.Name +
-            ' Is dirty -> reload it',
-        );
-        if (sectionComp.childRef && sectionComp.childRef.current) {
-          sectionComp.childRef.current.reload();
-        } else {
-          console.log(
-            'ConfigurationScreen:reloadConfigurationScreen: childRef not set',
-          );
-        }
-      }
+    console.log('ConfigurationScreen: Saving changed values', changedData);
+    mutate(changedData);
+    reset(undefined, {
+      keepValues: true,
     });
   };
 
-  useEffect(() => {
-    if (BLEAPI.connectedDevice === null) {
-      if (navigation.isFocused()) {
-        let screenName =
-          navigation.getState().routes[navigation.getState().index].name;
-        console.log(
-          'ConfigurationScreen:useEffect navigate to ScanForDevices, current screen: ' +
-            screenName +
-            ' isFocused: ' +
-            navigation.isFocused(),
-        );
-
-        navigation.navigate('ScanForDevices');
-      }
-    }
-  }, [BLEAPI, navigation]);
+  const {data: hasSRR} = useWiRocPropertyQuery(deviceId, 'hashw/srr', {
+    // This request throws if the hardware does not have SRR,
+    // so don't bother the automatic reatry...
+    retry: false,
+  });
 
   const [mTop, setMTop] = useState(0);
   const [currentScrollPosition, setCurrentScrollPosition] = useState(0);
-  /*
-  useEffect(() => {
-    if (isDirty) {
-      setMTop(130);
-      scrollViewRef?.scrollTo({x: 0, y: 130, animated: false});
-    } else {
-      setMTop(0);
-      scrollViewRef?.scrollTo({x: 0, y: 0, animated: false});
-    }
-    console.log('hej hej');
-  }, [isDirty, scrollViewRef]);
-*/
+
+  const commonSectionProps = {
+    deviceId,
+    onDefaultValuesChange,
+  };
+
   return (
-    <SafeAreaView style={Colors.lighter}>
-      <Notifications />
-      <SaveBanner
-        visible={isDirty}
-        save={saveConfigurationScreen}
-        reload={reloadConfigurationScreen}
-        onHideAnimationFinished={() => {
-          setMTop(0);
-          scrollViewRef?.scrollTo({
-            x: 0,
-            y: currentScrollPosition - 133,
-            animated: false,
-          });
-        }}
-        onShowAnimationFinished={() => {
-          setMTop(133);
-          scrollViewRef?.scrollTo({
-            x: 0,
-            y: currentScrollPosition + 133,
-            animated: false,
-          });
-        }}
-      />
-      <ScrollView
-        ref={ref => {
-          setScrollViewRef(ref);
-        }}
-        onScroll={e => {
-          setCurrentScrollPosition(e.nativeEvent.contentOffset.y);
-        }}
-        style={{marginTop: mTop}}>
-        <List.AccordionGroup>
-          <View>
-            <Divider bold={true} />
-            <Text style={styles.header}>Indata</Text>
-            <Divider bold={true} />
-            {configurationComponents.map((c: ISectionComponent) => {
-              if (c.SectionName === 'Input') {
-                return c.Comp;
-              }
-            })}
-          </View>
-          <View>
-            <Divider bold={true} />
-            <Text style={styles.header}>In- och utdata</Text>
-            <Divider bold={true} />
-            {configurationComponents.map((c: ISectionComponent) => {
-              if (c.SectionName === 'InputOutput') {
-                return c.Comp;
-              }
-            })}
-          </View>
-          <View>
-            <Divider bold={true} />
-            <Text style={styles.header}>Utdata</Text>
-            <Divider bold={true} />
-            {configurationComponents.map((c: ISectionComponent) => {
-              if (c.SectionName === 'Output') {
-                return c.Comp;
-              }
-            })}
-          </View>
-        </List.AccordionGroup>
-      </ScrollView>
-    </SafeAreaView>
+    <FormProvider {...form}>
+      <SafeAreaView style={Colors.lighter}>
+        <Notifications />
+        <SaveBanner
+          visible={formState.isDirty}
+          save={handleSubmit(onSubmit)}
+          reload={() => reset()}
+          onHideAnimationFinished={() => {
+            setMTop(0);
+            scrollViewRef?.scrollTo({
+              x: 0,
+              y: currentScrollPosition - 133,
+              animated: false,
+            });
+          }}
+          onShowAnimationFinished={() => {
+            setMTop(133);
+            scrollViewRef?.scrollTo({
+              x: 0,
+              y: currentScrollPosition + 133,
+              animated: false,
+            });
+          }}
+        />
+        <ScrollView
+          ref={ref => {
+            setScrollViewRef(ref);
+          }}
+          onScroll={e => {
+            setCurrentScrollPosition(e.nativeEvent.contentOffset.y);
+          }}
+          style={{marginTop: mTop}}>
+          <List.AccordionGroup>
+            <View>
+              <Divider bold={true} />
+              <Text style={styles.header}>Indata</Text>
+              <Divider bold={true} />
+              <USB {...commonSectionProps} />
+              <SerialBluetooth {...commonSectionProps} />
+              {hasSRR && <SRR {...commonSectionProps} />}
+            </View>
+            <View>
+              <Divider bold={true} />
+              <Text style={styles.header}>In- och utdata</Text>
+              <Divider bold={true} />
+              <LoraRadio {...commonSectionProps} />
+              <RS232 {...commonSectionProps} />
+            </View>
+            <View>
+              <Divider bold={true} />
+              <Text style={styles.header}>Utdata</Text>
+              <Divider bold={true} />
+              <SIRAP {...commonSectionProps} />
+            </View>
+          </List.AccordionGroup>
+        </ScrollView>
+      </SafeAreaView>
+    </FormProvider>
   );
 }
 

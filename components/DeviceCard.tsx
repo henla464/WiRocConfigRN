@@ -1,5 +1,4 @@
-import React, {useEffect} from 'react';
-import {useState} from 'react';
+import React from 'react';
 import {
   Button,
   Card,
@@ -9,81 +8,73 @@ import {
   Title,
 } from 'react-native-paper';
 import {StyleSheet} from 'react-native';
-import {Device} from 'react-native-ble-plx';
-import {useBLEApiContext} from '../context/BLEApiContext';
+import {useNotify} from '../hooks/useNotify';
 import {useNavigation} from '@react-navigation/native';
-import {useLogger} from '../hooks/useLogger';
+import {useStore} from '../store';
 
 interface DeviceCardProps {
-  device: Device;
+  deviceId: string;
 }
 
-export default function DeviceCard({device}: DeviceCardProps) {
-  const [isConnected, setIsConnected] = useState<boolean>(false);
-  const [isConnecting, setIsConnecting] = useState<boolean>(false);
-  const logger = useLogger();
-  const BLEAPI = useBLEApiContext();
+export default function DeviceCard({deviceId}: DeviceCardProps) {
+  const notify = useNotify();
 
-  const cardConnect = async () => {
-    setIsConnecting(true);
-    await BLEAPI.connectToDevice(device);
-    setIsConnecting(false);
-    console.log('cardConnect: end');
-  };
-
-  const cardDisconnect = async () => {
-    await BLEAPI.disconnectDevice(device);
-  };
-
+  const bleConnection = useStore(
+    state => state.wiRocDevices[deviceId].bleConnection,
+  );
+  const connectDevice = useStore(state => state.connectBleDevice);
+  const disconnectDevice = useStore(state => state.disconnectBleDevice);
   const navigation = useNavigation();
 
-  useEffect(() => {
-    logger.debug(
-      'DeviceCard',
-      'useEffect',
-      'device.id: ' +
-        device.id +
-        ' BLEAPI.connectedDevice?.id: ' +
-        BLEAPI.connectedDevice?.id,
-    );
-    setIsConnected(device.id === BLEAPI.connectedDevice?.id);
-  }, [BLEAPI, logger, device.id, BLEAPI.connectedDevice?.id]);
-
-  useEffect(() => {
-    if (isConnected) {
-      navigation.navigate('Device');
-    }
-  }, [isConnected, navigation]);
-
-  // Map the RSSI value to a width between 0 and 1
-  let rssiWidth: number = 100; // Used when RSSI is zero or greater.
-  let rssi = device.rssi ?? 0;
-  if (rssi < -120) {
-    rssiWidth = 0;
-  } else if (rssi < 0) {
-    rssiWidth = 120 + rssi;
-    if (rssiWidth > 100) {
-      rssiWidth = 100;
-    }
+  if (!bleConnection) {
+    return null;
   }
-  rssiWidth = rssiWidth / 100;
+
+  console.log(
+    'DeviceCard: ' + bleConnection.name + ' ' + deviceId,
+    bleConnection,
+  );
 
   return (
-    <Card style={styles.card} key={device.id}>
+    <Card
+      style={{
+        ...styles.card,
+        opacity: bleConnection.rssi === null ? 0.5 : 1,
+      }}>
       <Card.Content>
-        <Title>{device.name}</Title>
-        <Paragraph>{device.id}</Paragraph>
-        <ProgressBar
-          progress={rssiWidth}
-          style={styles.progressBar}
-          color={MD3Colors.primary30}
-        />
+        <Title>{bleConnection.name ?? deviceId}</Title>
+        <Paragraph>{deviceId}</Paragraph>
+        {bleConnection.rssi === null ? (
+          <Paragraph>Previously seen device</Paragraph>
+        ) : (
+          <ProgressBar
+            progress={getRssiWidth(bleConnection.rssi ?? 0)}
+            style={styles.progressBar}
+            color={MD3Colors.primary30}
+          />
+        )}
       </Card.Content>
       <Card.Actions>
         <Button
-          loading={isConnecting}
-          onPress={isConnected ? cardDisconnect : cardConnect}>
-          {isConnected ? 'Koppla från' : 'Anslut'}
+          loading={bleConnection.status === 'connecting'}
+          onPress={async () => {
+            if (bleConnection.status === 'connected') {
+              disconnectDevice(deviceId);
+            } else {
+              try {
+                await connectDevice(deviceId);
+                navigation.navigate('Device', {
+                  deviceId,
+                });
+              } catch (err) {
+                notify({
+                  type: 'error',
+                  message: 'Failed to connect to device',
+                });
+              }
+            }
+          }}>
+          {bleConnection.status === 'connected' ? 'Koppla från' : 'Anslut'}
         </Button>
       </Card.Actions>
     </Card>
@@ -104,3 +95,16 @@ const styles = StyleSheet.create({
     padding: 0,
   },
 });
+
+function getRssiWidth(rssi: number) {
+  let rssiWidth: number = 100; // Used when RSSI is zero or greater.
+  if (rssi < -120) {
+    rssiWidth = 0;
+  } else if (rssi < 0) {
+    rssiWidth = 120 + rssi;
+    if (rssiWidth > 100) {
+      rssiWidth = 100;
+    }
+  }
+  return rssiWidth / 100;
+}

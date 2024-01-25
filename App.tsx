@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import 'react-native-gesture-handler';
 import {NavigationContainer} from '@react-navigation/native';
 import {createDrawerNavigator} from '@react-navigation/drawer';
@@ -7,49 +7,63 @@ import DeviceBottomNavigation from './components/DeviceBottomNavigation';
 
 import AboutScreen from './components/AboutScreen';
 import NavigationHeader from './components/NavigationHeader';
-import {BLEApiContext} from './context/BLEApiContext';
-import useBLE from './hooks/useBLE';
 
 import {DrawerContent} from './components/DrawerContent';
-import {RootStackParamList} from './types/navigation';
+import {RootDrawerParamList} from './types/navigation';
+import {createWiRocBleManager} from './utils/wiRocBleManager';
+import {useStore} from './store';
+import {useReactQuerySubscription} from './hooks/useReactQuerySubscription';
 
-const Drawer2 = createDrawerNavigator<RootStackParamList>();
+const Drawer2 = createDrawerNavigator<RootDrawerParamList>();
 
-function App(): JSX.Element {
-  const BLEAPI = useBLE();
+export const wiRocBleManager = createWiRocBleManager();
+
+export function App() {
+  const syncKnownDevices = useStore(state => state.syncKnownDevices);
+
+  useEffect(() => {
+    syncKnownDevices();
+  }, [syncKnownDevices]);
+
+  const activeDeviceId = useStore(state => state.activeDeviceId);
+  useReactQuerySubscription(wiRocBleManager);
 
   return (
     <NavigationContainer>
-      <BLEApiContext.Provider value={BLEAPI}>
-        <Drawer2.Navigator
-          initialRouteName="ScanForDevices"
-          drawerContent={props => <DrawerContent {...props} />}>
-          <Drawer2.Screen
-            name="ScanForDevices"
-            component={ScanForDevicesScreen}
-            options={{
-              title: 'Sök WiRoc enheter',
-              headerRight: () => <NavigationHeader />,
-            }}
-          />
-          <Drawer2.Screen
-            name="About"
-            component={AboutScreen}
-            options={{
-              title: 'Om',
-              headerRight: () => <NavigationHeader />,
-            }}
-          />
-          <Drawer2.Screen
-            name="Device"
-            component={DeviceBottomNavigation}
-            options={{
-              title: 'Konfigurera enhet',
-              headerRight: () => <NavigationHeader />,
-            }}
-          />
-        </Drawer2.Navigator>
-      </BLEApiContext.Provider>
+      <Drawer2.Navigator
+        initialRouteName="ScanForDevices"
+        drawerContent={props => <DrawerContent {...props} />}>
+        <Drawer2.Screen
+          name="ScanForDevices"
+          component={ScanForDevicesScreen}
+          options={{
+            title: 'Sök WiRoc enheter',
+            headerRight: activeDeviceId
+              ? () => <NavigationHeader deviceId={activeDeviceId} />
+              : () => null,
+          }}
+        />
+        <Drawer2.Screen
+          name="About"
+          component={AboutScreen}
+          options={{
+            title: 'Om',
+            headerRight: activeDeviceId
+              ? () => <NavigationHeader deviceId={activeDeviceId} />
+              : () => null,
+          }}
+        />
+        <Drawer2.Screen
+          name="Device"
+          component={DeviceBottomNavigation}
+          options={{
+            title: 'Konfigurera enhet',
+            headerRight: activeDeviceId
+              ? () => <NavigationHeader deviceId={activeDeviceId} />
+              : () => null,
+          }}
+        />
+      </Drawer2.Navigator>
     </NavigationContainer>
   );
 }

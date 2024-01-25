@@ -2,40 +2,66 @@ import React, {useEffect, useState} from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
 import {Button, IconButton} from 'react-native-paper';
 import useInterval from '../hooks/useInterval';
-import {useBLEApiContext} from '../context/BLEApiContext';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import SaveBanner from './SaveBanner';
 import {ScrollView} from 'react-native-gesture-handler';
 import InformationModal from './InformationModal';
+import {
+  useWiRocPropertyMutation,
+  useWiRocPropertyQuery,
+} from '../hooks/useWiRocPropertyQuery';
+import {useActiveWiRocDevice} from '../hooks/useActiveWiRocDevice';
+import {useQueryClient} from '@tanstack/react-query';
+import {Controller, useForm} from 'react-hook-form';
+import {SettableValues} from '../api/transformers';
 
 export default function WakeUp() {
-  const BLEAPI = useBLEApiContext();
+  const deviceId = useActiveWiRocDevice();
+  const queryClient = useQueryClient();
 
-  const [isDirty, setIsDirty] = useState<boolean>(false);
   const [isInformationModalVisible, setIsInformationModalVisible] =
     useState<boolean>(false);
 
   const [isTimePickerVisible, setIsTimePickerVisible] =
     useState<boolean>(false);
-  const [wiRocDateTime, setWiRocDateTime] = useState<string>('');
 
   const [phoneDateTime, setPhoneDateTime] = useState<string>('');
 
-  const [wiRocWakeUpTime, setWiRocWakeUpTime] = useState<string>('');
-  const [origWiRocWakeUpTime, setOrigWiRocWakeUpTime] = useState<string | null>(
-    null,
+  const {data: wiRocDateTime} = useWiRocPropertyQuery(deviceId, 'rtc/datetime');
+  const {data: origWiRocWakeUpTime} = useWiRocPropertyQuery(
+    deviceId,
+    'rtc/wakeup',
+  );
+  const {data: origWiRocWakeUpToBeEnabledAtShutdown} = useWiRocPropertyQuery(
+    deviceId,
+    'rtc/wakeupenabled',
   );
 
-  const [
-    wiRocWakeUpToBeEnabledAtShutdown,
-    setWiRocWakeUpToBeEnabledAtShutdown,
-  ] = useState<boolean>(false);
-  const [
-    origWiRocWakeUpToBeEnabledAtShutdown,
-    setOrigWiRocWakeUpToBeEnabledAtShutdown,
-  ] = useState<boolean | null>(null);
+  const {mutate: setDateTime} = useWiRocPropertyMutation(
+    deviceId,
+    'rtc/datetime',
+  );
 
-  const [triggerVersion, setTriggerVersion] = useState<number>(0);
+  const {mutate: clearWakeup} = useWiRocPropertyMutation(
+    deviceId,
+    'rtc/clearwakeup',
+  );
+
+  const {mutate: wakeup} = useWiRocPropertyMutation(deviceId, 'rtc/wakeup');
+
+  const form = useForm<Partial<SettableValues>>({
+    defaultValues: {
+      'rtc/wakeup': origWiRocWakeUpTime,
+      'rtc/wakeupenabled': origWiRocWakeUpToBeEnabledAtShutdown,
+    },
+  });
+
+  useEffect(() => {
+    form.reset({
+      'rtc/wakeup': origWiRocWakeUpTime,
+      'rtc/wakeupenabled': origWiRocWakeUpToBeEnabledAtShutdown,
+    });
+  }, [form, origWiRocWakeUpTime, origWiRocWakeUpToBeEnabledAtShutdown]);
 
   useInterval(() => {
     let dateTimeString = new Date().toLocaleString('sv-SE');
@@ -44,111 +70,27 @@ export default function WakeUp() {
     setPhoneDateTime(dateTimeString);
   }, 10000);
 
-  const updateFromWiRoc = (propName: string, propValue: string) => {
-    console.log('WakeUp:updateFromWiRoc: propName: ' + propName);
-    console.log('WakeUp:updateFromWiRoc: propValue: ' + propValue);
-    switch (propName) {
-      case 'rtc/datetime':
-        setWiRocDateTime(propValue);
-        break;
-      case 'rtc/wakeup':
-        setWiRocWakeUpTime(propValue);
-        setOrigWiRocWakeUpTime(propValue);
-        break;
-      case 'rtc/wakeupenabled':
-        setWiRocWakeUpToBeEnabledAtShutdown(parseInt(propValue, 10) !== 0);
-        setOrigWiRocWakeUpToBeEnabledAtShutdown(parseInt(propValue, 10) !== 0);
-        break;
-    }
-  };
-
-  useEffect(() => {
-    async function getWakeUpSettings() {
-      if (BLEAPI.connectedDevice !== null) {
-        let pc = BLEAPI.requestProperty(
-          BLEAPI.connectedDevice,
-          'WakeUp',
-          'rtc/datetime|rtc/wakeup|rtc/wakeupenabled',
-          updateFromWiRoc,
-        );
-      }
-    }
-    getWakeUpSettings();
-  }, [BLEAPI, triggerVersion]);
-
-  useEffect(() => {
-    if (
-      origWiRocWakeUpTime == null ||
-      origWiRocWakeUpToBeEnabledAtShutdown === null
-    ) {
-      return;
-    }
-    if (
-      origWiRocWakeUpTime !== wiRocWakeUpTime ||
-      origWiRocWakeUpToBeEnabledAtShutdown !== wiRocWakeUpToBeEnabledAtShutdown
-    ) {
-      setIsDirty(true);
+  const SaveWakeUp = (data: Partial<SettableValues>) => {
+    if (data['rtc/wakeupenabled'] && data['rtc/wakeup']) {
+      // Only need to set wakeup time (it is enabled at the same time)
+      wakeup(data['rtc/wakeup']);
     } else {
-      setIsDirty(false);
+      clearWakeup();
     }
-  }, [
-    wiRocWakeUpTime,
-    wiRocWakeUpToBeEnabledAtShutdown,
-    origWiRocWakeUpTime,
-    origWiRocWakeUpToBeEnabledAtShutdown,
-  ]);
-
-  const SaveWakeUp = () => {
-    if (BLEAPI.connectedDevice) {
-      if (
-        origWiRocWakeUpTime !== wiRocWakeUpTime ||
-        wiRocWakeUpToBeEnabledAtShutdown !==
-          origWiRocWakeUpToBeEnabledAtShutdown
-      ) {
-        if (wiRocWakeUpToBeEnabledAtShutdown) {
-          // Only need to set wakeup time (it is enabled at the same time)
-          BLEAPI.saveProperty(
-            BLEAPI.connectedDevice,
-            'WakeUp',
-            'rtc/wakeup',
-            wiRocWakeUpTime,
-            updateFromWiRoc,
-          );
-        } else {
-          BLEAPI.saveProperty(
-            BLEAPI.connectedDevice,
-            'WakeUp',
-            'rtc/clearwakeup',
-            null,
-            updateFromWiRoc,
-          );
-        }
-        // refresh wakeupenabled since and wakeup time from device
-        BLEAPI.requestProperty(
-          BLEAPI.connectedDevice,
-          'WakeUp',
-          'rtc/wakeupenabled|rtc/wakeup',
-          updateFromWiRoc,
-        );
-      }
-    }
+    // refresh wakeupenabled since and wakeup time from device
+    queryClient.invalidateQueries({
+      queryKey: [deviceId, 'rtc/wakeup'],
+    });
+    queryClient.invalidateQueries({
+      queryKey: [deviceId, 'rtc/wakeupenabled'],
+    });
   };
 
   const SetWiRocDateAndTime = () => {
-    if (BLEAPI.connectedDevice) {
-      let dateTimeString = new Date().toISOString();
-      dateTimeString = dateTimeString.replaceAll('T', ' ');
-      dateTimeString = dateTimeString.substring(0, 19);
-      BLEAPI.saveProperty(
-        BLEAPI.connectedDevice,
-        'WakeUp',
-        'rtc/datetime',
-        dateTimeString,
-        updateFromWiRoc,
-      );
-    } else {
-      console.log('WakeUp:SetWiRocDateAndTime not connected to device');
-    }
+    let dateTimeString = new Date().toISOString();
+    dateTimeString = dateTimeString.replaceAll('T', ' ');
+    dateTimeString = dateTimeString.substring(0, 19);
+    setDateTime(dateTimeString);
   };
 
   return (
@@ -161,10 +103,19 @@ export default function WakeUp() {
         }
       />
       <SaveBanner
-        visible={isDirty}
-        save={SaveWakeUp}
+        visible={form.formState.isDirty}
+        save={form.handleSubmit(SaveWakeUp)}
         reload={() => {
-          setTriggerVersion(triggerVersion + 1);
+          queryClient.invalidateQueries({
+            queryKey: [deviceId, 'rtc/datetime'],
+          });
+          queryClient.invalidateQueries({
+            queryKey: [deviceId, 'rtc/wakeup'],
+          });
+          queryClient.invalidateQueries({
+            queryKey: [deviceId, 'rtc/wakeupenabled'],
+          });
+          form.reset();
         }}
       />
       <View style={styles.container}>
@@ -201,52 +152,57 @@ export default function WakeUp() {
               setIsInformationModalVisible(true);
             }}
           />
-          <Switch
-            style={{marginRight: 40, flex: 0.5}}
-            value={wiRocWakeUpToBeEnabledAtShutdown}
-            onValueChange={() => {
-              setWiRocWakeUpToBeEnabledAtShutdown(
-                !wiRocWakeUpToBeEnabledAtShutdown,
-              );
-            }}
+          <Controller
+            control={form.control}
+            name="rtc/wakeupenabled"
+            render={({field: {value, onChange}}) => (
+              <Switch
+                style={{marginRight: 40, flex: 0.5}}
+                value={value}
+                onValueChange={onChange}
+              />
+            )}
           />
         </View>
         <View style={styles.containerRowCenter}>
-          <Button
-            disabled={!wiRocWakeUpToBeEnabledAtShutdown}
-            icon=""
-            mode="outlined"
-            onPress={() => setIsTimePickerVisible(true)}
-            style={styles.wakeUpButton}
-            labelStyle={
-              wiRocWakeUpToBeEnabledAtShutdown
-                ? styles.wakeUpButtonLabelStyle
-                : styles.wakeUpButtonDisabledLabelStyle
-            }
-            contentStyle={styles.wakeUpButtonContent}>
-            {wiRocWakeUpTime}
-          </Button>
-          <DateTimePickerModal
-            isVisible={isTimePickerVisible}
-            mode="time"
-            onConfirm={date => {
-              setWiRocWakeUpTime(
-                date.toLocaleTimeString('sv-SE').substring(0, 5),
-              );
-              setIsTimePickerVisible(false);
-            }}
-            onCancel={() => {
-              setIsTimePickerVisible(false);
-            }}
+          <Controller
+            control={form.control}
+            name="rtc/wakeup"
+            render={({field: {value, onChange}}) => (
+              <>
+                <Button
+                  disabled={!form.watch('rtc/wakeupenabled')}
+                  icon=""
+                  mode="outlined"
+                  onPress={() => setIsTimePickerVisible(true)}
+                  style={styles.wakeUpButton}
+                  labelStyle={
+                    form.watch('rtc/wakeupenabled')
+                      ? styles.wakeUpButtonLabelStyle
+                      : styles.wakeUpButtonDisabledLabelStyle
+                  }
+                  contentStyle={styles.wakeUpButtonContent}>
+                  {value}
+                </Button>
+                <DateTimePickerModal
+                  isVisible={isTimePickerVisible}
+                  mode="time"
+                  onConfirm={date => {
+                    onChange(date.toLocaleTimeString('sv-SE').substring(0, 5));
+                    setIsTimePickerVisible(false);
+                  }}
+                  onCancel={() => {
+                    setIsTimePickerVisible(false);
+                  }}
+                />
+              </>
+            )}
           />
         </View>
       </View>
     </ScrollView>
   );
 }
-/*
- 
-      */
 
 const styles = StyleSheet.create({
   table: {

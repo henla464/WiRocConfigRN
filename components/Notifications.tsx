@@ -1,10 +1,13 @@
 import React from 'react';
 import {Banner, useTheme} from 'react-native-paper';
-import {useNotificationStore} from '../stores/notificationStore';
+import {useStore} from '../store';
 
 export const Notifications = () => {
-  const {notifications, removeNotification, removeAllNotifications} =
-    useNotificationStore();
+  const notifications = useStore(state => state.notifications);
+  const removeNotification = useStore(state => state.removeNotification);
+  const removeAllNotifications = useStore(
+    state => state.removeAllNotifications,
+  );
   const theme = useTheme();
 
   const currentNotification = notifications[0];

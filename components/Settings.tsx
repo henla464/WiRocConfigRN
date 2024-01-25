@@ -1,49 +1,38 @@
-import React, {useCallback, useState} from 'react';
+import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {Button, DataTable} from 'react-native-paper';
-import {useBLEApiContext} from '../context/BLEApiContext';
-import {useLogger} from '../hooks/useLogger';
+import {useActiveWiRocDevice} from '../hooks/useActiveWiRocDevice';
 import {useNotify} from '../hooks/useNotify';
+import {
+  useWiRocPropertyMutation,
+  useWiRocPropertyQuery,
+} from '../hooks/useWiRocPropertyQuery';
 import AddEditSettingsModal from './AddEditSettingsModal';
 
-interface ISettings {
-  Key: string;
-  Value: string;
-}
-
 export default function Settings() {
-  const logger = useLogger();
+  const deviceId = useActiveWiRocDevice();
+
   const notify = useNotify();
-  const BLEAPI = useBLEApiContext();
-  const [settings, setSettings] = useState<ISettings[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [currentKey, setCurrentKey] = useState<string>('');
   const [currentValue, setCurrentValue] = useState<string>('');
   const [newSetting, setNewSetting] = useState<boolean>(false);
 
-  const updateSettings = useCallback(
-    (propName: string, propValue: string) => {
-      console.log('Settings:updateSettings start');
-      try {
-        let settingsObj = JSON.parse(propValue);
-        //console.log('Settings:updateSettings: old ' + JSON.stringify(settings));
-        console.log(
-          'Settings:updateSettings: new ' +
-            JSON.stringify(settingsObj.settings),
-        );
-        setSettings(settingsObj.settings);
-      } catch (e) {
-        logger.error(
-          'Settings',
-          'updateSettings',
-          'fetch settings exception: ' + e,
-        );
-        notify({type: 'error', message: 'Kunde inte hämta nyckelvärdelistan'});
-      }
+  const {mutate: updateSettings} = useWiRocPropertyMutation(
+    deviceId,
+    'settings',
+    {
+      onError: () => {
+        notify({type: 'error', message: 'Kunde inte uppdatera'});
+      },
     },
-    [notify, logger],
   );
+
+  const {data: {settings} = {settings: []}, refetch: fetchOrRefresh} =
+    useWiRocPropertyQuery(deviceId, 'settings', {
+      enabled: false,
+    });
 
   const editSetting = (keyName: string, keyValue: string) => {
     setCurrentKey(keyName);
@@ -63,46 +52,11 @@ export default function Settings() {
     setShowModal(false);
   };
 
-  const fetchOrRefresh = () => {
-    if (BLEAPI.connectedDevice) {
-      console.log('Settings:useEffect start');
-      BLEAPI.requestProperty(
-        BLEAPI.connectedDevice,
-        'Settings',
-        'settings',
-        updateSettings,
-      );
-    }
-  };
-
   const saveSetting = async (
     keyName: string,
     keyValue: string,
   ): Promise<void> => {
-    if (BLEAPI.connectedDevice) {
-      var settingKeyAndValue = keyName + '\t' + keyValue;
-      await BLEAPI.saveProperty(
-        BLEAPI.connectedDevice,
-        'Settings',
-        'setting',
-        settingKeyAndValue,
-        (propName: string, propValue: string) => {
-          if (propName === 'setting') {
-            let keyAndValue = propValue.split('\t');
-            let newSettings = [...settings];
-            let idx = newSettings.findIndex(sett => {
-              return sett.Key === keyAndValue[0];
-            });
-            if (idx >= 0) {
-              newSettings[idx].Value = keyAndValue[1];
-            } else {
-              newSettings.push({Key: keyAndValue[0], Value: keyAndValue[1]});
-            }
-            setSettings(newSettings);
-          }
-        },
-      );
-    }
+    updateSettings({Key: keyName, Value: keyValue});
     setShowModal(false);
   };
 
@@ -117,7 +71,12 @@ export default function Settings() {
         newSetting={newSetting}
       />
       <View style={styles.container}>
-        <Button mode="contained" style={styles.button} onPress={fetchOrRefresh}>
+        <Button
+          mode="contained"
+          style={styles.button}
+          onPress={() => {
+            fetchOrRefresh();
+          }}>
           Hämta/Uppdatera listan
         </Button>
         <Button mode="contained" style={styles.button} onPress={addSetting}>
@@ -134,7 +93,7 @@ export default function Settings() {
                 <DataTable.Title style={{flex: 3}}> </DataTable.Title>
               </DataTable.Header>
               <ScrollView>
-                {settings.map(setting => (
+                {settings?.map(setting => (
                   <DataTable.Row key={setting.Key} style={styles.row}>
                     <DataTable.Cell style={{flex: 5}}>
                       {setting.Key}

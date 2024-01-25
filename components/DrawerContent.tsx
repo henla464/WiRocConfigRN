@@ -1,10 +1,11 @@
 import {DrawerContentScrollView, DrawerItem} from '@react-navigation/drawer';
 import {
+  DrawerContentComponentProps,
   DrawerDescriptorMap,
   DrawerNavigationHelpers,
 } from '@react-navigation/drawer/lib/typescript/src/types';
 import {DrawerNavigationState, ParamListBase} from '@react-navigation/native';
-import React, {useState} from 'react';
+import React from 'react';
 import {Image, StyleSheet, View} from 'react-native';
 import {
   Caption,
@@ -14,23 +15,16 @@ import {
   TouchableRipple,
   Icon,
 } from 'react-native-paper';
-import {useBLEApiContext} from '../context/BLEApiContext';
-import {Device} from 'react-native-ble-plx';
-import {demoDevice} from '../hooks/useBLE';
 import ConnectionIcon from './ConnectionIcon';
+import {useStore} from '../store';
+import sortBy from 'lodash/sortBy';
 
-interface DrawerContentProps {
-  state: DrawerNavigationState<ParamListBase>;
-  navigation: DrawerNavigationHelpers;
-  descriptors: DrawerDescriptorMap;
-}
-
-export function DrawerContent(props: DrawerContentProps) {
-  const BLEAPI = useBLEApiContext();
-  const [
-    deviceIdConnectingOrDisconnecting,
-    setDeviceIdConnectingOrDisconnecting,
-  ] = useState<string>('');
+export function DrawerContent(props: DrawerContentComponentProps) {
+  const devices = useStore(state =>
+    sortBy(Object.entries(state.wiRocDevices), ([, device]) => device.name),
+  );
+  const connectDevice = useStore(state => state.connectBleDevice);
+  const disconnectDevice = useStore(state => state.disconnectBleDevice);
 
   return (
     <DrawerContentScrollView>
@@ -71,21 +65,23 @@ export function DrawerContent(props: DrawerContentProps) {
               WiRoc enheter
             </Text>
           }>
-          {BLEAPI.allDevices.map((device: Device) => (
+          {devices.map(([deviceId, device]) => (
             <TouchableRipple
-              key={device.id}
+              key={deviceId}
               onPress={async () => {
-                if (device.id === BLEAPI.connectedDevice?.id) {
-                  //await BLEAPI.disconnectDevice(device);
-                  //props.navigation.navigate('Device');
-                }
+                // if (device.bleConnection?.status === 'connected') {
+                //await BLEAPI.disconnectDevice(device);
+                props.navigation.navigate('Device', {
+                  deviceId,
+                });
+                // }
               }}>
               <View style={styles.foundDevices}>
                 <View style={styles.columnContainer}>
                   <View>
                     <Text
                       style={
-                        device.id === BLEAPI.connectedDevice?.id
+                        device.bleConnection?.status === 'connected'
                           ? styles.connectedDevice
                           : null
                       }>
@@ -93,33 +89,36 @@ export function DrawerContent(props: DrawerContentProps) {
                     </Text>
                   </View>
                   <View>
-                    <Caption style={styles.caption}>{device.id}</Caption>
+                    <Caption style={styles.caption}>{deviceId}</Caption>
                   </View>
                 </View>
-                <Button
-                  loading={deviceIdConnectingOrDisconnecting === device.id}
-                  onPress={async () => {
-                    setDeviceIdConnectingOrDisconnecting(device.id);
-                    if (device.id === BLEAPI.connectedDevice?.id) {
-                      await BLEAPI.disconnectDevice(BLEAPI.connectedDevice);
-                      setDeviceIdConnectingOrDisconnecting('');
-                      props.navigation.navigate('ScanForDevices');
-                    } else {
-                      await BLEAPI.connectToDevice(device);
-                      setDeviceIdConnectingOrDisconnecting('');
-                      props.navigation.navigate('Device');
-                    }
-                  }}
-                  icon={({}) => (
-                    <ConnectionIcon
-                      isConnected={device.id === BLEAPI.connectedDevice?.id}
-                    />
-                  )}>
-                  {' '}
-                </Button>
+                {device.bleConnection && (
+                  <Button
+                    loading={device.bleConnection.status === 'connecting'}
+                    onPress={async () => {
+                      if (device.bleConnection?.status === 'connected') {
+                        await disconnectDevice(deviceId);
+                        props.navigation.navigate('ScanForDevices');
+                      } else {
+                        await connectDevice(deviceId);
+                        //props.navigation.navigate('Device', {deviceId});
+                        props.navigation.jumpTo('Device', {deviceId});
+                      }
+                    }}
+                    icon={({}) => (
+                      <ConnectionIcon
+                        isConnected={
+                          device.bleConnection?.status === 'connected'
+                        }
+                      />
+                    )}>
+                    {' '}
+                  </Button>
+                )}
               </View>
             </TouchableRipple>
           ))}
+          {/*
           <TouchableRipple
             key="11:22:33:44:55:66"
             onPress={() => {
@@ -165,6 +164,7 @@ export function DrawerContent(props: DrawerContentProps) {
               </Button>
             </View>
           </TouchableRipple>
+          */}
         </Drawer.Section>
       </View>
     </DrawerContentScrollView>

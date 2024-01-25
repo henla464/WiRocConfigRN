@@ -1,176 +1,92 @@
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {Modal, ScrollView, StyleSheet, Text, View} from 'react-native';
 import {Button, Divider, List} from 'react-native-paper';
-import {useBLEApiContext} from '../context/BLEApiContext';
-import {useLogger} from '../hooks/useLogger';
 import {useNotify} from '../hooks/useNotify';
+import {
+  useWiRocPropertyMutation,
+  useWiRocPropertyQuery,
+} from '../hooks/useWiRocPropertyQuery';
 import WifiItem from './WifiItem';
 
 interface IDeviceConnectionModalProps {
+  deviceId: string;
   modalVisible: boolean;
   closeModal: () => void;
 }
 
-interface IWifiListItem {
-  networkName: string;
-  isConnected: boolean;
-  signalStrength: string;
-}
-
 export default function DeviceConnectionModal({
+  deviceId,
   modalVisible,
   closeModal,
 }: IDeviceConnectionModalProps) {
-  const logger = useLogger();
   const notify = useNotify();
-  const BLEAPI = useBLEApiContext();
 
-  const [wifiNetworks, setWifiNetworks] = useState<IWifiListItem[]>([]);
-  const [ip, setIp] = useState<string>('');
-  const [triggerVersion, setTriggerVersion] = useState<number>(0);
+  const {data: wifiNetworks = [], refetch: refetchWifiNetworks} =
+    useWiRocPropertyQuery(deviceId, 'listwifi');
+  const {data: ip, refetch: refetchIp} = useWiRocPropertyQuery(deviceId, 'ip');
 
-  useEffect(() => {
-    async function getWifiList() {
-      if (modalVisible) {
-        if (BLEAPI.connectedDevice !== null) {
-          let pc = BLEAPI.requestProperty(
-            BLEAPI.connectedDevice,
-            'DeviceConnectionModal',
-            'listwifi',
-            (propName: string, propValue: string) => {
-              if (propName === 'listwifi') {
-                let wifiList: IWifiListItem[] = [];
-                let rowList = propValue.split(/\r?\n/);
-                for (let i = 0; i < rowList.length; i += 3) {
-                  wifiList.push({
-                    networkName: rowList[i],
-                    isConnected: rowList[i + 1] === 'yes',
-                    signalStrength: rowList[i + 2],
-                  });
-                }
-                setWifiNetworks(wifiList);
-              }
-            },
-          );
+  const {mutate: wifiDisconnect} = useWiRocPropertyMutation(
+    deviceId,
+    'disconnectwifi',
+    {
+      onError: error => {
+        const msg = error instanceof Error ? error.message : 'Unknown error';
+        notify({
+          type: 'error',
+          message: 'Disconnecting from Wifi network failed: ' + msg,
+        });
+      },
+      onSettled: () => {
+        refresh();
+      },
+    },
+  );
 
-          let pc2 = BLEAPI.requestProperty(
-            BLEAPI.connectedDevice,
-            'DeviceConnectionModal',
-            'ip',
-            (propName: string, propValue: string) => {
-              if (propName === 'ip') {
-                setIp(propValue);
-              }
-            },
-          );
-        }
-      }
-    }
-    getWifiList();
-  }, [BLEAPI, triggerVersion]);
+  const {mutate: renewIp} = useWiRocPropertyMutation(deviceId, 'renewip', {
+    onError: (error, networkType) => {
+      const msg = error instanceof Error ? error.message : 'Unknown error';
+      notify({
+        type: 'error',
+        message: `Förnya ${networkType} IP failed: ` + msg,
+      });
+    },
+    onSuccess: () => {
+      notify({
+        type: 'info',
+        message: 'Förnya IP lyckades',
+      });
+    },
+    onSettled: () => {
+      refresh();
+    },
+  });
 
-  const wifiDisconnect = (networkName: string) => {
-    if (BLEAPI.connectedDevice) {
-      BLEAPI.requestProperty(
-        BLEAPI.connectedDevice,
-        'WifiItem',
-        'disconnectwifi',
-        (propName: string, propValue: string) => {
-          console.log(
-            'wifiDisconnect: networkName: ' +
-              networkName +
-              ' propName: ' +
-              propName +
-              ' value: ' +
-              propValue,
-          );
-          if (propName === 'disconnectwifi' && propValue === 'OK') {
-            refresh();
-          }
-        },
-      );
-    }
-  };
-
-  // should listen to: connectwifi ( value 'OK' )
-  const renewWifiIP = () => {
-    if (BLEAPI.connectedDevice) {
-      BLEAPI.requestProperty(
-        BLEAPI.connectedDevice,
-        'DeviceConnectionModal',
-        'renewip\twifi',
-        (propName: string, propValue: string) => {
-          if (propName === 'renewip\twifi' && propValue === 'OK') {
-            refresh();
-          } else {
-            logger.error(
-              'DeviceConnectionModal',
-              'renewWifiIP',
-              'renewWifiIP returned: ' + propValue,
-            );
-            notify({
-              type: 'error',
-              message: `Förnya Wifi IP misslyckades: ${propValue}`,
-            });
-          }
-        },
-      );
-    }
-  };
-
-  const renewEthernetIP = () => {
-    if (BLEAPI.connectedDevice) {
-      BLEAPI.requestProperty(
-        BLEAPI.connectedDevice,
-        'DeviceConnectionModal',
-        'renewip\tethernet',
-        (propName: string, propValue: string) => {
-          if (propName === 'renewip\tethernet' && propValue === 'OK') {
-            refresh();
-          } else {
-            logger.error(
-              'DeviceConnectionModal',
-              'renewEthernetIP',
-              'renewEthernetIP returned: ' + propValue,
-            );
-            notify({
-              type: 'error',
-              message: `Förnya ethernet IP misslyckades: ${propValue}`,
-            });
-          }
-        },
-      );
-    }
-  };
-
-  const wifiConnect = (networkName: string, password: string) => {
-    if (BLEAPI.connectedDevice) {
-      BLEAPI.saveProperty(
-        BLEAPI.connectedDevice,
-        'DeviceConnectionModal',
-        'connectwifi',
-        networkName + '\t' + password,
-        (propName: string, propValue: string) => {
-          if (propName === 'connectwifi' && propValue === 'OK') {
-            refresh();
-          } else {
-            logger.error(
-              'DeviceConnectionModal',
-              'wifiConnect',
-              'wifiConnect returned: ' + propValue,
-            );
-            notify({
-              type: 'error',
-              message: 'Ansluta till Wifi nätverket misslyckades: ' + propValue,
-            });
-          }
-        },
-      );
-    }
-  };
+  const {mutate: wifiConnect} = useWiRocPropertyMutation(
+    deviceId,
+    'connectwifi',
+    {
+      onError: error => {
+        const msg = error instanceof Error ? error.message : 'Unknown error';
+        notify({
+          type: 'error',
+          message: 'Ansluta till Wifi nätverket misslyckades: ' + msg,
+        });
+      },
+      onSuccess: () => {
+        notify({
+          type: 'info',
+          message: 'Anslutning till Wifi-nätverket lyckades',
+        });
+      },
+      onSettled: () => {
+        refresh();
+      },
+    },
+  );
 
   const refresh = () => {
-    setTriggerVersion(triggerVersion + 1);
+    refetchWifiNetworks();
+    refetchIp();
   };
 
   return (
@@ -192,7 +108,7 @@ export default function DeviceConnectionModal({
                 mode="contained"
                 style={styles.button2}
                 onPress={() => {
-                  renewWifiIP();
+                  renewIp('wifi');
                 }}>
                 Förnya Wifi IP
               </Button>
@@ -202,7 +118,7 @@ export default function DeviceConnectionModal({
                 mode="contained"
                 style={styles.button2}
                 onPress={() => {
-                  renewEthernetIP();
+                  renewIp('ethernet');
                 }}>
                 Förnya ethernet IP
               </Button>
@@ -223,15 +139,25 @@ export default function DeviceConnectionModal({
 
             <List.AccordionGroup>
               <View>
-                {wifiNetworks.map((wifiNetworkItem: IWifiListItem) => {
+                {wifiNetworks.map(wifiNetworkItem => {
                   return (
                     <WifiItem
                       isConnected={wifiNetworkItem.isConnected}
                       networkName={wifiNetworkItem.networkName}
                       signalStrength={wifiNetworkItem.signalStrength}
                       wifiConnect={wifiConnect}
-                      wifiDisconnect={wifiDisconnect}
-                      key={wifiNetworkItem.networkName}
+                      wifiDisconnect={wifiName => {
+                        wifiDisconnect(undefined, {
+                          onSuccess: () => {
+                            notify({
+                              type: 'info',
+                              message: `Kopplade från ${wifiName}`,
+                            });
+                          },
+                        });
+                      }}
+                      // include signalStrength in key, since network names can sometimes be the same (different requency variants?)
+                      key={`${wifiNetworkItem.networkName}-${wifiNetworkItem.signalStrength}`}
                     />
                   );
                 })}
