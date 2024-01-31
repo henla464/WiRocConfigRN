@@ -1,8 +1,14 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import {useQuery} from '@tanstack/react-query';
+import React, {useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
 import {SelectList} from 'react-native-dropdown-select-list';
 import {Button, Icon} from 'react-native-paper';
-import {useBLEApiContext} from '../context/BLEApiContext';
+import {useActiveWiRocDevice} from '../hooks/useActiveWiRocDevice';
+import {useNotify} from '../hooks/useNotify';
+import {
+  useWiRocPropertyMutation,
+  useWiRocPropertyQuery,
+} from '../hooks/useWiRocPropertyQuery';
 
 interface ISelectItem {
   key: string;
@@ -28,82 +34,34 @@ interface IReleaseItem {
 }
 
 export default function Update() {
-  const BLEAPI = useBLEApiContext();
+  const deviceId = useActiveWiRocDevice();
+  const notify = useNotify();
 
-  const [HWVersion, setHWVersion] = useState<string | null>(null);
-  const [HWRevision, setHWRevision] = useState<string | null>(null);
-  const [currentWiRocVersion, setCurrentWiRocVersion] = useState<string | null>(
-    null,
-  );
-  const [currentWiRocBLEAPIVersion, setCurrentWiRocBLEAPIVersion] = useState<
-    string | null
-  >(null);
   const [wiRocVersion, setWiRocVersion] = useState<string | null>(null);
   const [wiRocBLEAPIVersion, setWiRocBLEAPIVersion] = useState<string | null>(
     null,
   );
 
-  const [wiRocVersionList, setWiRocVersionList] = useState<ISelectItem[]>([]);
+  const {data: hwVersionAndRevision} = useWiRocPropertyQuery(
+    deviceId,
+    'wirochwversion',
+  );
+  const HWVersion = hwVersionAndRevision?.substring(1).split('Rev')[0];
+  const HWRevision = hwVersionAndRevision?.substring(1).split('Rev')[1];
 
-  const [wiRocBLEAPIVersionList, setWiRocBLEAPIVersionList] = useState<
-    ISelectItem[]
-  >([]);
+  const {data: currentWiRocVersion} = useWiRocPropertyQuery(
+    deviceId,
+    'wirocpythonversion',
+  );
+  const {data: currentWiRocBLEAPIVersion} = useWiRocPropertyQuery(
+    deviceId,
+    'wirocbleapiversion',
+  );
 
-  const updateFromWiRoc = (propName: string, propValue: string) => {
-    console.log('Update:updateFromWiRoc: propName: ' + propName);
-    console.log('Update:updateFromWiRoc: propValue: ' + propValue);
-    switch (propName) {
-      case 'wirochwversion':
-        let revAndRel = propValue.substring(1).split('Rev');
-        setHWVersion(revAndRel[0]);
-        setHWRevision(revAndRel[1]);
-        break;
-      case 'wirocpythonversion':
-        setCurrentWiRocVersion(propValue);
-        break;
-      case 'wirocbleapiversion':
-        setCurrentWiRocBLEAPIVersion(propValue);
-        break;
-    }
-  };
-
-  useEffect(() => {
-    if (BLEAPI.connectedDevice) {
-      // wirochwversion
-      BLEAPI.requestProperty(
-        BLEAPI.connectedDevice,
-        'Update',
-        'wirochwversion|wirocpythonversion|wirocbleapiversion',
-        updateFromWiRoc,
-      );
-      /*
-      BLEAPI.requestProperty(
-        BLEAPI.connectedDevice,
-        'Update',
-        'wirocpythonversion',
-        (propName: string, propValue: string) => {
-          if (propName === 'wirocpythonversion') {
-            setCurrentWiRocVersion(propValue);
-          }
-        },
-      );
-
-      BLEAPI.requestProperty(
-        BLEAPI.connectedDevice,
-        'Update',
-        'wirocbleversion',
-        (propName: string, propValue: string) => {
-          if (propName === 'wirocbleversion') {
-            setCurrentWiRocBLEAPIVersion(propValue);
-          }
-        },
-      );
-      */
-    }
-  }, [BLEAPI]);
-
-  const getWiRocVersions = useCallback(async (): Promise<IReleaseItem[]> => {
-    try {
+  const {data: wiRocPythonReleases} = useQuery({
+    enabled: HWVersion !== undefined && HWRevision !== undefined,
+    queryKey: ['wiRocPythonReleases', HWVersion, HWRevision],
+    queryFn: async () => {
       const wirocPythonReleasesURL =
         'https://monitor.wiroc.se/api/v1/WiRocPython2Releases?sort=versionNumber desc&hwVersion=' +
         HWVersion +
@@ -115,32 +73,18 @@ export default function Update() {
           'X-Authorization': configObj.apiKey,
         },
       });
+      if (!response.ok) {
+        throw new Error('Could not fetch WiRoc Python releases');
+      }
       const json = await response.json();
       return json;
-    } catch (error) {
-      console.error(error);
-      return [];
-    }
-  }, [HWVersion, HWRevision]);
+    },
+  });
 
-  useEffect(() => {
-    if (BLEAPI.connectedDevice && HWVersion && HWRevision) {
-      const fetchData = async () => {
-        const releases = await getWiRocVersions();
-
-        let ddReleases: ISelectItem[] = releases.map(rel => {
-          return {key: rel.releaseName, value: rel.releaseName};
-        });
-
-        setWiRocVersionList(ddReleases);
-      };
-
-      fetchData();
-    }
-  }, [BLEAPI, HWRevision, HWVersion, getWiRocVersions]);
-
-  const getBLEAPIVersions = useCallback(async (): Promise<IReleaseItem[]> => {
-    try {
+  const {data: wiRocBleReleases} = useQuery({
+    enabled: HWVersion !== undefined && HWRevision !== undefined,
+    queryKey: ['wiRocBleReleases', HWVersion, HWRevision],
+    queryFn: async () => {
       const wirocBLEAPIReleasesURL =
         'https://monitor.wiroc.se/api/v1/WiRocBLEAPIReleases?sort=versionNumber desc&hwVersion=' +
         HWVersion +
@@ -152,81 +96,47 @@ export default function Update() {
           'X-Authorization': configObj.apiKey,
         },
       });
+      if (!response.ok) {
+        throw new Error('Could not fetch WiRoc BLE API releases');
+      }
       const json = await response.json();
       return json;
-    } catch (error) {
-      console.error(error);
-      return [];
-    }
-  }, [HWVersion, HWRevision]);
+    },
+  });
 
-  useEffect(() => {
-    if (BLEAPI.connectedDevice && HWVersion && HWRevision) {
-      const fetchData = async () => {
-        const releases = await getBLEAPIVersions();
+  const wiRocVersionList: ISelectItem[] = wiRocPythonReleases?.map(rel => {
+    return {key: rel.releaseName, value: rel.releaseName};
+  });
 
-        let ddReleases: ISelectItem[] = releases.map(rel => {
-          return {key: rel.releaseName, value: rel.releaseName};
+  const wiRocBLEAPIVersionList: ISelectItem[] = wiRocBleReleases?.map(rel => {
+    return {key: rel.releaseName, value: rel.releaseName};
+  });
+
+  const {mutate: updateBLEAPIVersion} = useWiRocPropertyMutation(
+    deviceId,
+    'upgradewirocble',
+    {
+      onError: () => {
+        notify({
+          type: 'error',
+          message: 'Kunde inte uppdatera WiRoc BLE API version',
         });
+      },
+    },
+  );
 
-        setWiRocBLEAPIVersionList(ddReleases);
-      };
-
-      fetchData();
-    }
-  }, [BLEAPI, HWRevision, HWVersion, getBLEAPIVersions]);
-
-  const updateBLEAPIVersion = async () => {
-    try {
-      if (BLEAPI.connectedDevice) {
-        if (wiRocBLEAPIVersion) {
-          await BLEAPI.saveProperty(
-            BLEAPI.connectedDevice,
-            'Update',
-            'upgradewirocble',
-            wiRocBLEAPIVersion,
-            (propName: string, propValue: string) => {
-              console.log(
-                'Update propName: ' +
-                  propName +
-                  ' propValue: ' +
-                  propValue +
-                  ' Implement error handling!',
-              );
-            },
-          );
-        }
-      }
-    } catch (e) {
-      console.log('Update:updateBLEAPIVersion' + e);
-    }
-  };
-
-  const updateWiRocVersion = async () => {
-    try {
-      if (BLEAPI.connectedDevice) {
-        if (wiRocVersion) {
-          await BLEAPI.saveProperty(
-            BLEAPI.connectedDevice,
-            'Update',
-            'upgradewirocpython',
-            wiRocVersion,
-            (propName: string, propValue: string) => {
-              console.log(
-                'Update propName: ' +
-                  propName +
-                  ' propValue: ' +
-                  propValue +
-                  ' Implement error handling!',
-              );
-            },
-          );
-        }
-      }
-    } catch (e) {
-      console.log('Update:updateWiRocVersion' + e);
-    }
-  };
+  const {mutate: updateWiRocVersion} = useWiRocPropertyMutation(
+    deviceId,
+    'upgradewirocpython',
+    {
+      onError: () => {
+        notify({
+          type: 'error',
+          message: 'Kunde inte uppdatera WiRoc BLE API version',
+        });
+      },
+    },
+  );
 
   // wiRocVersion
   return (
@@ -267,7 +177,11 @@ export default function Update() {
         <Button
           icon=""
           mode="contained"
-          onPress={updateWiRocVersion}
+          onPress={() => {
+            if (wiRocVersion) {
+              updateWiRocVersion(wiRocVersion);
+            }
+          }}
           style={[styles.button, {flex: 1, marginRight: 0, marginTop: 20}]}>
           Uppdatera till ny WiRoc version
         </Button>
@@ -309,7 +223,11 @@ export default function Update() {
         <Button
           icon=""
           mode="contained"
-          onPress={updateBLEAPIVersion}
+          onPress={() => {
+            if (wiRocBLEAPIVersion) {
+              updateBLEAPIVersion(wiRocBLEAPIVersion);
+            }
+          }}
           style={[styles.button, {flex: 1, marginRight: 0, marginTop: 20}]}>
           Uppdatera till ny WiRoc BLE API version
         </Button>

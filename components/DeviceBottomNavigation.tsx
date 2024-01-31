@@ -1,17 +1,63 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import ConfigurationScreen from './ConfigurationScreen';
 import OtherScreen from './OtherScreen';
 import TestScreen from './TestScreen';
 import {createMaterialBottomTabNavigator} from 'react-native-paper/react-navigation';
 import {Icon} from 'react-native-paper';
 import DeviceHeader from './DeviceHeader';
+import {DrawerScreenProps} from '@react-navigation/drawer';
+import {
+  RootDrawerParamList,
+  ConfigurationTabParamList,
+} from '../types/navigation';
+import {useStore} from '../store';
+import {wiRocBleManager} from '../App';
 
-const Tab2 = createMaterialBottomTabNavigator();
+const Tab2 = createMaterialBottomTabNavigator<ConfigurationTabParamList>();
 
-export default function DeviceBottomNavigation() {
+type Props = DrawerScreenProps<RootDrawerParamList, 'Device'>;
+
+export default function DeviceBottomNavigation(props: Props) {
+  console.log(
+    'DeviceBottomNavigation',
+    'deviceId',
+    props.route.params.deviceId,
+  );
+
+  const setActiveDeviceId = useStore(state => state.setActiveDeviceId);
+  const activeDeviceId = useStore(state => state.activeDeviceId);
+  const apiBackend = useStore(state =>
+    activeDeviceId ? state.wiRocDevices[activeDeviceId].apiBackend : null,
+  );
+
+  const deviceId = props.route.params.deviceId;
+  const navigate = props.navigation.navigate;
+
+  useEffect(() => {
+    setActiveDeviceId(deviceId);
+  }, [setActiveDeviceId, deviceId]);
+
+  useEffect(() => {
+    console.log('Registering onDeviceDisconnected');
+    return wiRocBleManager.onDeviceDisconnected(disconnectedDevice => {
+      if (deviceId === disconnectedDevice.id) {
+        console.log('DeviceBottomNavigation', 'onDeviceDisconnected');
+        navigate('ScanForDevices');
+      }
+    });
+  }, [deviceId, navigate]);
+
+  if (!activeDeviceId || !apiBackend) {
+    return null;
+  }
+
+  return <Content deviceId={activeDeviceId} />;
+}
+
+function Content({deviceId}: {deviceId: string}) {
   return (
     <>
-      <DeviceHeader />
+      <DeviceHeader deviceId={deviceId} />
       <Tab2.Navigator>
         <Tab2.Screen
           name="configuration"

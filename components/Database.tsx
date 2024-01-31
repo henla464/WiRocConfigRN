@@ -1,40 +1,39 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Button} from 'react-native-paper';
-import {useBLEApiContext} from '../context/BLEApiContext';
+import {useActiveWiRocDevice} from '../hooks/useActiveWiRocDevice';
+import {useNotify} from '../hooks/useNotify';
+import {useWiRocPropertyMutation} from '../hooks/useWiRocPropertyQuery';
 
 export default function Database() {
-  const BLEAPI = useBLEApiContext();
+  const deviceId = useActiveWiRocDevice();
+  const notify = useNotify();
 
-  const deletePunches = async () => {
-    if (BLEAPI.connectedDevice) {
-      BLEAPI.requestProperty(
-        BLEAPI.connectedDevice,
-        'Database',
-        'deletepunches',
-        (propName, propValue) => {
-          if (propName === 'deletepunches') {
-            console.log('Database:deletePunches: ' + propValue);
-          }
-        },
-      );
-    }
-  };
+  const {mutate: deletePunches} = useWiRocPropertyMutation(
+    deviceId,
+    'deletepunches',
+    {
+      onSuccess: () => {
+        notify({
+          message: 'Stämplingar har tagits bort från databasen',
+          type: 'info',
+        });
+      },
+    },
+  );
 
-  const dropDatabaseTables = async () => {
-    if (BLEAPI.connectedDevice) {
-      BLEAPI.requestProperty(
-        BLEAPI.connectedDevice,
-        'Database',
-        'dropalltables',
-        (propName, propValue) => {
-          if (propName === 'dropalltables') {
-            console.log('Database:dropDatabaseTables: ' + propValue);
-          }
-        },
-      );
-    }
-  };
+  const {mutate: dropDatabaseTables} = useWiRocPropertyMutation(
+    deviceId,
+    'dropalltables',
+    {
+      onSuccess: () => {
+        notify({
+          message: 'Databasen har tömts och skapats om',
+          type: 'info',
+        });
+      },
+    },
+  );
 
   return (
     <View style={styles.container}>
@@ -42,7 +41,9 @@ export default function Database() {
         <Button
           icon=""
           mode="contained"
-          onPress={deletePunches}
+          onPress={() => {
+            deletePunches();
+          }}
           style={[styles.button, {flex: 1, marginRight: 0, marginTop: 30}]}>
           Ta bort stämplingar från databasen
         </Button>
@@ -51,7 +52,9 @@ export default function Database() {
         <Button
           icon=""
           mode="contained"
-          onPress={dropDatabaseTables}
+          onPress={() => {
+            dropDatabaseTables();
+          }}
           style={[styles.button, {flex: 1, marginRight: 0, marginTop: 30}]}>
           Ta bort och skapa om alla databastabeller
         </Button>

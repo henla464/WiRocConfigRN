@@ -1,58 +1,47 @@
 import React from 'react';
-import {useState} from 'react';
 import {Button} from 'react-native-paper';
 import {SafeAreaView, ScrollView, StatusBar, StyleSheet} from 'react-native';
 
 import {Colors} from 'react-native/Libraries/NewAppScreen';
-import {Device} from 'react-native-ble-plx';
 import DeviceCard from './DeviceCard';
-import {useBLEApiContext} from '../context/BLEApiContext';
 import {Notifications} from './Notifications';
+import {useShallow} from 'zustand/react/shallow';
+import {useStore} from '../store';
 
 export default function ScanForDevicesScreen() {
-  const [isSearching, setIsSearching] = useState<boolean>(false);
-  const BLEAPI = useBLEApiContext();
-
-  const scan = async () => {
-    if (isSearching) {
-      console.log('Stop scan');
-      setIsSearching(false);
-      BLEAPI.stopScanningForDevices();
-    } else {
-      console.log('Start scan');
-      BLEAPI.requestPermissions((isGranted: boolean) => {
-        console.log('Start scan 2');
-        if (isGranted) {
-          console.log('Start scan 3');
-          setIsSearching(true);
-          console.log('Start scan 4');
-          BLEAPI.scanForDevices();
-        }
-      });
-    }
-  };
+  const deviceIds = useStore(
+    useShallow(state => Object.keys(state.wiRocDevices)),
+  );
 
   return (
     <SafeAreaView style={Colors.lighter}>
       <StatusBar barStyle={'dark-content'} backgroundColor={Colors.lighter} />
       <Notifications />
       <ScrollView>
-        <Button
-          icon=""
-          loading={isSearching}
-          mode="contained"
-          onPress={scan}
-          style={styles.button}>
-          {isSearching ? 'Stoppa sökning' : 'Sök WiRoc enheter'}
-        </Button>
-
-        {BLEAPI.allDevices.map((device: Device) => (
-          <DeviceCard device={device} key={'deviceCard-' + device.id} />
+        <ScanButton />
+        {deviceIds.map(deviceId => (
+          <DeviceCard deviceId={deviceId} key={deviceId} />
         ))}
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const ScanButton = () => {
+  const startScan = useStore(state => state.startBleScan);
+  const stopScan = useStore(state => state.stopBleScan);
+  const isScanning = useStore(state => state.isScanning);
+  return (
+    <Button
+      icon=""
+      loading={isScanning}
+      mode="contained"
+      onPress={isScanning ? stopScan : startScan}
+      style={styles.button}>
+      {isScanning ? 'Stoppa sökning' : 'Sök WiRoc enheter'}
+    </Button>
+  );
+};
 
 const styles = StyleSheet.create({
   button: {
