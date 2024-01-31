@@ -74,6 +74,9 @@ export default function WakeUp() {
       }
     }
     getWakeUpSettings();
+
+    let dateTimeString = new Date().toLocaleString('sv-SE');
+    setPhoneDateTime(dateTimeString);
   }, [BLEAPI, triggerVersion]);
 
   useEffect(() => {
@@ -136,9 +139,20 @@ export default function WakeUp() {
 
   const SetWiRocDateAndTime = () => {
     if (BLEAPI.connectedDevice) {
-      let dateTimeString = new Date().toISOString();
-      dateTimeString = dateTimeString.replaceAll('T', ' ');
-      dateTimeString = dateTimeString.substring(0, 19);
+      var options: Intl.DateTimeFormatOptions = {
+        localeMatcher: 'lookup',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        formatMatcher: 'best fit',
+        hour12: false,
+      };
+
+      let dateTimeString = new Date().toLocaleDateString('sv', options);
+      console.log('dateTimeString: ' + dateTimeString);
       BLEAPI.saveProperty(
         BLEAPI.connectedDevice,
         'WakeUp',
