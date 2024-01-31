@@ -33,13 +33,14 @@ export default function OtherScreen() {
         'OtherScreen',
         'hashw/rtc',
         (propName: string, propValue: string) => {
+          logger.debug('OtherScreen', 'useEffect', 'hashw rtc');
           if (propName === 'hashw/rtc') {
             setHasRTC(parseInt(propValue, 10) !== 0);
           }
         },
       );
     }
-  }, [BLEAPI]);
+  }, [BLEAPI, logger]);
 
   return (
     <>
@@ -58,7 +59,7 @@ export default function OtherScreen() {
           width: Dimensions.get('window').width,
         }}>
         <Tab.Screen name="Databas" component={Database} />
-        {!hasRTC ? <Tab.Screen name="Väckning" component={WakeUp} /> : null}
+        {hasRTC ? <Tab.Screen name="Väckning" component={WakeUp} /> : null}
         <Tab.Screen name="Status" component={Status} />
         <Tab.Screen name="Settings" component={Settings} />
         <Tab.Screen name="Update" component={Update} />

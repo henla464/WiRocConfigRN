@@ -61,7 +61,7 @@ export default function Update() {
       case 'wirocpythonversion':
         setCurrentWiRocVersion(propValue);
         break;
-      case 'wirocbleversion':
+      case 'wirocbleapiversion':
         setCurrentWiRocBLEAPIVersion(propValue);
         break;
     }
@@ -73,7 +73,7 @@ export default function Update() {
       BLEAPI.requestProperty(
         BLEAPI.connectedDevice,
         'Update',
-        'wirochwversion|wirocpythonversion|wirocbleversion',
+        'wirochwversion|wirocpythonversion|wirocbleapiversion',
         updateFromWiRoc,
       );
       /*
@@ -233,7 +233,7 @@ export default function Update() {
     <View style={styles.container}>
       <View style={(styles.containerRow, {width: '100%'})}>
         <Text style={{fontSize: 18, fontWeight: 'bold', marginTop: 30}}>
-          Nuvarande WiRoc version: {currentWiRocVersion}
+          Nuvarande WiRoc version: v{currentWiRocVersion}
         </Text>
         <SelectList
           setSelected={(val: string) => {
@@ -257,7 +257,10 @@ export default function Update() {
             marginTop: 20,
           }}
           arrowicon={<Icon source="chevron-down" size={35} color={'black'} />}
-          defaultOption={{key: currentWiRocVersion, value: currentWiRocVersion}}
+          defaultOption={{
+            key: 'v' + currentWiRocVersion,
+            value: 'v' + currentWiRocVersion,
+          }}
         />
       </View>
       <View style={styles.containerRow}>
@@ -272,7 +275,7 @@ export default function Update() {
 
       <View style={(styles.containerRow, {width: '100%', marginTop: 40})}>
         <Text style={{fontSize: 18, fontWeight: 'bold', marginTop: 30}}>
-          Nuvarande WiRoc BLE API version: {currentWiRocBLEAPIVersion}
+          Nuvarande WiRoc BLE API version: v{currentWiRocBLEAPIVersion}
         </Text>
         <SelectList
           setSelected={(val: string) => {
@@ -297,8 +300,8 @@ export default function Update() {
           }}
           arrowicon={<Icon source="chevron-down" size={35} color={'black'} />}
           defaultOption={{
-            key: currentWiRocBLEAPIVersion,
-            value: currentWiRocBLEAPIVersion,
+            key: 'v' + currentWiRocBLEAPIVersion,
+            value: 'v' + currentWiRocBLEAPIVersion,
           }}
         />
       </View>
