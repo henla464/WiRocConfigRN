@@ -32,15 +32,12 @@ export function App() {
     <NavigationContainer>
       <Drawer2.Navigator
         initialRouteName="ScanForDevices"
-        drawerContent={props => <DrawerContent {...props} />}>
+        drawerContent={DrawerContent}>
         <Drawer2.Screen
           name="ScanForDevices"
           component={ScanForDevicesScreen}
           options={{
             title: 'Sök WiRoc enheter',
-            headerRight: activeDeviceId
-              ? () => <NavigationHeader deviceId={activeDeviceId} />
-              : () => null,
           }}
         />
         <Drawer2.Screen
@@ -48,9 +45,6 @@ export function App() {
           component={AboutScreen}
           options={{
             title: 'Om',
-            headerRight: activeDeviceId
-              ? () => <NavigationHeader deviceId={activeDeviceId} />
-              : () => null,
           }}
         />
         <Drawer2.Screen

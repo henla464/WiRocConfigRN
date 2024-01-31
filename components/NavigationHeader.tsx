@@ -1,9 +1,13 @@
 import React, {useState} from 'react';
 
 import {StyleSheet, View} from 'react-native';
-import {Icon, TouchableRipple} from 'react-native-paper';
-import {useWiRocPropertyQuery} from '../hooks/useWiRocPropertyQuery';
+import {IconButton} from 'react-native-paper';
+import {
+  useWiRocPropertyMutation,
+  useWiRocPropertyQuery,
+} from '../hooks/useWiRocPropertyQuery';
 import DeviceConnectionModal from './DeviceConnectionModal';
+import EditDeviceNameModal from './EditDeviceNameModal';
 
 export default function NavigationHeader({deviceId}: {deviceId: string}) {
   const {data: batteryLevel = 0, refetch: refetchBatteryLevel} =
@@ -16,11 +20,20 @@ export default function NavigationHeader({deviceId}: {deviceId: string}) {
 
   const {data: ip} = useWiRocPropertyQuery(deviceId, 'ip');
 
+  const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'wirocdevicename');
+  const {mutate: mutateDeviceName} = useWiRocPropertyMutation(
+    deviceId,
+    'wirocdevicename',
+  );
+
   const isConnected = (ip?.length ?? 0) > 0;
 
   const batteryLevelRounded = Math.round(batteryLevel / 10) * 10;
 
   const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
+
+  const [isDeviceNameModalVisiable, setIsDeviceNameModalVisiable] =
+    useState<boolean>(false);
 
   return (
     <>
@@ -31,38 +44,47 @@ export default function NavigationHeader({deviceId}: {deviceId: string}) {
         }}
         modalVisible={isModalVisible}
       />
+      <EditDeviceNameModal
+        modalVisible={isDeviceNameModalVisiable}
+        closeModal={function (): void {
+          setIsDeviceNameModalVisiable(false);
+        }}
+        saveSetting={function (newDeviceName: string): void {
+          mutateDeviceName(newDeviceName);
+          setIsDeviceNameModalVisiable(false);
+        }}
+        deviceName={deviceName ?? ''}
+      />
       <View style={styles.container}>
-        <View style={styles.iconSpacing}>
-          <TouchableRipple
-            onPress={() => {
-              setIsModalVisible(true);
-            }}>
-            <Icon
-              source={isConnected ? 'wifi-settings' : 'wifi-off'}
-              size={40}
-            />
-          </TouchableRipple>
-        </View>
-        <TouchableRipple
+        <IconButton
+          icon="pen"
+          onPress={() => {
+            setIsDeviceNameModalVisiable(true);
+          }}
+        />
+        <IconButton
+          icon={isConnected ? 'wifi-settings' : 'wifi-off'}
+          onPress={() => {
+            setIsModalVisible(true);
+          }}
+        />
+        <IconButton
+          icon={
+            !isCharging && batteryLevelRounded === 0
+              ? 'battery-alert-variant-outline'
+              : batteryLevelRounded === 0
+              ? 'battery-charging-10'
+              : !isCharging && batteryLevelRounded === 100
+              ? 'battery'
+              : 'battery-' +
+                (isCharging ? 'charging-' : '') +
+                batteryLevelRounded
+          }
           onPress={() => {
             refetchBatteryLevel();
             refetchIsCharging();
-          }}>
-          <Icon
-            source={
-              !isCharging && batteryLevelRounded === 0
-                ? 'battery-alert-variant-outline'
-                : batteryLevelRounded === 0
-                ? 'battery-charging-10'
-                : !isCharging && batteryLevelRounded === 100
-                ? 'battery'
-                : 'battery-' +
-                  (isCharging ? 'charging-' : '') +
-                  batteryLevelRounded
-            }
-            size={40}
-          />
-        </TouchableRipple>
+          }}
+        />
       </View>
     </>
   );
@@ -72,13 +94,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
-    marginTop: 8,
-  },
-  iconSpacing: {
-    paddingRight: 25,
-  },
-  iconButton: {
-    padding: 0,
-    margin: 0,
+    alignItems: 'center',
   },
 });

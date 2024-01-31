@@ -4,7 +4,6 @@ import OtherScreen from './OtherScreen';
 import TestScreen from './TestScreen';
 import {createMaterialBottomTabNavigator} from 'react-native-paper/react-navigation';
 import {Icon} from 'react-native-paper';
-import DeviceHeader from './DeviceHeader';
 import {DrawerScreenProps} from '@react-navigation/drawer';
 import {
   RootDrawerParamList,
@@ -12,12 +11,14 @@ import {
 } from '../types/navigation';
 import {useStore} from '../store';
 import {wiRocBleManager} from '../App';
+import {useWiRocPropertyQuery} from '../hooks/useWiRocPropertyQuery';
 
 const Tab2 = createMaterialBottomTabNavigator<ConfigurationTabParamList>();
 
 type Props = DrawerScreenProps<RootDrawerParamList, 'Device'>;
 
 export default function DeviceBottomNavigation(props: Props) {
+  const navigation = props.navigation;
   console.log(
     'DeviceBottomNavigation',
     'deviceId',
@@ -36,6 +37,14 @@ export default function DeviceBottomNavigation(props: Props) {
   useEffect(() => {
     setActiveDeviceId(deviceId);
   }, [setActiveDeviceId, deviceId]);
+
+  const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'wirocdevicename');
+
+  useEffect(() => {
+    navigation.setOptions({
+      title: deviceName ?? '',
+    });
+  }, [navigation, deviceName]);
 
   useEffect(() => {
     console.log('Registering onDeviceDisconnected');
@@ -57,7 +66,6 @@ export default function DeviceBottomNavigation(props: Props) {
 function Content({deviceId}: {deviceId: string}) {
   return (
     <>
-      <DeviceHeader deviceId={deviceId} />
       <Tab2.Navigator>
         <Tab2.Screen
           name="configuration"
