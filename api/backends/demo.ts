@@ -3,9 +3,12 @@ import demoDeviceData from '../../hooks/demoDeviceData.json';
 import {GettablePropName} from '../transformers';
 import {PunchesRecievedCallback, WiRocApiBackend} from '../types';
 
-const demoData = demoDeviceData as unknown as Record<GettablePropName, string>;
+export const createDemoApiBackend = (deviceName: string): WiRocApiBackend => {
+  const demoData = {
+    ...demoDeviceData,
+  } as unknown as Record<GettablePropName, string>;
+  demoData.wirocdevicename = deviceName;
 
-export const createDemoApiBackend = (): WiRocApiBackend => {
   const onPunchRecievedSubscribers = new Set<PunchesRecievedCallback>();
 
   setInterval(() => {

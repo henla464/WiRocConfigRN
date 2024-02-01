@@ -55,10 +55,16 @@ export const createWiRocDevicesSlice: ImmerStateCreator<
     },
     wiRocDevices: {
       '11:22:33:44:55:66': {
-        name: 'Demo',
+        name: 'Demo 1',
         bleConnection: null,
         restApiHost: null,
-        apiBackend: createDemoApiBackend(),
+        apiBackend: createDemoApiBackend('Demo 1'),
+      },
+      '99:88:77:66:55:44': {
+        name: 'Demo 2',
+        bleConnection: null,
+        restApiHost: null,
+        apiBackend: createDemoApiBackend('Demo 2'),
       },
       // test: {
       //   name: 'Rest test',
