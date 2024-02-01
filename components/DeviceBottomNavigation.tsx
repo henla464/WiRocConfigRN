@@ -60,10 +60,10 @@ export default function DeviceBottomNavigation(props: Props) {
     return null;
   }
 
-  return <Content deviceId={activeDeviceId} />;
+  return <Content />;
 }
 
-function Content({deviceId}: {deviceId: string}) {
+function Content() {
   return (
     <>
       <Tab2.Navigator>
