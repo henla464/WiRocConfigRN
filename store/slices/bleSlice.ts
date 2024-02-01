@@ -139,9 +139,9 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
         });
         console.log('[BLE] Connected to', deviceId);
       } catch (err) {
-        // TODO user message
         console.error('Error while connecting', err);
         setWiRocConnection(deviceId, state => (state.status = 'disconnected'));
+        throw err;
       }
     },
     async disconnectBleDevice(deviceId) {

@@ -9,7 +9,7 @@ import {
 } from 'react-native-paper';
 import {StyleSheet} from 'react-native';
 import {useNotify} from '../hooks/useNotify';
-import {useNavigation} from '@react-navigation/native';
+import {CommonActions, useNavigation} from '@react-navigation/native';
 import {useStore} from '../store';
 
 interface DeviceCardProps {
@@ -63,13 +63,16 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
             } else {
               try {
                 await connectDevice(deviceId);
-                navigation.navigate('Device', {
-                  deviceId,
-                });
+                navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{name: 'Device', params: {deviceId}}],
+                  }),
+                );
               } catch (err) {
                 notify({
                   type: 'error',
-                  message: 'Failed to connect to device',
+                  message: 'Kunde inte ansluta till enheten',
                 });
               }
             }

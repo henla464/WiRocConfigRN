@@ -22,6 +22,7 @@ import {
 import ConnectionIcon from './ConnectionIcon';
 import {useStore} from '../store';
 import sortBy from 'lodash/sortBy';
+import {useNotify} from '../hooks/useNotify';
 
 export function DrawerContent(props: DrawerContentComponentProps) {
   const devices = useStore(state =>
@@ -29,6 +30,7 @@ export function DrawerContent(props: DrawerContentComponentProps) {
   );
   const connectDevice = useStore(state => state.connectBleDevice);
   const disconnectDevice = useStore(state => state.disconnectBleDevice);
+  const notify = useNotify();
 
   return (
     <DrawerContentScrollView>
@@ -73,12 +75,17 @@ export function DrawerContent(props: DrawerContentComponentProps) {
             <TouchableRipple
               key={deviceId}
               onPress={async () => {
-                props.navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{name: 'Device', params: {deviceId}}],
-                  }),
-                );
+                if (
+                  !device.bleConnection ||
+                  device.bleConnection?.status === 'connected'
+                ) {
+                  props.navigation.dispatch(
+                    CommonActions.reset({
+                      index: 0,
+                      routes: [{name: 'Device', params: {deviceId}}],
+                    }),
+                  );
+                }
               }}>
               <View style={styles.foundDevices}>
                 <View style={styles.columnContainer}>
@@ -104,17 +111,24 @@ export function DrawerContent(props: DrawerContentComponentProps) {
                         await disconnectDevice(deviceId);
                         props.navigation.navigate('ScanForDevices');
                       } else {
-                        await connectDevice(deviceId);
-                        //props.navigation.navigate('Device', {deviceId});
-                        props.navigation.jumpTo('Device', {deviceId});
+                        try {
+                          await connectDevice(deviceId);
+                          props.navigation.dispatch(
+                            CommonActions.reset({
+                              index: 0,
+                              routes: [{name: 'Device', params: {deviceId}}],
+                            }),
+                          );
+                        } catch (e) {
+                          notify({
+                            type: 'error',
+                            message: 'Kunde inte ansluta till enheten',
+                          });
+                        }
                       }
                     }}
                     icon={({}) => (
-                      <ConnectionIcon
-                        isConnected={
-                          device.bleConnection?.status === 'connected'
-                        }
-                      />
+                      <ConnectionIcon status={device.bleConnection?.status} />
                     )}>
                     {' '}
                   </Button>

@@ -1,13 +1,19 @@
 import React from 'react';
-import {Icon} from 'react-native-paper';
+import {ActivityIndicator, Icon} from 'react-native-paper';
 
 interface IConnectionIconProps {
-  isConnected: boolean;
+  status?: 'connected' | 'disconnected' | 'connecting';
 }
 export default function ConnectionIcon(props: IConnectionIconProps) {
+  if (!props.status) {
+    return null;
+  }
+  if (props.status === 'connecting') {
+    return <ActivityIndicator />;
+  }
   return (
     <Icon
-      source={props.isConnected ? 'bluetooth-connect' : 'connection'}
+      source={props.status === 'connected' ? 'bluetooth-connect' : 'connection'}
       size={50}
       color="#663399"
     />
