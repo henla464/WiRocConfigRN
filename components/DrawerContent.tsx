@@ -4,7 +4,11 @@ import {
   DrawerDescriptorMap,
   DrawerNavigationHelpers,
 } from '@react-navigation/drawer/lib/typescript/src/types';
-import {DrawerNavigationState, ParamListBase} from '@react-navigation/native';
+import {
+  CommonActions,
+  DrawerNavigationState,
+  ParamListBase,
+} from '@react-navigation/native';
 import React from 'react';
 import {Image, StyleSheet, View} from 'react-native';
 import {
@@ -69,12 +73,12 @@ export function DrawerContent(props: DrawerContentComponentProps) {
             <TouchableRipple
               key={deviceId}
               onPress={async () => {
-                // if (device.bleConnection?.status === 'connected') {
-                //await BLEAPI.disconnectDevice(device);
-                props.navigation.navigate('Device', {
-                  deviceId,
-                });
-                // }
+                props.navigation.dispatch(
+                  CommonActions.reset({
+                    index: 0,
+                    routes: [{name: 'Device', params: {deviceId}}],
+                  }),
+                );
               }}>
               <View style={styles.foundDevices}>
                 <View style={styles.columnContainer}>
