@@ -32,6 +32,17 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
     });
   };
 
+  wiRocBleManager.onDeviceDisconnected((device, wasExpected) => {
+    logger.info('BLE', 'onDeviceConnected', `Disconnected from ${device.id}`);
+    setWiRocConnection(device.id, state => (state.status = 'disconnected'));
+    if (!wasExpected) {
+      get().addNotification({
+        type: 'info',
+        message: `Anslutningen till ${device.name} avbröts.`,
+      });
+    }
+  });
+
   return {
     bleDevices: {},
     isScanning: false,

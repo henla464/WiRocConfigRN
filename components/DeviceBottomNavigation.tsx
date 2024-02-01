@@ -47,10 +47,8 @@ export default function DeviceBottomNavigation(props: Props) {
   }, [navigation, deviceName]);
 
   useEffect(() => {
-    console.log('Registering onDeviceDisconnected');
     return wiRocBleManager.onDeviceDisconnected(disconnectedDevice => {
       if (deviceId === disconnectedDevice.id) {
-        console.log('DeviceBottomNavigation', 'onDeviceDisconnected');
         navigate('ScanForDevices');
       }
     });

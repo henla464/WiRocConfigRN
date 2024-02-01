@@ -51,7 +51,9 @@ type TestPunchSentCallback = (
 
 export const createWiRocBleManager = () => {
   const onDeviceConnectedSubscribers = new Set<(device: Device) => void>();
-  const onDeviceDisconnectedSubscribers = new Set<(device: Device) => void>();
+  const onDeviceDisconnectedSubscribers = new Set<
+    (device: Device, wasExpected: boolean) => void
+  >();
 
   const blePropertyBuffer = createBleChunkHelper();
   const blePunchesBuffer = createBleChunkHelper();
@@ -59,6 +61,7 @@ export const createWiRocBleManager = () => {
 
   const punchesSubscription: Record<string, Subscription> = {};
   const testPunchesSubscription: Record<string, Subscription> = {};
+  const isDisconnecting: Record<string, boolean> = {};
 
   const startDeviceScan = (callback: (device: Device) => void) => {
     bleManager.startDeviceScan([apiService], null, async (error, device) => {
@@ -84,15 +87,16 @@ export const createWiRocBleManager = () => {
       deviceId,
       apiService,
       punchesCharacteristic,
-      (error, characteristic) => {
+      (err, characteristic) => {
         if (
-          error instanceof Error &&
-          error.errorCode === BleErrorCode.OperationCancelled
+          err instanceof Error &&
+          (err.errorCode === BleErrorCode.OperationCancelled ||
+            err.errorCode === BleErrorCode.DeviceDisconnected)
         ) {
           return;
         }
-        if (error) {
-          throw error;
+        if (err) {
+          throw err;
         }
         blePunchesBuffer.provideChunk(deviceId, characteristic?.value);
       },
@@ -109,7 +113,8 @@ export const createWiRocBleManager = () => {
         if (
           !(
             err instanceof BleError &&
-            err.errorCode === BleErrorCode.OperationCancelled
+            (err.errorCode === BleErrorCode.OperationCancelled ||
+              err.errorCode === BleErrorCode.DeviceDisconnected)
           )
         ) {
           // OperationCancelled seems to be expected
@@ -135,15 +140,16 @@ export const createWiRocBleManager = () => {
         deviceId,
         apiService,
         testPunchesCharacteristic,
-        (error, characteristic) => {
+        (err, characteristic) => {
           if (
-            error instanceof Error &&
-            error.errorCode === BleErrorCode.OperationCancelled
+            err instanceof Error &&
+            (err.errorCode === BleErrorCode.OperationCancelled ||
+              err.errorCode === BleErrorCode.DeviceDisconnected)
           ) {
             return;
           }
-          if (error) {
-            throw error;
+          if (err) {
+            throw err;
           }
           bleTestPunchesBuffer.provideChunk(deviceId, characteristic?.value);
         },
@@ -162,7 +168,8 @@ export const createWiRocBleManager = () => {
         if (
           !(
             err instanceof BleError &&
-            err.errorCode === BleErrorCode.OperationCancelled
+            (err.errorCode === BleErrorCode.OperationCancelled ||
+              err.errorCode === BleErrorCode.DeviceDisconnected)
           )
         ) {
           // OperationCancelled seems to be expected
@@ -180,6 +187,12 @@ export const createWiRocBleManager = () => {
 
   const connectToDevice = async (deviceId: string) => {
     console.log('[wiRocBleManager] Connecting to', deviceId);
+
+    if (await bleManager.isDeviceConnected(deviceId)) {
+      console.log('[wiRocBleManager] Already connected');
+      return;
+    }
+
     console.log('[wiRocBleManager] Checking if we know it already...');
     const [foundDevice] = await bleManager.devices([deviceId]);
     if (!foundDevice) {
@@ -214,20 +227,22 @@ export const createWiRocBleManager = () => {
 
     console.log('[wiRocBleManager] Connecting to scanned device...');
     await bleManager.connectToDevice(deviceId);
+    console.log('[wiRocBleManager] Connected to device', deviceId);
     await bleManager.discoverAllServicesAndCharacteristicsForDevice(deviceId);
     bleManager.monitorCharacteristicForDevice(
       deviceId,
       apiService,
       propertyCharacteristic,
-      (error, characteristic) => {
+      (err, characteristic) => {
         if (
-          error instanceof Error &&
-          error.errorCode === BleErrorCode.OperationCancelled
+          err instanceof Error &&
+          (err.errorCode === BleErrorCode.OperationCancelled ||
+            err.errorCode === BleErrorCode.DeviceDisconnected)
         ) {
           return;
         }
-        if (error) {
-          throw error;
+        if (err) {
+          throw err;
         }
         blePropertyBuffer.provideChunk(deviceId, characteristic?.value);
       },
@@ -247,13 +262,22 @@ export const createWiRocBleManager = () => {
     const [device] = await bleManager.devices([deviceId]);
     onDeviceConnectedSubscribers.forEach(subscriber => subscriber(device));
 
-    // TODO is this automatically called when device disconnects?
-    bleManager.onDeviceDisconnected(deviceId, () => {
-      onDeviceDisconnectedSubscribers.forEach(subscriber => subscriber(device));
+    const sub = bleManager.onDeviceDisconnected(deviceId, () => {
+      sub.remove();
+      const wasExpected = isDisconnecting[deviceId];
+      isDisconnecting[deviceId] = false;
+
+      onDeviceDisconnectedSubscribers.forEach(subscriber =>
+        subscriber(device, wasExpected),
+      );
+
+      if (!wasExpected) {
+        cancelTransactions(deviceId);
+      }
     });
   };
 
-  const disconnectFromDevice = async (deviceId: string) => {
+  const cancelTransactions = (deviceId: string) => {
     try {
       bleManager.cancelTransaction(
         `propertyNotificationTransaction${deviceId}`,
@@ -262,7 +286,6 @@ export const createWiRocBleManager = () => {
       bleManager.cancelTransaction(
         `testPunchesNotificationTransaction${deviceId}`,
       );
-      await bleManager.cancelDeviceConnection(deviceId);
     } catch (err) {
       if (
         !(
@@ -274,7 +297,24 @@ export const createWiRocBleManager = () => {
         // https://dotintent.github.io/react-native-ble-plx/#blemanagercanceltransaction
         throw err;
       }
-      throw err;
+    }
+  };
+
+  const disconnectFromDevice = async (deviceId: string) => {
+    try {
+      cancelTransactions(deviceId);
+      isDisconnecting[deviceId] = true;
+      await bleManager.cancelDeviceConnection(deviceId);
+    } catch (err) {
+      if (
+        !(
+          err instanceof BleError &&
+          err.errorCode === BleErrorCode.DeviceDisconnected
+        )
+      ) {
+        isDisconnecting[deviceId] = false;
+        throw err;
+      }
     }
   };
 
@@ -396,7 +436,9 @@ export const createWiRocBleManager = () => {
     };
   };
 
-  const onDeviceDisconnected = (callback: (device: Device) => void) => {
+  const onDeviceDisconnected = (
+    callback: (device: Device, wasExpected: boolean) => void,
+  ) => {
     onDeviceDisconnectedSubscribers.add(callback);
     return () => {
       onDeviceDisconnectedSubscribers.delete(callback);
