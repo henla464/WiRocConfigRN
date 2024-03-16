@@ -1,6 +1,12 @@
 import React from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
-import {Icon, List, RadioButton, SegmentedButtons} from 'react-native-paper';
+import {
+  Checkbox,
+  Icon,
+  List,
+  RadioButton,
+  SegmentedButtons,
+} from 'react-native-paper';
 import OnOffChip from './OnOffChip';
 import {LoraMode, LoraRange} from '../api';
 import {SectionComponentProps} from './ConfigurationScreen';
@@ -46,6 +52,19 @@ export default function LoraRadio({
       field: {value: codeRate, onChange: setCodeRate},
     },
   ] = useConfigurationProperty(deviceId, 'coderate', onDefaultValuesChange);
+
+  const [
+    {
+      field: {
+        value: acknowledgementRequested,
+        onChange: setAcknowledgementRequested,
+      },
+    },
+  ] = useConfigurationProperty(
+    deviceId,
+    'acknowledgementrequested',
+    onDefaultValuesChange,
+  );
 
   const channelList = [
     {key: '1', value: '1', disabled: !isLoraRadioEnabled},
@@ -310,6 +329,21 @@ export default function LoraRadio({
           />
         </RadioButton.Group>
         <Text style={{fontSize: 30, fontWeight: 'bold', paddingTop: 14}}>
+          Begär bekräftelse
+        </Text>
+        <View style={styles.mainCheckBoxContainer}>
+          <Checkbox.Item
+            label="Begär att mottagaren bekräftar mottagen stämpling"
+            position="leading"
+            status={acknowledgementRequested ? 'checked' : 'unchecked'}
+            onPress={() => {
+              setAcknowledgementRequested(!acknowledgementRequested);
+            }}
+            disabled={!isLoraRadioEnabled}
+            labelStyle={styles.checkBoxLabel}
+          />
+        </View>
+        <Text style={{fontSize: 30, fontWeight: 'bold', paddingTop: 14}}>
           Code Rate
         </Text>
         <SelectList
@@ -424,5 +458,15 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingBottom: 20,
     alignSelf: 'flex-start',
+  },
+  mainCheckBoxContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 0,
+    margin: 0,
+  },
+  checkBoxLabel: {
+    marginLeft: 5,
   },
 });

@@ -97,6 +97,7 @@ export const setters = {
   sendtosirapipport: numberSetter(),
   sendtosirapip: stringSetter(),
   sendtosirapenabled: booleanSetter(),
+  acknowledgementrequested: booleanSetter(),
   datarate: numberSetter(),
   channel: numberSetter(),
   ipaddress: stringSetter(),
