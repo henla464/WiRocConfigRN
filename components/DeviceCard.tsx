@@ -72,7 +72,9 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
               } catch (err) {
                 notify({
                   type: 'error',
-                  message: 'Kunde inte ansluta till enheten',
+                  message: `Kunde inte ansluta till enheten: ${
+                    err instanceof Error ? err.message : 'Okänt fel'
+                  }`,
                 });
               }
             }

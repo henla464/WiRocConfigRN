@@ -1,14 +1,6 @@
 import {DrawerContentScrollView, DrawerItem} from '@react-navigation/drawer';
-import {
-  DrawerContentComponentProps,
-  DrawerDescriptorMap,
-  DrawerNavigationHelpers,
-} from '@react-navigation/drawer/lib/typescript/src/types';
-import {
-  CommonActions,
-  DrawerNavigationState,
-  ParamListBase,
-} from '@react-navigation/native';
+import {DrawerContentComponentProps} from '@react-navigation/drawer/lib/typescript/src/types';
+import {CommonActions} from '@react-navigation/native';
 import React from 'react';
 import {Image, StyleSheet, View} from 'react-native';
 import {
@@ -119,10 +111,12 @@ export function DrawerContent(props: DrawerContentComponentProps) {
                               routes: [{name: 'Device', params: {deviceId}}],
                             }),
                           );
-                        } catch (e) {
+                        } catch (err) {
                           notify({
                             type: 'error',
-                            message: 'Kunde inte ansluta till enheten',
+                            message: `Kunde inte ansluta till enheten: ${
+                              err instanceof Error ? err.message : 'Okänt fel'
+                            }`,
                           });
                         }
                       }
@@ -136,53 +130,6 @@ export function DrawerContent(props: DrawerContentComponentProps) {
               </View>
             </TouchableRipple>
           ))}
-          {/*
-          <TouchableRipple
-            key="11:22:33:44:55:66"
-            onPress={() => {
-              BLEAPI.connectToDevice(demoDevice);
-              props.navigation.navigate('Device');
-            }}>
-            <View style={styles.foundDevices}>
-              <View style={styles.columnContainer}>
-                <View>
-                  <Text
-                    style={
-                      demoDevice.id === BLEAPI.connectedDevice?.id
-                        ? styles.connectedDevice
-                        : null
-                    }>
-                    Demo Device
-                  </Text>
-                </View>
-                <View>
-                  <Caption style={styles.caption}>{demoDevice.id}</Caption>
-                </View>
-              </View>
-              <Button
-                loading={deviceIdConnectingOrDisconnecting === demoDevice.id}
-                onPress={async () => {
-                  setDeviceIdConnectingOrDisconnecting(demoDevice.id);
-                  if (demoDevice.id === BLEAPI.connectedDevice?.id) {
-                    await BLEAPI.disconnectDevice(BLEAPI.connectedDevice);
-                    setDeviceIdConnectingOrDisconnecting('');
-                    props.navigation.navigate('ScanForDevices');
-                  } else {
-                    await BLEAPI.connectToDevice(demoDevice);
-                    setDeviceIdConnectingOrDisconnecting('');
-                    props.navigation.navigate('Device');
-                  }
-                }}
-                icon={({}) => (
-                  <ConnectionIcon
-                    isConnected={demoDevice.id === BLEAPI.connectedDevice?.id}
-                  />
-                )}>
-                {' '}
-              </Button>
-            </View>
-          </TouchableRipple>
-          */}
         </Drawer.Section>
       </View>
     </DrawerContentScrollView>

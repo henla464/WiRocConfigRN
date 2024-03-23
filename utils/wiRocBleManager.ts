@@ -7,6 +7,7 @@ import {
 } from 'react-native-ble-plx';
 import {GettablePropName, SettablePropName} from '../api/transformers';
 import {chunkLengthToUse, createBleChunkHelper} from './bleChunkHelper';
+import {requestBlePermissions} from './blePermissions';
 
 const apiService = 'fb880900-4ab2-40a2-a8f0-14cc1c2e5608';
 const propertyCharacteristic = 'fb880912-4ab2-40a2-a8f0-14cc1c2e5608';
@@ -186,94 +187,105 @@ export const createWiRocBleManager = () => {
   };
 
   const connectToDevice = async (deviceId: string) => {
-    console.log('[wiRocBleManager] Connecting to', deviceId);
+    return new Promise<void>(async (resolve, reject) => {
+      console.log('[wiRocBleManager] Connecting to', deviceId);
 
-    if (await bleManager.isDeviceConnected(deviceId)) {
-      console.log('[wiRocBleManager] Already connected');
-      return;
-    }
+      if (await bleManager.isDeviceConnected(deviceId)) {
+        console.log('[wiRocBleManager] Already connected');
+        return;
+      }
 
-    console.log('[wiRocBleManager] Checking if we know it already...');
-    const [foundDevice] = await bleManager.devices([deviceId]);
-    if (!foundDevice) {
-      console.log(
-        '[wiRocBleManager] Device not scanned. Will try to scan for it...',
-      );
-      const timeout = setTimeout(() => {
-        console.log('[wiRocBleManager] Stopping scan...');
-        bleManager.stopDeviceScan();
-        // setWiRocConnection(deviceId, state => (state.status = 'disconnected'));
-        clearTimeout(timeout);
-        throw new Error('Device not found');
-      }, 7e3);
-      await new Promise<void>(resolve => {
-        bleManager.startDeviceScan(
-          [apiService],
-          null,
-          async (err, scannedDevice) => {
-            if (err) {
-              console.error('Error while scanning for device', err);
-            } else if (scannedDevice?.id === deviceId) {
-              console.log('[wiRocBleManager] Found device', deviceId);
-              bleManager.stopDeviceScan();
-              clearTimeout(timeout);
-              resolve();
-            }
-            // TODO update devices we find here
-          },
+      console.log('[wiRocBleManager] Checking if we know it already...');
+      const [foundDevice] = await bleManager.devices([deviceId]);
+      if (!foundDevice) {
+        console.log(
+          '[wiRocBleManager] Device not scanned. Will try to scan for it...',
         );
-      });
-    }
-
-    console.log('[wiRocBleManager] Connecting to scanned device...');
-    await bleManager.connectToDevice(deviceId);
-    console.log('[wiRocBleManager] Connected to device', deviceId);
-    await bleManager.discoverAllServicesAndCharacteristicsForDevice(deviceId);
-    bleManager.monitorCharacteristicForDevice(
-      deviceId,
-      apiService,
-      propertyCharacteristic,
-      (err, characteristic) => {
-        if (
-          err instanceof Error &&
-          (err.errorCode === BleErrorCode.OperationCancelled ||
-            err.errorCode === BleErrorCode.DeviceDisconnected)
-        ) {
+        console.log('[wiRocBleManager] Checking permissions...');
+        const granted = await requestBlePermissions();
+        if (!granted) {
+          console.log('[wiRocBleManager] Permissions not granted');
           return;
         }
-        if (err) {
-          throw err;
-        }
-        blePropertyBuffer.provideChunk(deviceId, characteristic?.value);
-      },
-      `propertyNotificationTransaction${deviceId}`,
-    );
+        const timeout = setTimeout(() => {
+          console.log('[wiRocBleManager] Stopping scan...');
+          bleManager.stopDeviceScan();
+          // setWiRocConnection(deviceId, state => (state.status = 'disconnected'));
+          clearTimeout(timeout);
+          reject(new Error('Device not found'));
+        }, 7e3);
+        await new Promise<void>(resolveScan => {
+          bleManager.startDeviceScan(
+            [apiService],
+            null,
+            async (err, scannedDevice) => {
+              if (err) {
+                console.error('Error while scanning for device', err);
+                clearTimeout(timeout);
+                reject(err);
+              } else if (scannedDevice?.id === deviceId) {
+                console.log('[wiRocBleManager] Found device', deviceId);
+                bleManager.stopDeviceScan();
+                clearTimeout(timeout);
+                resolveScan();
+              }
+              // TODO update devices we find here
+            },
+          );
+        });
+        resolve();
+      }
 
-    // The main purpose of this command is to set chunk size to use.
-    //
-    // But the response of this request will also contain a bunch of
-    // properties (which we can use to initialize the Query cache).
-    await sendData(
-      deviceId,
-      propertyCharacteristic,
-      `all\t${chunkLengthToUse}`,
-    );
-
-    const [device] = await bleManager.devices([deviceId]);
-    onDeviceConnectedSubscribers.forEach(subscriber => subscriber(device));
-
-    const sub = bleManager.onDeviceDisconnected(deviceId, () => {
-      sub.remove();
-      const wasExpected = isDisconnecting[deviceId];
-      isDisconnecting[deviceId] = false;
-
-      onDeviceDisconnectedSubscribers.forEach(subscriber =>
-        subscriber(device, wasExpected),
+      console.log('[wiRocBleManager] Connecting to scanned device...');
+      await bleManager.connectToDevice(deviceId);
+      console.log('[wiRocBleManager] Connected to device', deviceId);
+      await bleManager.discoverAllServicesAndCharacteristicsForDevice(deviceId);
+      bleManager.monitorCharacteristicForDevice(
+        deviceId,
+        apiService,
+        propertyCharacteristic,
+        (err, characteristic) => {
+          if (
+            err instanceof Error &&
+            (err.errorCode === BleErrorCode.OperationCancelled ||
+              err.errorCode === BleErrorCode.DeviceDisconnected)
+          ) {
+            return;
+          }
+          if (err) {
+            throw err;
+          }
+          blePropertyBuffer.provideChunk(deviceId, characteristic?.value);
+        },
+        `propertyNotificationTransaction${deviceId}`,
       );
 
-      if (!wasExpected) {
-        cancelTransactions(deviceId);
-      }
+      // The main purpose of this command is to set chunk size to use.
+      //
+      // But the response of this request will also contain a bunch of
+      // properties (which we can use to initialize the Query cache).
+      await sendData(
+        deviceId,
+        propertyCharacteristic,
+        `all\t${chunkLengthToUse}`,
+      );
+
+      const [device] = await bleManager.devices([deviceId]);
+      onDeviceConnectedSubscribers.forEach(subscriber => subscriber(device));
+
+      const sub = bleManager.onDeviceDisconnected(deviceId, () => {
+        sub.remove();
+        const wasExpected = isDisconnecting[deviceId];
+        isDisconnecting[deviceId] = false;
+
+        onDeviceDisconnectedSubscribers.forEach(subscriber =>
+          subscriber(device, wasExpected),
+        );
+
+        if (!wasExpected) {
+          cancelTransactions(deviceId);
+        }
+      });
     });
   };
 
