@@ -89,6 +89,26 @@ export const createDemoApiBackend = (deviceName: string): WiRocApiBackend => {
         });
       }
 
+      if (propertyName === 'upgradewirocpython') {
+        demoData.wirocpythonversion = values[0];
+        onPropertiesChangesSubscribers.forEach(callback => {
+          callback({
+            wirocpythonversion: values[0],
+          });
+        });
+        return 'OK';
+      }
+
+      if (propertyName === 'upgradewirocble') {
+        demoData.wirocbleapiversion = values[0];
+        onPropertiesChangesSubscribers.forEach(callback => {
+          callback({
+            wirocbleapiversion: values[0],
+          });
+        });
+        return 'OK';
+      }
+
       // TODO some properties are not really settable, hence the TS error
       // @ts-expect-error
       demoData[propertyName] = values[0];
