@@ -6,6 +6,7 @@ import {wiRocBleManager} from '../App';
 import {useActiveWiRocDevice} from '../hooks/useActiveWiRocDevice';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {TestPunch} from '../api/types';
+import {useNotify} from '../hooks/useNotify';
 
 export default function SendPunches() {
   const deviceId = useActiveWiRocDevice();
@@ -15,6 +16,7 @@ export default function SendPunches() {
   const [isSending, setIsSending] = useState(false);
   const [sendInterval, setSendInterval] = useState(1000);
   const stateRef = useRef<TestPunch[]>();
+  const notify = useNotify();
 
   const {data: punches = []} = useQuery<unknown, unknown, TestPunch[]>({
     queryKey: [deviceId, 'testPunches'],
@@ -93,7 +95,10 @@ export default function SendPunches() {
       setIsSending(false);
     } else {
       if (!siCardNo || siCardNo.length === 0 || isNaN(parseInt(siCardNo, 10))) {
-        // error, show message?
+        notify({
+          message: 'SI Nummer måste fyllas i',
+          type: 'info',
+        });
         console.log(
           'SendPunches:startStopSendPunches: SI Card no is not an integer number',
           siCardNo,
