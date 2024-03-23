@@ -1,7 +1,15 @@
 import {BluetoothDevice} from '..';
 import demoDeviceData from '../../hooks/demoDeviceData.json';
 import {GettablePropName} from '../transformers';
-import {PunchesRecievedCallback, WiRocApiBackend} from '../types';
+import {
+  PropertiesChangedCallback,
+  PunchesRecievedCallback,
+  TestPunch,
+  TestPunchesSentCallback,
+  WiRocApiBackend,
+} from '../types';
+
+let testPunchId = 0;
 
 export const createDemoApiBackend = (deviceName: string): WiRocApiBackend => {
   const demoData = {
@@ -9,19 +17,13 @@ export const createDemoApiBackend = (deviceName: string): WiRocApiBackend => {
   } as unknown as Record<GettablePropName, string>;
   demoData.wirocdevicename = deviceName;
 
-  const onPunchRecievedSubscribers = new Set<PunchesRecievedCallback>();
+  let watchingPunchesTimeout: ReturnType<typeof setTimeout> | null = null;
 
-  setInterval(() => {
-    onPunchRecievedSubscribers.forEach(callback => {
-      callback([
-        {
-          SICardNumber: 123456,
-          StationNumber: 1,
-          Time: new Date().toISOString(),
-        },
-      ]);
-    });
-  }, 5000);
+  let isWatchingTestPunches = false;
+
+  const onPunchRecievedSubscribers = new Set<PunchesRecievedCallback>();
+  const onPropertiesChangesSubscribers = new Set<PropertiesChangedCallback>();
+  const onTestPunchesSentSubscribers = new Set<TestPunchesSentCallback>();
 
   return {
     async getProperty(propertyName: GettablePropName) {
@@ -40,6 +42,15 @@ export const createDemoApiBackend = (deviceName: string): WiRocApiBackend => {
         ];
         demoData.settings = JSON.stringify(updated);
         return values.join('\t');
+      }
+
+      if (propertyName === 'rtc/wakeup') {
+        demoData['rtc/wakeupenabled'] = '1';
+        onPropertiesChangesSubscribers.forEach(callback => {
+          callback({
+            'rtc/wakeupenabled': '1',
+          });
+        });
       }
 
       if (propertyName === 'bindrfcomm') {
@@ -85,9 +96,11 @@ export const createDemoApiBackend = (deviceName: string): WiRocApiBackend => {
       return values[0];
     },
 
-    onPropertiesChanges() {
-      // Currently not supported
-      return () => {};
+    onPropertiesChanges(callback) {
+      onPropertiesChangesSubscribers.add(callback);
+      return () => {
+        onPropertiesChangesSubscribers.delete(callback);
+      };
     },
 
     onPunchesRecieved(callback) {
@@ -97,9 +110,81 @@ export const createDemoApiBackend = (deviceName: string): WiRocApiBackend => {
       };
     },
 
-    onTestPunchesSent() {
-      // TODO implement
-      return () => {};
+    onTestPunchesSent(callback) {
+      onTestPunchesSentSubscribers.add(callback);
+      return () => {
+        onTestPunchesSentSubscribers.delete(callback);
+      };
+    },
+
+    startWatchingPunches() {
+      if (watchingPunchesTimeout) {
+        return;
+      }
+
+      const send = () => {
+        onPunchRecievedSubscribers.forEach(callback => {
+          callback([
+            {
+              SICardNumber: 123456,
+              StationNumber: 1,
+              Time: new Date().toISOString(),
+            },
+          ]);
+        });
+
+        watchingPunchesTimeout = setTimeout(send, 5000);
+      };
+
+      send();
+    },
+
+    stopWatchingPunches() {
+      if (watchingPunchesTimeout) {
+        clearTimeout(watchingPunchesTimeout);
+        watchingPunchesTimeout = null;
+      }
+    },
+
+    startWatchingTestPunches() {
+      isWatchingTestPunches = true;
+    },
+
+    stopWatchingTestPunches() {
+      isWatchingTestPunches = false;
+    },
+
+    startSendingTestPunches(options) {
+      let punchesLeft = options.numberOfPunches;
+
+      let sentPunches: TestPunch[] = [];
+
+      const send = () => {
+        if (isWatchingTestPunches) {
+          onTestPunchesSentSubscribers.forEach(callback => {
+            // TODO: Make data below correct/more realistic
+            sentPunches.push({
+              Id: testPunchId,
+              MsgId: testPunchId++,
+              Status: 'Acked',
+              SINo: parseInt(options.siCardNo, 10),
+              NoOfSendTries: 1,
+              SubscrId: 0,
+              RSSI: 0,
+              Time: new Date().toISOString(),
+            });
+            callback(sentPunches);
+          });
+        }
+
+        punchesLeft--;
+
+        if (punchesLeft > 0) {
+          setTimeout(send, options.sendInterval);
+        }
+      };
+
+      send();
     },
   };
 };

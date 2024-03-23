@@ -12,7 +12,6 @@ import {DrawerContent} from './components/DrawerContent';
 import {RootDrawerParamList} from './types/navigation';
 import {createWiRocBleManager} from './utils/wiRocBleManager';
 import {useStore} from './store';
-import {useReactQuerySubscription} from './hooks/useReactQuerySubscription';
 
 const Drawer2 = createDrawerNavigator<RootDrawerParamList>();
 
@@ -26,7 +25,6 @@ export function App() {
   }, [syncKnownDevices]);
 
   const activeDeviceId = useStore(state => state.activeDeviceId);
-  useReactQuerySubscription(wiRocBleManager);
 
   return (
     <NavigationContainer>

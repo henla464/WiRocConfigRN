@@ -11,8 +11,17 @@ export interface WiRocApiBackend {
   onPropertiesChanges: (
     callback: PropertiesChangedCallback,
   ) => DeregisterCallback;
+  startWatchingPunches: () => void;
+  stopWatchingPunches: () => void;
+  startWatchingTestPunches: () => void;
+  stopWatchingTestPunches: () => void;
   onPunchesRecieved: (callback: PunchesRecievedCallback) => DeregisterCallback;
-  onTestPunchesSent: (callback: PunchesSentCallback) => DeregisterCallback;
+  onTestPunchesSent: (callback: TestPunchesSentCallback) => DeregisterCallback;
+  startSendingTestPunches: (options: {
+    numberOfPunches: number;
+    sendInterval: number;
+    siCardNo: string;
+  }) => void;
 }
 
 export interface Punch {
@@ -36,5 +45,5 @@ export type PropertiesChangedCallback = (
   changedProperties: Partial<Record<GettablePropName, string>>,
 ) => void;
 export type PunchesRecievedCallback = (punches: Punch[]) => void;
-export type PunchesSentCallback = (punches: TestPunch[]) => void;
+export type TestPunchesSentCallback = (punches: TestPunch[]) => void;
 export type DeregisterCallback = () => void;

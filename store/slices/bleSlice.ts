@@ -5,6 +5,8 @@ import {WiRocBleConnection} from './wiRocDevicesSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {wiRocBleManager} from '../../App';
 import {createBleApiBackend} from '../../api/backends/ble';
+import {queryClient} from '../../queryClient';
+import {setupReactQuerySubscriptionToDevice} from '../../utils/reactQuery';
 
 type DeviceId = string;
 
@@ -88,6 +90,17 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
             return;
           }
 
+          console.log('[BLE] Creating BLE API backend for device', device.id);
+          const apiBackend = createBleApiBackend(device.id);
+          console.log(
+            '[BLE] Start listening for streaming data from',
+            device.id,
+          );
+          setupReactQuerySubscriptionToDevice(
+            queryClient,
+            apiBackend,
+            device.id,
+          );
           console.log('[BLE] Adding device', device.id, 'to known devices');
           set(state => {
             state.wiRocDevices[device.id] = {
@@ -97,7 +110,7 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
                 rssi: device.rssi,
                 status: isConnected ? 'connected' : 'disconnected',
               },
-              apiBackend: createBleApiBackend(device.id),
+              apiBackend,
               restApiHost: null,
             };
           });
@@ -133,10 +146,17 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
       try {
         await wiRocBleManager.connectToDevice(deviceId);
         setWiRocConnection(deviceId, state => (state.status = 'connected'));
-        set(state => {
-          state.wiRocDevices[deviceId].apiBackend =
-            createBleApiBackend(deviceId);
-        });
+        if (!get().wiRocDevices[deviceId].apiBackend) {
+          const apiBackend = createBleApiBackend(deviceId);
+          setupReactQuerySubscriptionToDevice(
+            queryClient,
+            apiBackend,
+            deviceId,
+          );
+          set(state => {
+            state.wiRocDevices[deviceId].apiBackend = apiBackend;
+          });
+        }
         console.log('[BLE] Connected to', deviceId);
       } catch (err) {
         console.error('Error while connecting', err);

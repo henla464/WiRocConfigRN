@@ -48,6 +48,7 @@ export default function DeviceBottomNavigation(props: Props) {
 
   useEffect(() => {
     return wiRocBleManager.onDeviceDisconnected(disconnectedDevice => {
+      // TODO: make work for demo and rest as well?
       if (deviceId === disconnectedDevice.id) {
         navigate('ScanForDevices');
       }

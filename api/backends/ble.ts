@@ -61,4 +61,24 @@ export const createBleApiBackend = (deviceId: string): WiRocApiBackend => ({
       callback(newData.punches);
     });
   },
+
+  startWatchingPunches() {
+    wiRocBleManager.enablePunchesNotification(deviceId);
+  },
+
+  stopWatchingPunches() {
+    wiRocBleManager.disablePunchesNotification(deviceId);
+  },
+
+  startWatchingTestPunches() {
+    wiRocBleManager.enableTestPunchesNotification(deviceId);
+  },
+
+  stopWatchingTestPunches() {
+    wiRocBleManager.disableTestPunchesNotification(deviceId);
+  },
+
+  startSendingTestPunches(options) {
+    wiRocBleManager.startSendTestPunches(deviceId, options);
+  },
 });

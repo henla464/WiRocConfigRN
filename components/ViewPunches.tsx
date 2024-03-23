@@ -3,11 +3,12 @@ import React, {useState} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {Button, DataTable} from 'react-native-paper';
 import {Punch} from '../api/types';
-import {wiRocBleManager} from '../App';
 import {useActiveWiRocDevice} from '../hooks/useActiveWiRocDevice';
+import {useStore} from '../store';
 
 export default function ViewPunches() {
   const deviceId = useActiveWiRocDevice();
+  const apiBackend = useStore(state => state.wiRocDevices[deviceId].apiBackend);
   const [isListening, setIsListening] = useState<boolean>(false);
 
   const {data: punches = []} = useQuery<unknown, unknown, Punch[]>({
@@ -23,10 +24,10 @@ export default function ViewPunches() {
 
   const startStopViewPunches = async () => {
     if (isListening) {
-      wiRocBleManager.disablePunchesNotification(deviceId);
+      apiBackend.stopWatchingPunches();
       setIsListening(false);
     } else {
-      wiRocBleManager.enablePunchesNotification(deviceId);
+      apiBackend.startWatchingPunches();
       setIsListening(true);
     }
   };

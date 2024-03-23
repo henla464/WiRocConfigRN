@@ -1,5 +1,4 @@
-import {useQuery, useMutation, useQueryClient} from '@tanstack/react-query';
-import {useCallback} from 'react';
+import {useQuery, useMutation} from '@tanstack/react-query';
 import {
   GettablePropName,
   getters,
@@ -8,6 +7,8 @@ import {
   setters,
 } from '../api/transformers';
 import {useStore} from '../store';
+import {queryClient} from '../queryClient';
+import {getKey, updateQueryDataForDevice} from '../utils/reactQuery';
 
 type GetterName = keyof typeof getters;
 type SetterName = keyof typeof setters;
@@ -66,7 +67,6 @@ export const useWiRocPropertiesMutation = (deviceId: string) => {
     state => state.wiRocDevices[deviceId]?.apiBackend,
   );
 
-  const updateQueryData = useUpdateQueryDataForDevice();
   return useMutation({
     mutationFn: async (data: Partial<SettableValues>) => {
       for (const [_propertyName, requestValue] of Object.entries(data)) {
@@ -91,7 +91,8 @@ export const useWiRocPropertiesMutation = (deviceId: string) => {
 
         console.log('[REQ] Deserialized response:', responseValue);
 
-        updateQueryData(
+        updateQueryDataForDevice(
+          queryClient,
           deviceId,
           setter.responseTarget ?? (propertyName as GettablePropName),
           responseValue,
@@ -115,7 +116,6 @@ export const useWiRocPropertyMutation = <
   const apiBackend = useStore(
     state => state.wiRocDevices[deviceId]?.apiBackend,
   );
-  const updateQueryData = useUpdateQueryDataForDevice();
 
   return useMutation<unknown, unknown, Value>({
     ...options,
@@ -137,7 +137,8 @@ export const useWiRocPropertyMutation = <
       const responseValue = setter.deserializeResponse(response);
       console.log('[REQ] Deserialized response:', response);
 
-      updateQueryData(
+      updateQueryDataForDevice(
+        queryClient,
         deviceId,
         setter.responseTarget ?? (propertyName as GettablePropName),
         responseValue,
@@ -146,46 +147,4 @@ export const useWiRocPropertyMutation = <
       return responseValue;
     },
   });
-};
-
-// wrapper around queryClient.setQueryData, just to get unified logging
-export const useUpdateQueryDataForDevice = () => {
-  const queryClient = useQueryClient();
-  return useCallback(
-    (deviceId: string, propertyName: GetterName, value: unknown) => {
-      if (value === undefined) {
-        return;
-      }
-      const type = Array.isArray(value) ? '[]' : typeof value;
-
-      queryClient.setQueryData(getKey(deviceId, propertyName), current => {
-        console.log(
-          `[REQ] Setting ${propertyName}: ${type} = ${JSON.stringify(value)}`,
-        );
-        if (propertyName === 'settings') {
-          console.log('[REQ] Merging settings');
-          console.log('[REQ]: Current:', type, current, current?.settings);
-          const updatedValue = {
-            settings: [...(current?.settings ?? []), value],
-          };
-          console.log('[REQ]: Updated:', type, updatedValue);
-          return updatedValue;
-        }
-        return value;
-      });
-    },
-    [queryClient],
-  );
-};
-
-const getKey = (
-  deviceId: string,
-  propertyName: GetterName | SetterName,
-): string[] => {
-  return [
-    'wiRocDevice',
-    deviceId,
-    'properties',
-    propertyName.replace('/', '_'),
-  ];
 };

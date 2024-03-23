@@ -33,4 +33,14 @@ export const createRestApiBackend = (host: string): WiRocApiBackend => ({
     // WebSocket? Polling?
     return () => {};
   },
+
+  startWatchingPunches() {},
+
+  stopWatchingPunches() {},
+
+  startWatchingTestPunches() {},
+
+  stopWatchingTestPunches() {},
+
+  startSendingTestPunches() {},
 });

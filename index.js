@@ -9,9 +9,8 @@ import {AppRegistry} from 'react-native';
 import {PaperProvider, MD3LightTheme as DefaultTheme} from 'react-native-paper';
 import App from './App';
 import {name as appName} from './app.json';
-import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
-
-const queryClient = new QueryClient();
+import {QueryClientProvider} from '@tanstack/react-query';
+import {queryClient} from './queryClient';
 
 export default function Main() {
   return (

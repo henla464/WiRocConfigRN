@@ -1,7 +1,11 @@
 import {createDemoApiBackend} from '../../api/backends/demo';
 import {createRestApiBackend} from '../../api/backends/rest';
 import {WiRocApiBackend} from '../../api/types';
+import {queryClient} from '../../queryClient';
+import {setupReactQuerySubscriptionToDevice} from '../../utils/reactQuery';
 import {ImmerStateCreator} from '../types';
+
+const USE_HARD_CODED_REST_DEVICE = false;
 
 export interface WiRocDevicesSliceState {
   /**
@@ -53,25 +57,43 @@ export const createWiRocDevicesSlice: ImmerStateCreator<
         state.activeDeviceId = deviceId;
       });
     },
+    addWiRocDevice: (deviceId: string, wiRocDevice: WiRocDevice) => {
+      set(state => {
+        state.wiRocDevices[deviceId] = wiRocDevice;
+      });
+    },
     wiRocDevices: {
-      '11:22:33:44:55:66': {
-        name: 'Demo 1',
-        bleConnection: null,
-        restApiHost: null,
-        apiBackend: createDemoApiBackend('Demo 1'),
-      },
-      '99:88:77:66:55:44': {
-        name: 'Demo 2',
-        bleConnection: null,
-        restApiHost: null,
-        apiBackend: createDemoApiBackend('Demo 2'),
-      },
-      // test: {
-      //   name: 'Rest test',
-      //   bleConnection: null,
-      //   restApiHost: null,
-      //   apiBackend: createRestApiBackend('192.168.0.108:5000'),
-      // },
+      ...createDemoDevice('11:22:33:44:55:66', 'Demo 1'),
+      ...createDemoDevice('99:88:77:66:55:44', 'Demo 2'),
+      ...(USE_HARD_CODED_REST_DEVICE
+        ? createRestDevice('rest', 'Rest test', '192.168.0.108:5000')
+        : {}),
+    },
+  };
+};
+
+const createDemoDevice = (id: string, name: string) => {
+  const apiBackend = createDemoApiBackend(name);
+  setupReactQuerySubscriptionToDevice(queryClient, apiBackend, id);
+  return {
+    [id]: {
+      name,
+      bleConnection: null,
+      restApiHost: null,
+      apiBackend,
+    },
+  };
+};
+
+const createRestDevice = (id: string, name: string, host: string) => {
+  const apiBackend = createRestApiBackend(host);
+  setupReactQuerySubscriptionToDevice(queryClient, apiBackend, id);
+  return {
+    [id]: {
+      name,
+      bleConnection: null,
+      restApiHost: host,
+      apiBackend,
     },
   };
 };

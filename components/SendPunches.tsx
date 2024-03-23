@@ -2,15 +2,16 @@ import React, {useEffect, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {SelectList} from 'react-native-dropdown-select-list';
 import {Button, DataTable, Icon, TextInput} from 'react-native-paper';
-import {wiRocBleManager} from '../App';
 import {useActiveWiRocDevice} from '../hooks/useActiveWiRocDevice';
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import {TestPunch} from '../api/types';
+import {useStore} from '../store';
 import {useNotify} from '../hooks/useNotify';
 
 export default function SendPunches() {
   const deviceId = useActiveWiRocDevice();
   const queryClient = useQueryClient();
+  const apiBackend = useStore(state => state.wiRocDevices[deviceId].apiBackend);
   const [siCardNo, setSiCardNo] = useState<string>('');
   const [numberOfPunches, setNumberOfPunches] = useState(1);
   const [isSending, setIsSending] = useState(false);
@@ -84,14 +85,14 @@ export default function SendPunches() {
       numberOfPunches === noOfCompletedRows
     ) {
       // all received, stop listening
-      wiRocBleManager.disableTestPunchesNotification(deviceId);
+      apiBackend.stopWatchingTestPunches();
       setIsSending(false);
     }
-  }, [punches, numberOfPunches, deviceId]);
+  }, [punches, numberOfPunches, deviceId, apiBackend]);
 
   const startStopSendPunches = async () => {
     if (isSending) {
-      wiRocBleManager.disableTestPunchesNotification(deviceId);
+      apiBackend.stopWatchingTestPunches();
       setIsSending(false);
     } else {
       if (!siCardNo || siCardNo.length === 0 || isNaN(parseInt(siCardNo, 10))) {
@@ -106,11 +107,9 @@ export default function SendPunches() {
         return;
       }
 
-      console.log('startStopSendPunches: start send punches');
-      queryClient.setQueryData([deviceId, 'testPpunches'], []);
-      console.log('startStopSendPunches: emptied punches');
-      wiRocBleManager.enableTestPunchesNotification(deviceId);
-      wiRocBleManager.startSendTestPunches(deviceId, {
+      queryClient.setQueryData([deviceId, 'testPunches'], []);
+      apiBackend.startWatchingTestPunches();
+      apiBackend.startSendingTestPunches({
         numberOfPunches,
         sendInterval,
         siCardNo,
@@ -125,7 +124,7 @@ export default function SendPunches() {
       <View style={styles.containerRow}>
         <TextInput
           value={siCardNo}
-          label="SI Nummer"
+          label="SportIdent-nummber"
           onChangeText={text => {
             if (text === '') {
               setSiCardNo('');
