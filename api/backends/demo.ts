@@ -40,7 +40,7 @@ export const createDemoApiBackend = (deviceName: string): WiRocApiBackend => {
             Value: values[1],
           },
         ];
-        demoData.settings = JSON.stringify(updated);
+        demoData.settings = JSON.stringify({settings: updated});
         return values.join('\t');
       }
 
