@@ -90,20 +90,22 @@ export const createDemoApiBackend = (deviceName: string): WiRocApiBackend => {
       }
 
       if (propertyName === 'upgradewirocpython') {
-        demoData.wirocpythonversion = values[0];
+        demoData.wirocpythonversion =
+          values[0].match(/v?(.*)/)?.[1] ?? demoData.wirocpythonversion;
         onPropertiesChangesSubscribers.forEach(callback => {
           callback({
-            wirocpythonversion: values[0],
+            wirocpythonversion: demoData.wirocpythonversion,
           });
         });
         return 'OK';
       }
 
       if (propertyName === 'upgradewirocble') {
-        demoData.wirocbleapiversion = values[0];
+        demoData.wirocbleapiversion =
+          values[0].match(/v?(.*)/)?.[1] ?? demoData.wirocbleapiversion;
         onPropertiesChangesSubscribers.forEach(callback => {
           callback({
-            wirocbleapiversion: values[0],
+            wirocbleapiversion: demoData.wirocbleapiversion,
           });
         });
         return 'OK';

@@ -116,6 +116,12 @@ export default function Update() {
     deviceId,
     'upgradewirocble',
     {
+      onSuccess: () => {
+        notify({
+          type: 'info',
+          message: 'Enheten kommer att uppdatera WiRoc BLE API-versionen',
+        });
+      },
       onError: () => {
         notify({
           type: 'error',
@@ -129,6 +135,12 @@ export default function Update() {
     deviceId,
     'upgradewirocpython',
     {
+      onSuccess: () => {
+        notify({
+          type: 'info',
+          message: 'Enheten kommer att uppdatera WiRoc-versionen',
+        });
+      },
       onError: () => {
         notify({
           type: 'error',
