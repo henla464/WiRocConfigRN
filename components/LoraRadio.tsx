@@ -306,7 +306,7 @@ export default function LoraRadio({
             }}
           />
           <RadioButton.Item
-            label="Medium Long 781 bps"
+            label="Medium short 781 bps"
             value="MS"
             labelVariant="titleLarge"
             disabled={!isLoraRadioEnabled}
