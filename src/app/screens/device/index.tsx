@@ -13,11 +13,11 @@ import OtherScreen from './screens/other';
 import TestScreen from './screens/test';
 import {ConfigurationTabParamList} from './types';
 
-const Tab2 = createMaterialBottomTabNavigator<ConfigurationTabParamList>();
+const Tab = createMaterialBottomTabNavigator<ConfigurationTabParamList>();
 
 type Props = DrawerScreenProps<RootDrawerParamList, 'Device'>;
 
-export default function DeviceBottomNavigation(props: Props) {
+export default function DeviceScreen(props: Props) {
   const navigation = props.navigation;
   console.log(
     'DeviceBottomNavigation',
@@ -65,8 +65,8 @@ export default function DeviceBottomNavigation(props: Props) {
 function Content() {
   return (
     <>
-      <Tab2.Navigator>
-        <Tab2.Screen
+      <Tab.Navigator>
+        <Tab.Screen
           name="configuration"
           component={ConfigurationScreen}
           options={{
@@ -76,7 +76,7 @@ function Content() {
             ),
           }}
         />
-        <Tab2.Screen
+        <Tab.Screen
           name="test"
           component={TestScreen}
           options={{
@@ -87,7 +87,7 @@ function Content() {
           }}
         />
 
-        <Tab2.Screen
+        <Tab.Screen
           name="other"
           component={OtherScreen}
           options={{
@@ -97,7 +97,7 @@ function Content() {
             ),
           }}
         />
-      </Tab2.Navigator>
+      </Tab.Navigator>
     </>
   );
 }

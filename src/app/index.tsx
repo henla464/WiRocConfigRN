@@ -9,11 +9,11 @@ import {useStore} from '@store/index';
 import {DrawerContent} from './drawer';
 import NavigationHeader from './header';
 import AboutScreen from './screens/about';
-import DeviceBottomNavigation from './screens/device';
+import DeviceScreen from './screens/device';
 import ScanForDevicesScreen from './screens/scan';
 import {RootDrawerParamList} from './types';
 
-const Drawer2 = createDrawerNavigator<RootDrawerParamList>();
+const Drawer = createDrawerNavigator<RootDrawerParamList>();
 
 export const wiRocBleManager = createWiRocBleManager();
 
@@ -28,26 +28,26 @@ export function App() {
 
   return (
     <NavigationContainer>
-      <Drawer2.Navigator
+      <Drawer.Navigator
         initialRouteName="ScanForDevices"
         drawerContent={DrawerContent}>
-        <Drawer2.Screen
+        <Drawer.Screen
           name="ScanForDevices"
           component={ScanForDevicesScreen}
           options={{
             title: 'Sök WiRoc enheter',
           }}
         />
-        <Drawer2.Screen
+        <Drawer.Screen
           name="About"
           component={AboutScreen}
           options={{
             title: 'Om',
           }}
         />
-        <Drawer2.Screen
+        <Drawer.Screen
           name="Device"
-          component={DeviceBottomNavigation}
+          component={DeviceScreen}
           options={{
             title: 'Konfigurera enhet',
             headerRight: activeDeviceId
@@ -55,7 +55,7 @@ export function App() {
               : () => null,
           }}
         />
-      </Drawer2.Navigator>
+      </Drawer.Navigator>
     </NavigationContainer>
   );
 }
