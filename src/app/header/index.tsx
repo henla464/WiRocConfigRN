@@ -20,6 +20,7 @@ export default function NavigationHeader({deviceId}: {deviceId: string}) {
   );
 
   const {data: ip} = useWiRocPropertyQuery(deviceId, 'ip');
+  const {data: wifiNetworks = []} = useWiRocPropertyQuery(deviceId, 'listwifi');
 
   const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'wirocdevicename');
   const {mutate: mutateDeviceName} = useWiRocPropertyMutation(
@@ -27,7 +28,8 @@ export default function NavigationHeader({deviceId}: {deviceId: string}) {
     'wirocdevicename',
   );
 
-  const isConnected = (ip?.length ?? 0) > 0;
+  const isConnected =
+    (ip?.length ?? 0) > 0 && wifiNetworks.some(n => n.isConnected);
 
   const batteryLevelRounded = Math.round(batteryLevel / 10) * 10;
 
