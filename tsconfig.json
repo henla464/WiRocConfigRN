@@ -1,7 +1,14 @@
 {
+  "extends": "@tsconfig/react-native/tsconfig.json",
   "compilerOptions": {
     "jsx": "react",
-    "esModuleInterop": true
-  },
-  "extends": "@tsconfig/react-native/tsconfig.json"
+    "esModuleInterop": true,
+    "baseUrl": ".",
+    "paths": {
+      "@api/*": ["src/api/*"],
+      "@lib/*": ["src/lib/*"],
+      "@store": ["src/store/index.ts"],
+      "@store/*": ["src/store/*"]
+    }
+  }
 }

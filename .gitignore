@@ -68,3 +68,5 @@ yarn-error.log
 
 # configuration / secrets
 /config/config.json
+
+NOTES.md
