@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
 
 import {StyleSheet, View} from 'react-native';
-import {IconButton} from 'react-native-paper';
+import {IconButton, Portal, Snackbar, Text} from 'react-native-paper';
 import {
   useWiRocPropertyMutation,
   useWiRocPropertyQuery,
@@ -34,6 +34,10 @@ export default function NavigationHeader({deviceId}: {deviceId: string}) {
 
   const [isDeviceNameModalVisiable, setIsDeviceNameModalVisiable] =
     useState<boolean>(false);
+
+  const [isBatteryLevelSnackbarVisible, setBatteryLevelSnackbarVisible] =
+    useState(false);
+  const snackbarText = `Enhetens batterinivå: ${batteryLevelRounded}%`;
 
   return (
     <>
@@ -83,9 +87,24 @@ export default function NavigationHeader({deviceId}: {deviceId: string}) {
           onPress={() => {
             refetchBatteryLevel();
             refetchIsCharging();
+            setBatteryLevelSnackbarVisible(true);
           }}
         />
       </View>
+      <Portal>
+        <Snackbar
+          visible={isBatteryLevelSnackbarVisible}
+          onDismiss={() => setBatteryLevelSnackbarVisible(false)}
+          action={{
+            label: 'OK',
+            onPress: () => {
+              setBatteryLevelSnackbarVisible(false);
+            },
+          }}
+          duration={4000}>
+          {snackbarText}
+        </Snackbar>
+      </Portal>
     </>
   );
 }
