@@ -19,12 +19,6 @@ type Props = DrawerScreenProps<RootDrawerParamList, 'Device'>;
 
 export default function DeviceScreen(props: Props) {
   const navigation = props.navigation;
-  console.log(
-    'DeviceBottomNavigation',
-    'deviceId',
-    props.route.params.deviceId,
-  );
-
   const setActiveDeviceId = useStore(state => state.setActiveDeviceId);
   const activeDeviceId = useStore(state => state.activeDeviceId);
   const apiBackend = useStore(state =>

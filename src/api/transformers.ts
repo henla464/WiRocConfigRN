@@ -1,4 +1,6 @@
 import chunk from 'lodash/chunk';
+import orderBy from 'lodash/orderBy';
+import uniqBy from 'lodash/uniqBy';
 
 import {
   BluetoothDevice,
@@ -229,12 +231,23 @@ function unionSetter<T extends string>(): Setter<T> {
 function wifiListGetter(): Getter<Wifi[]> {
   return {
     deserialize: (value: string): Wifi[] => {
-      return chunk(value.split('\n'), 3).map(
+      const wifiNetworks = chunk(value.split('\n'), 3).map(
         ([networkName, connected, rssi]) => ({
           networkName,
           isConnected: connected === 'yes',
           signalStrength: parseInt(rssi, 10),
         }),
+      );
+
+      return uniqBy(
+        orderBy(
+          wifiNetworks,
+          ['isConnected', 'signalStrength'],
+          ['desc', 'desc'],
+        ),
+        // since we order by isConnected desc, we will not risk filtering out
+        // the connected network
+        'networkName',
       );
     },
   };

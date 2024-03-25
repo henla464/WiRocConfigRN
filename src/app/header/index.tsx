@@ -1,3 +1,4 @@
+import {useNavigation} from '@react-navigation/native';
 import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {IconButton, Portal, Snackbar} from 'react-native-paper';
@@ -7,10 +8,10 @@ import {
   useWiRocPropertyQuery,
 } from '@lib/hooks/useWiRocPropertyQuery';
 
-import DeviceConnectionModal from './components/DeviceConnectionModal';
 import EditDeviceNameModal from './components/EditDeviceNameModal';
 
 export default function NavigationHeader({deviceId}: {deviceId: string}) {
+  const navigation = useNavigation();
   const {data: batteryLevel = 0, refetch: refetchBatteryLevel} =
     useWiRocPropertyQuery(deviceId, 'batterylevel');
 
@@ -33,8 +34,6 @@ export default function NavigationHeader({deviceId}: {deviceId: string}) {
 
   const batteryLevelRounded = Math.round(batteryLevel / 10) * 10;
 
-  const [isModalVisible, setIsModalVisible] = useState<boolean>(false);
-
   const [isDeviceNameModalVisiable, setIsDeviceNameModalVisiable] =
     useState<boolean>(false);
 
@@ -44,13 +43,6 @@ export default function NavigationHeader({deviceId}: {deviceId: string}) {
 
   return (
     <>
-      <DeviceConnectionModal
-        deviceId={deviceId}
-        closeModal={() => {
-          setIsModalVisible(false);
-        }}
-        modalVisible={isModalVisible}
-      />
       <EditDeviceNameModal
         modalVisible={isDeviceNameModalVisiable}
         closeModal={function (): void {
@@ -72,7 +64,7 @@ export default function NavigationHeader({deviceId}: {deviceId: string}) {
         <IconButton
           icon={isConnected ? 'wifi-settings' : 'wifi-off'}
           onPress={() => {
-            setIsModalVisible(true);
+            navigation.navigate('DeviceNetwork', {deviceId});
           }}
         />
         <IconButton

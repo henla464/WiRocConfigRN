@@ -28,12 +28,18 @@ export const createDemoApiBackend = (deviceName: string): WiRocApiBackend => {
   return {
     async getProperty(propertyName: GettablePropName) {
       const response = demoData[propertyName];
+      console.log('Getting property', propertyName, response);
       if (!response) {
         throw new Error(`Property ${propertyName} not found in demo data`);
       }
+      // simulate some delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
       return response;
     },
     async setProperty(propertyName, value) {
+      // simulate some delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       const values = Array.isArray(value) ? value : [value];
 
       if (propertyName === 'uploadlogarchive') {

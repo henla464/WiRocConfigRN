@@ -34,9 +34,6 @@ export const setupReactQuerySubscriptionToDevice = (
 
       const getter = getters[key as GettablePropName];
       if (!getter) {
-        console.warn(
-          `[REQ][useReactQuerySubscription] No getter for property "${key}"`,
-        );
         return;
       }
 
