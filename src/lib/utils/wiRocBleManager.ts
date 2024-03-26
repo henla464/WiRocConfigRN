@@ -262,6 +262,7 @@ export const createWiRocBleManager = () => {
         `propertyNotificationTransaction${deviceId}`,
       );
 
+      console.log('[wiRocBleManager] Setting chunk size...');
       // The main purpose of this command is to set chunk size to use.
       //
       // But the response of this request will also contain a bunch of
@@ -271,8 +272,12 @@ export const createWiRocBleManager = () => {
         propertyCharacteristic,
         `all\t${chunkLengthToUse}`,
       );
+      console.log('[wiRocBleManager] Setting chunk size done.');
 
       const [device] = await bleManager.devices([deviceId]);
+
+      console.log('[wiRocBleManager] Emitting onDeviceConnected...');
+
       onDeviceConnectedSubscribers.forEach(subscriber => subscriber(device));
 
       const sub = bleManager.onDeviceDisconnected(deviceId, () => {
@@ -288,6 +293,9 @@ export const createWiRocBleManager = () => {
           cancelTransactions(deviceId);
         }
       });
+
+      console.log('[wiRocBleManager] connectToDevice done');
+      resolve();
     });
   };
 
@@ -341,7 +349,7 @@ export const createWiRocBleManager = () => {
     key: SettablePropName,
     value: string,
   ) => {
-    console.log('[BLE] writeProperty', deviceId, key, value);
+    console.log('[wiRocBleManager] writeProperty', deviceId, key, value);
     return sendData(deviceId, propertyCharacteristic, `${key}\t${value}`);
   };
 
@@ -349,7 +357,7 @@ export const createWiRocBleManager = () => {
     deviceId: string,
     key: GettablePropName,
   ): Promise<string> => {
-    console.log('[BLE] requestProperty', deviceId, key);
+    console.log('[wiRocBleManager] requestProperty', deviceId, key);
     const data = await requestProperties(deviceId, [key]);
     const value = data[key];
     if (!value) {
@@ -362,7 +370,7 @@ export const createWiRocBleManager = () => {
     deviceId: string,
     keys: GettablePropName[],
   ) => {
-    console.log('[BLE] requestProperties', deviceId, keys);
+    console.log('[wiRocBleManager] requestProperties', deviceId, keys);
     let propNameToSend = keys.join('|') + '|';
     if (Buffer.from(propNameToSend, 'utf-8').length === chunkLengthToUse) {
       propNameToSend += ' ';
@@ -375,7 +383,7 @@ export const createWiRocBleManager = () => {
     characteristic: string,
     data: string,
   ) => {
-    console.log('[BLE] sendData', deviceId, data);
+    console.log('[wiRocBleManager] sendData', deviceId, data);
     await bleManager.writeCharacteristicWithResponseForDevice(
       deviceId,
       apiService,
@@ -388,7 +396,7 @@ export const createWiRocBleManager = () => {
       const onData = (_deviceId: string, responseString: string) => {
         blePropertyBuffer.unsubscribe(onData);
         const parsedData = parseWiRocBleProps(responseString);
-        console.log('[BLE] parsed response', parsedData);
+        console.log('[wiRocBleManager] parsed response', parsedData);
         resolve(parsedData);
       };
       blePropertyBuffer.subscribe(onData);
@@ -434,7 +442,7 @@ export const createWiRocBleManager = () => {
     deviceId: string,
     params: {numberOfPunches: number; sendInterval: number; siCardNo: string},
   ): Promise<void> => {
-    console.log('[BLE] startSendTestPunches', deviceId, params);
+    console.log('[wiRocBleManager] startSendTestPunches', deviceId, params);
     const data = await sendData(
       deviceId,
       testPunchesCharacteristic,

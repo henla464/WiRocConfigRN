@@ -147,6 +147,7 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
 
       try {
         await wiRocBleManager.connectToDevice(deviceId);
+        console.log('[BLE] Successfully connected to', deviceId);
         setWiRocConnection(deviceId, state => (state.status = 'connected'));
         if (!get().wiRocDevices[deviceId].apiBackend) {
           const apiBackend = createBleApiBackend(deviceId);
