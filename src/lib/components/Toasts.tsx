@@ -3,12 +3,16 @@ import {Portal, Snackbar} from 'react-native-paper';
 
 import {useStore} from '@store';
 
-export function Toasts() {
+interface ToastsProps {
+  offset?: number;
+}
+
+export function Toasts({offset = 0}: ToastsProps) {
   const toasts = useStore(state => state.toasts);
   return (
     <Portal>
       {toasts.map(toast => (
-        <Toast key={toast.id} id={toast.id} />
+        <Toast key={toast.id} id={toast.id} offset={offset} />
       ))}
     </Portal>
   );
@@ -16,9 +20,10 @@ export function Toasts() {
 
 interface ToastProps {
   id: number;
+  offset?: number;
 }
 
-function Toast({id}: ToastProps) {
+function Toast({id, offset}: ToastProps) {
   const toast = useStore(state => state.toasts.find(t => t.id === id));
   const dismissToast = useStore(state => state.dismissToast);
   const dismissedToasts = useStore(state => state.dismissedToasts);
@@ -32,6 +37,9 @@ function Toast({id}: ToastProps) {
       key={toast.id}
       visible={!dismissedToasts[toast.id]}
       onDismiss={toast.onDismiss ?? (() => dismissToast(toast.id))}
+      style={{
+        bottom: offset,
+      }}
       action={
         toast.action ?? {
           label: 'OK',

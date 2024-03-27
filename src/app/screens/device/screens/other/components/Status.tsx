@@ -5,6 +5,7 @@ import {Button, DataTable, Divider} from 'react-native-paper';
 
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useNotify} from '@lib/hooks/useNotify';
+import {useToasts} from '@lib/hooks/useToasts';
 import {
   useWiRocPropertyMutation,
   useWiRocPropertyQuery,
@@ -15,6 +16,7 @@ import {useStore} from '@store';
 export default function Status() {
   const logs = useStore(state => state.logs);
   const notify = useNotify();
+  const {addToast} = useToasts();
   const [isLogsVisible, setLogsVisible] = useState(false);
 
   const deviceId = useActiveWiRocDevice();
@@ -22,36 +24,48 @@ export default function Status() {
     useWiRocPropertyQuery(deviceId, 'services', {
       enabled: false,
     });
-  const {data: status, refetch: refetchStatus} = useWiRocPropertyQuery(
-    deviceId,
-    'status',
-    {
-      enabled: false,
-    },
-  );
+
+  const {
+    data: status,
+    refetch: refetchStatus,
+    isLoading: isLoadingStatus,
+    isRefetching: isRefetchingStatus,
+  } = useWiRocPropertyQuery(deviceId, 'status', {
+    enabled: false,
+  });
 
   const inData = status?.inputAdapters;
   const outData = status?.subscriberAdapters;
 
-  const {mutate: uploadDatabaseAndLogs} = useWiRocPropertyMutation(
-    deviceId,
-    'uploadlogarchive',
-  );
+  const {mutate: uploadDatabaseAndLogs, isPending: isUploadingDatabaseAndLogs} =
+    useWiRocPropertyMutation(deviceId, 'uploadlogarchive', {
+      onSuccess: () => {
+        addToast({
+          message: 'Databas och loggar laddas upp',
+        });
+      },
+    });
 
   return (
     <View style={styles.container}>
       <Button
         icon=""
         mode="contained"
+        disabled={isUploadingDatabaseAndLogs}
+        loading={isUploadingDatabaseAndLogs}
         onPress={() => {
           uploadDatabaseAndLogs();
         }}
         style={[styles.button]}>
-        Ladda upp enhetens databas och loggar
+        {isUploadingDatabaseAndLogs
+          ? 'Laddar upp...'
+          : 'Ladda upp enhetens databas och loggar'}
       </Button>
       <Button
         icon=""
         mode="contained"
+        disabled={isLoadingStatus || isRefetchingStatus}
+        loading={isLoadingStatus || isRefetchingStatus}
         onPress={() => {
           try {
             refetchServices({throwOnError: true});
@@ -72,7 +86,9 @@ export default function Status() {
           }
         }}
         style={[styles.button]}>
-        Hämta status information
+        {isLoadingStatus || isRefetchingStatus
+          ? 'Hämtar statusinformation...'
+          : 'Hämta statusinformation'}
       </Button>
       <ScrollView>
         <Text style={styles.header}>Services</Text>

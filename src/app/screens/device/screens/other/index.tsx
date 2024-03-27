@@ -1,8 +1,10 @@
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import React from 'react';
 import {Dimensions} from 'react-native';
+import {useTheme} from 'react-native-paper';
 
 import {Notifications} from '@lib/components/Notifications';
+import {Toasts} from '@lib/components/Toasts';
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
 
@@ -21,6 +23,7 @@ export default function OtherScreen() {
   return (
     <>
       <Notifications />
+      <Toasts offset={80} />
       <Tab.Navigator
         key="otherScreen"
         screenOptions={{
