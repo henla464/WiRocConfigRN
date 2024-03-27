@@ -1,14 +1,12 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
-import React, {useRef, useState} from 'react';
+import React, {useState} from 'react';
 import {RefreshControl, SafeAreaView, ScrollView, View} from 'react-native';
 import {
   Button,
   Dialog,
-  IconButton,
   List,
   Portal,
   ProgressBar,
-  Snackbar,
   Surface,
   Text,
   Tooltip,
@@ -16,7 +14,9 @@ import {
 import {RootStackParamList} from 'src/app/types';
 
 import {Notifications} from '@lib/components/Notifications';
+import {Toasts} from '@lib/components/Toasts';
 import {useNotify} from '@lib/hooks/useNotify';
+import {useToasts} from '@lib/hooks/useToasts';
 import {
   useWiRocPropertyMutation,
   useWiRocPropertyQuery,
@@ -28,33 +28,10 @@ export const DeviceNetworkScreen = (props: Props) => {
   const navigate = props.navigation.navigate;
   const deviceId = props.route.params.deviceId;
   const notify = useNotify();
-  const [snackbarText, _setSnackbarText] = React.useState<string | null>(null);
+  const {addToast} = useToasts();
   const [disconnectName, setDisconnectName] = useState<string | null>(null);
-  const snackbarTimeoutHandle = useRef<ReturnType<typeof setTimeout> | null>(
-    null,
-  );
 
-  const setSnackbarText = (text: string | null) => {
-    if (text === null) {
-      if (snackbarTimeoutHandle.current) {
-        clearTimeout(snackbarTimeoutHandle.current);
-        snackbarTimeoutHandle.current = null;
-      }
-      _setSnackbarText(null);
-      return;
-    }
-
-    if (snackbarTimeoutHandle.current) {
-      clearTimeout(snackbarTimeoutHandle.current);
-    }
-
-    snackbarTimeoutHandle.current = setTimeout(() => {
-      _setSnackbarText(null);
-    }, 4000);
-
-    _setSnackbarText(text);
-  };
-
+  const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'wirocdevicename');
   const {
     data: wifiNetworks = [],
     refetch: refetchWifiNetworks,
@@ -75,7 +52,7 @@ export const DeviceNetworkScreen = (props: Props) => {
         });
       },
       onSuccess: () => {
-        setSnackbarText('Förnya IP lyckades');
+        addToast({message: 'Förnya IP lyckades'});
       },
       onSettled: () => {
         refresh();
@@ -83,7 +60,7 @@ export const DeviceNetworkScreen = (props: Props) => {
     },
   );
 
-  const {mutate: wifiDisconnect, isPending: isDisconnecting} =
+  const {mutateAsync: wifiDisconnect, isPending: isDisconnecting} =
     useWiRocPropertyMutation(deviceId, 'disconnectwifi', {
       onError: error => {
         const msg = error instanceof Error ? error.message : 'Unknown error';
@@ -102,6 +79,8 @@ export const DeviceNetworkScreen = (props: Props) => {
     await refetchIp();
   };
 
+  const [isRefreshing, setRefreshing] = useState(false);
+
   return (
     <>
       <SafeAreaView>
@@ -109,15 +88,23 @@ export const DeviceNetworkScreen = (props: Props) => {
           stickyHeaderIndices={[0]}
           refreshControl={
             <RefreshControl
-              refreshing={isLoadingWifiNetworks}
-              onRefresh={refetchWifiNetworks}
+              refreshing={isRefreshing}
+              onRefresh={() => {
+                setRefreshing(true);
+                refresh().finally(() => {
+                  setRefreshing(false);
+                });
+              }}
             />
           }>
           <ProgressBar
-            visible={isRefetchingWifiNetworks || isRenewingIp}
+            visible={
+              isLoadingWifiNetworks || isRefetchingWifiNetworks || isRenewingIp
+            }
             indeterminate
           />
           <Notifications />
+          <Toasts />
           <View
             style={{
               flex: 1,
@@ -165,28 +152,16 @@ export const DeviceNetworkScreen = (props: Props) => {
                 </Button>
               </View>
             </Surface>
-            <Surface
-              style={{
-                paddingTop: 8,
-              }}>
-              <View
+            <Surface>
+              <Text
                 style={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
+                  marginTop: 16,
                   marginLeft: 16,
                   marginRight: 10,
-                }}>
-                <Text variant="titleSmall">WiFi-nätverk</Text>
-                <Tooltip title="Uppdatera listan">
-                  <IconButton
-                    icon="refresh"
-                    onPress={() => {
-                      refresh();
-                    }}
-                  />
-                </Tooltip>
-              </View>
+                }}
+                variant="titleSmall">
+                WiFi-nätverk
+              </Text>
               <List.Section>
                 {wifiNetworks.map(wifiNetworkItem => {
                   return (
@@ -245,20 +220,6 @@ export const DeviceNetworkScreen = (props: Props) => {
         </ScrollView>
       </SafeAreaView>
       <Portal>
-        <Snackbar
-          visible={snackbarText !== null}
-          onDismiss={() => setSnackbarText(null)}
-          duration={Infinity}
-          action={{
-            label: 'OK',
-            onPress: () => {
-              setSnackbarText(null);
-            },
-          }}>
-          {snackbarText}
-        </Snackbar>
-      </Portal>
-      <Portal>
         <Dialog
           visible={disconnectName !== null}
           onDismiss={() => {
@@ -284,8 +245,15 @@ export const DeviceNetworkScreen = (props: Props) => {
             </Button>
             <Button
               onPress={() => {
-                wifiDisconnect();
-                setDisconnectName(null);
+                const name = disconnectName;
+                const dName = deviceName ?? 'Enheten';
+
+                wifiDisconnect().then(() => {
+                  addToast({
+                    message: `${dName} kopplade ifrån ${name}`,
+                  });
+                  setDisconnectName(null);
+                });
               }}>
               Koppla från
             </Button>

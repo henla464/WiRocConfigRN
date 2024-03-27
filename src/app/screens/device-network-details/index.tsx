@@ -5,6 +5,7 @@ import {Button, ProgressBar, Text, TextInput} from 'react-native-paper';
 import {RootStackParamList} from 'src/app/types';
 
 import {useNotify} from '@lib/hooks/useNotify';
+import {useToasts} from '@lib/hooks/useToasts';
 import {
   useWiRocPropertyMutation,
   useWiRocPropertyQuery,
@@ -15,6 +16,8 @@ type Props = NativeStackScreenProps<RootStackParamList, 'DeviceNetworkDetails'>;
 export const DeviceNetworkDetailsScreen = (props: Props) => {
   const {deviceId, networkName} = props.route.params;
   const notify = useNotify();
+  const {addToast} = useToasts();
+  const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'wirocdevicename');
   const {
     data: wifiNetworks = [],
     refetch: refetchWifiNetworks,
@@ -36,7 +39,9 @@ export const DeviceNetworkDetailsScreen = (props: Props) => {
         });
       },
       onSuccess: () => {
-        // setSnackbarText('Anslutning till Wifi-nätverket lyckades');
+        const name = wifiNetwork?.networkName ?? 'nätverket';
+        const dName = deviceName ?? 'Enheten';
+        addToast({message: `${dName} är nu ansluten till ${name}`});
       },
       onSettled: () => {
         refetchWifiNetworks();
