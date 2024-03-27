@@ -56,24 +56,26 @@ export default function ViewPunches() {
           Rensa
         </Button>
       </View>
-      <View style={styles.tableContainer}>
-        <DataTable style={styles.table}>
-          <DataTable.Header style={styles.row}>
-            <DataTable.Title>Kontrollnummer</DataTable.Title>
-            <DataTable.Title>SI-nummer</DataTable.Title>
-            <DataTable.Title>Tid</DataTable.Title>
-          </DataTable.Header>
-          <ScrollView>
-            {punches.map((punch, idx) => (
-              <DataTable.Row key={idx} style={styles.row}>
-                <DataTable.Cell>{punch.StationNumber}</DataTable.Cell>
-                <DataTable.Cell>{punch.SICardNumber}</DataTable.Cell>
-                <DataTable.Cell>{punch.Time}</DataTable.Cell>
-              </DataTable.Row>
-            ))}
-          </ScrollView>
-        </DataTable>
-      </View>
+      <ScrollView>
+        <View style={styles.tableContainer}>
+          <DataTable style={styles.table}>
+            <DataTable.Header style={styles.row}>
+              <DataTable.Title>Kontrollnummer</DataTable.Title>
+              <DataTable.Title>SI-nummer</DataTable.Title>
+              <DataTable.Title>Tid</DataTable.Title>
+            </DataTable.Header>
+            <ScrollView>
+              {punches.map((punch, idx) => (
+                <DataTable.Row key={idx} style={styles.row}>
+                  <DataTable.Cell>{punch.StationNumber}</DataTable.Cell>
+                  <DataTable.Cell>{punch.SICardNumber}</DataTable.Cell>
+                  <DataTable.Cell>{punch.Time}</DataTable.Cell>
+                </DataTable.Row>
+              ))}
+            </ScrollView>
+          </DataTable>
+        </View>
+      </ScrollView>
     </View>
   );
 }

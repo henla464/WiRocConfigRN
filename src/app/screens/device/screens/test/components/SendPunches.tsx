@@ -1,6 +1,6 @@
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import React, {useEffect, useRef, useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
 import {SelectList} from 'react-native-dropdown-select-list';
 import {Button, DataTable, Icon, TextInput} from 'react-native-paper';
 
@@ -209,33 +209,35 @@ export default function SendPunches() {
             <DataTable.Title>Status</DataTable.Title>
           </DataTable.Header>
 
-          {punches.map(punch => (
-            <DataTable.Row key={punch.Id} style={styles.row}>
-              <DataTable.Cell>{punch.SINo}</DataTable.Cell>
-              <DataTable.Cell>{punch.Time}</DataTable.Cell>
-              <DataTable.Cell>{punch.RSSI}</DataTable.Cell>
-              <DataTable.Cell
-                style={
-                  punch.NoOfSendTries > 1
-                    ? styles.failure
-                    : punch.Status === 'Acked'
-                    ? styles.success
-                    : null
-                }>
-                {punch.NoOfSendTries}
-              </DataTable.Cell>
-              <DataTable.Cell
-                style={
-                  punch.Status === 'Acked'
-                    ? styles.success
-                    : punch.Status === 'Not acked'
-                    ? styles.failure
-                    : null
-                }>
-                {punch.Status}
-              </DataTable.Cell>
-            </DataTable.Row>
-          ))}
+          <ScrollView>
+            {punches.map(punch => (
+              <DataTable.Row key={punch.Id} style={styles.row}>
+                <DataTable.Cell>{punch.SINo}</DataTable.Cell>
+                <DataTable.Cell>{punch.Time}</DataTable.Cell>
+                <DataTable.Cell>{punch.RSSI}</DataTable.Cell>
+                <DataTable.Cell
+                  style={
+                    punch.NoOfSendTries > 1
+                      ? styles.failure
+                      : punch.Status === 'Acked'
+                      ? styles.success
+                      : null
+                  }>
+                  {punch.NoOfSendTries}
+                </DataTable.Cell>
+                <DataTable.Cell
+                  style={
+                    punch.Status === 'Acked'
+                      ? styles.success
+                      : punch.Status === 'Not acked'
+                      ? styles.failure
+                      : null
+                  }>
+                  {punch.Status}
+                </DataTable.Cell>
+              </DataTable.Row>
+            ))}
+          </ScrollView>
         </DataTable>
       </View>
     </View>
