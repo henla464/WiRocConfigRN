@@ -17,3 +17,11 @@ rm -rf ~/.gradle/caches
 
 cd android
 ./gradlew cleanBuildCache
+
+
+Om man får felet
+Package com.wirocconfigrn signatures do not match previously installed version; ignoring!
+Så kan man avinstallera med 
+adb devices
+hitta vilken device och ange den med -s
+adb -s 85ae3823 uninstall "com.wirocconfigrn"
