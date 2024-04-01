@@ -235,7 +235,6 @@ export const createWiRocBleManager = () => {
             },
           );
         });
-        resolve();
       }
 
       log.debug('Connecting to scanned device...');

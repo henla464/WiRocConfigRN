@@ -8,10 +8,10 @@ import {
   setters,
 } from '@api/transformers';
 import {log} from '@lib/log';
-import {useStore} from '@store';
 
 import {queryClient} from '../../../queryClient';
 import {getKey, updateQueryDataForDevice} from '../utils/reactQuery';
+import {useWiRocDeviceApi} from './useWiRocDeviceApi';
 
 type GetterName = keyof typeof getters;
 type SetterName = keyof typeof setters;
@@ -39,15 +39,13 @@ export const useWiRocPropertyQuery = <PropName extends GetterName>(
     'queryKey'
   > = {},
 ) => {
-  const apiBackend = useStore(
-    state => state.wiRocDevices[deviceId]?.apiBackend,
-  );
+  const api = useWiRocDeviceApi(deviceId);
 
   const query = useQuery<unknown, unknown, GetterValueOf<PropName>>({
     queryKey: getKey(deviceId, propertyName),
     queryFn: async () => {
       // Request value for property from BLE/REST etc:
-      const value = await apiBackend.getProperty(propertyName);
+      const value = await api.getProperty(propertyName);
 
       // API will always return string. Deserialize it to a nice type:
       const deserializedValue = getters[propertyName].deserialize(value);
@@ -57,6 +55,7 @@ export const useWiRocPropertyQuery = <PropName extends GetterName>(
       return deserializedValue as GetterValueOf<PropName>;
     },
     staleTime: Infinity,
+    retry: false,
     ...options,
   });
   return {
@@ -66,9 +65,7 @@ export const useWiRocPropertyQuery = <PropName extends GetterName>(
 };
 
 export const useWiRocPropertiesMutation = (deviceId: string) => {
-  const apiBackend = useStore(
-    state => state.wiRocDevices[deviceId]?.apiBackend,
-  );
+  const api = useWiRocDeviceApi(deviceId);
 
   return useMutation({
     mutationFn: async (data: Partial<SettableValues>) => {
@@ -80,7 +77,7 @@ export const useWiRocPropertiesMutation = (deviceId: string) => {
           throw new Error('No setter for property ' + propertyName);
         }
         log.info('Setting', propertyName, requestValue);
-        const response = await apiBackend.setProperty(
+        const response = await api.setProperty(
           propertyName,
           setter.serialize(requestValue as never), // ?? :'-(
         );
@@ -112,9 +109,7 @@ export const useWiRocPropertyMutation = <
     'queryKey'
   > = {},
 ) => {
-  const apiBackend = useStore(
-    state => state.wiRocDevices[deviceId]?.apiBackend,
-  );
+  const api = useWiRocDeviceApi(deviceId);
 
   return useMutation<unknown, unknown, Value>({
     ...options,
@@ -127,10 +122,7 @@ export const useWiRocPropertyMutation = <
         requestValue as never, // ?? :'-(
       );
 
-      const response = await apiBackend.setProperty(
-        propertyName,
-        serializedValue,
-      );
+      const response = await api.setProperty(propertyName, serializedValue);
 
       log.debug('Serialized response:', response);
       const responseValue = setter.deserializeResponse(response);

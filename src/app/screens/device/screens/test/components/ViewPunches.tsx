@@ -5,11 +5,11 @@ import {Button, DataTable} from 'react-native-paper';
 
 import {Punch} from '@api/types';
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
-import {useStore} from '@store';
+import {useWiRocDeviceApi} from '@lib/hooks/useWiRocDeviceApi';
 
 export default function ViewPunches() {
   const deviceId = useActiveWiRocDevice();
-  const apiBackend = useStore(state => state.wiRocDevices[deviceId].apiBackend);
+  const wiRocDeviceApi = useWiRocDeviceApi(deviceId);
   const [isListening, setIsListening] = useState<boolean>(false);
 
   const {data: punches = []} = useQuery<unknown, unknown, Punch[]>({
@@ -25,10 +25,10 @@ export default function ViewPunches() {
 
   const startStopViewPunches = async () => {
     if (isListening) {
-      apiBackend.stopWatchingPunches();
+      wiRocDeviceApi.stopWatchingPunches();
       setIsListening(false);
     } else {
-      apiBackend.startWatchingPunches();
+      wiRocDeviceApi.startWatchingPunches();
       setIsListening(true);
     }
   };

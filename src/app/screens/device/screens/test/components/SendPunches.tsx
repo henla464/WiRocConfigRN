@@ -7,12 +7,12 @@ import {Button, DataTable, Divider, Icon, TextInput} from 'react-native-paper';
 import {TestPunch} from '@api/types';
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useNotify} from '@lib/hooks/useNotify';
-import {useStore} from '@store';
+import {useWiRocDeviceApi} from '@lib/hooks/useWiRocDeviceApi';
 
 export default function SendPunches() {
   const deviceId = useActiveWiRocDevice();
   const queryClient = useQueryClient();
-  const apiBackend = useStore(state => state.wiRocDevices[deviceId].apiBackend);
+  const wiRocDeviceApi = useWiRocDeviceApi(deviceId);
   const [siCardNo, setSiCardNo] = useState<string>('16777215');
   const [numberOfPunches, setNumberOfPunches] = useState(1);
   const [isSending, setIsSending] = useState(false);
@@ -78,14 +78,14 @@ export default function SendPunches() {
       numberOfPunches === noOfCompletedRows
     ) {
       // all received, stop listening
-      apiBackend.stopWatchingTestPunches();
+      wiRocDeviceApi.stopWatchingTestPunches();
       setIsSending(false);
     }
-  }, [punches, numberOfPunches, deviceId, apiBackend]);
+  }, [punches, numberOfPunches, deviceId, wiRocDeviceApi]);
 
   const startStopSendPunches = async () => {
     if (isSending) {
-      apiBackend.stopWatchingTestPunches();
+      wiRocDeviceApi.stopWatchingTestPunches();
       setIsSending(false);
     } else {
       if (!siCardNo || siCardNo.length === 0 || isNaN(parseInt(siCardNo, 10))) {
@@ -97,8 +97,8 @@ export default function SendPunches() {
       }
 
       queryClient.setQueryData([deviceId, 'testPunches'], []);
-      apiBackend.startWatchingTestPunches();
-      apiBackend.startSendingTestPunches({
+      wiRocDeviceApi.startWatchingTestPunches();
+      wiRocDeviceApi.startSendingTestPunches({
         numberOfPunches,
         sendInterval,
         siCardNo,

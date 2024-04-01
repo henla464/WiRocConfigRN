@@ -1,10 +1,11 @@
 import {createDrawerNavigator} from '@react-navigation/drawer';
 import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
-import React, {useEffect} from 'react';
+import React from 'react';
 import 'react-native-gesture-handler';
 
 import {DeviceAppBar} from '@lib/components/DeviceAppBar';
+import {WiRocDeviceSubscriber} from '@lib/utils/reactQuery';
 import {createWiRocBleManager} from '@lib/utils/wiRocBleManager';
 import {useStore} from '@store/index';
 
@@ -57,39 +58,39 @@ function Root() {
 }
 
 export function App() {
-  const syncKnownDevices = useStore(state => state.syncKnownDevices);
-
-  useEffect(() => {
-    syncKnownDevices();
-  }, [syncKnownDevices]);
-
+  const wiRocDevices = useStore(state => state.wiRocDevices);
   return (
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Root">
-        <Stack.Screen
-          name="Root"
-          component={Root}
-          options={{headerShown: false}}
-        />
-        <Stack.Screen
-          name="DeviceNetwork"
-          // @ts-expect-error
-          component={DeviceNetworkScreen}
-          options={{
-            header: DeviceAppBar,
-            title: 'Nätverksanslutning',
-          }}
-        />
-        <Stack.Screen
-          name="DeviceNetworkDetails"
-          // @ts-expect-error
-          component={DeviceNetworkDetailsScreen}
-          options={{
-            header: DeviceAppBar,
-          }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <>
+      {Object.keys(wiRocDevices).map(deviceId => (
+        <WiRocDeviceSubscriber key={deviceId} deviceId={deviceId} />
+      ))}
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Root">
+          <Stack.Screen
+            name="Root"
+            component={Root}
+            options={{headerShown: false}}
+          />
+          <Stack.Screen
+            name="DeviceNetwork"
+            // @ts-expect-error
+            component={DeviceNetworkScreen}
+            options={{
+              header: DeviceAppBar,
+              title: 'Nätverksanslutning',
+            }}
+          />
+          <Stack.Screen
+            name="DeviceNetworkDetails"
+            // @ts-expect-error
+            component={DeviceNetworkDetailsScreen}
+            options={{
+              header: DeviceAppBar,
+            }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </>
   );
 }
 

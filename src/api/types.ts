@@ -17,11 +17,7 @@ export interface WiRocApiBackend {
   stopWatchingTestPunches: () => void;
   onPunchesRecieved: (callback: PunchesRecievedCallback) => DeregisterCallback;
   onTestPunchesSent: (callback: TestPunchesSentCallback) => DeregisterCallback;
-  startSendingTestPunches: (options: {
-    numberOfPunches: number;
-    sendInterval: number;
-    siCardNo: string;
-  }) => void;
+  startSendingTestPunches: (options: TestPunchesOptions) => void;
 }
 
 export interface Punch {
@@ -47,3 +43,8 @@ export type PropertiesChangedCallback = (
 export type PunchesRecievedCallback = (punches: Punch[]) => void;
 export type TestPunchesSentCallback = (punches: TestPunch[]) => void;
 export type DeregisterCallback = () => void;
+export interface TestPunchesOptions {
+  numberOfPunches: number;
+  sendInterval: number;
+  siCardNo: string;
+}

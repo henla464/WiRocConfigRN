@@ -21,9 +21,6 @@ export default function DeviceScreen(props: Props) {
   const navigation = props.navigation;
   const setActiveDeviceId = useStore(state => state.setActiveDeviceId);
   const activeDeviceId = useStore(state => state.activeDeviceId);
-  const apiBackend = useStore(state =>
-    activeDeviceId ? state.wiRocDevices[activeDeviceId].apiBackend : null,
-  );
 
   const deviceId = props.route.params.deviceId;
   const navigate = props.navigation.navigate;
@@ -49,7 +46,7 @@ export default function DeviceScreen(props: Props) {
     });
   }, [deviceId, navigate]);
 
-  if (!activeDeviceId || !apiBackend) {
+  if (!activeDeviceId) {
     return null;
   }
 

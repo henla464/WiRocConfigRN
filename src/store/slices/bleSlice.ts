@@ -1,11 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import {createBleApiBackend} from '@api/backends/ble';
 import {log} from '@lib/log';
 import {requestBlePermissions} from '@lib/utils/blePermissions';
-import {setupReactQuerySubscriptionToDevice} from '@lib/utils/reactQuery';
 
-import {queryClient} from '../../../queryClient';
 import {wiRocBleManager} from '../../app';
 import {ImmerStateCreator} from '../types';
 import {WiRocBleConnection} from './wiRocDevicesSlice';
@@ -18,7 +13,6 @@ export interface BleSliceState {
   stopBleScan: () => void;
   connectBleDevice: (deviceId: DeviceId) => Promise<void>;
   disconnectBleDevice: (deviceId: DeviceId) => Promise<void>;
-  syncKnownDevices: () => Promise<void>;
 }
 
 export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
@@ -91,35 +85,20 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
             return;
           }
 
-          const apiBackend = createBleApiBackend(device.id);
+          log.debug('Creating BLE API backend for device', device.id);
           log.debug('Start listening for streaming data from', device.id);
-          setupReactQuerySubscriptionToDevice(
-            queryClient,
-            apiBackend,
-            device.id,
-          );
           log.debug('Adding device', device.id, 'to known devices');
-          set(state => {
-            state.wiRocDevices[device.id] = {
+          get().addWiRocDevice(device.id, {
+            apiBackend: 'ble',
+            name: device.name,
+            bleConnection: {
+              deviceId: device.id,
               name: device.name,
-              bleConnection: {
-                name: device.name,
-                rssi: device.rssi,
-                status: isConnected ? 'connected' : 'disconnected',
-              },
-              apiBackend,
-              restApiHost: null,
-            };
+              rssi: device.rssi,
+              status: isConnected ? 'connected' : 'disconnected',
+            },
+            restApiHost: null,
           });
-
-          const knownDevices = await getKnownDevices();
-          await AsyncStorage.setItem(
-            'knownDevices',
-            JSON.stringify({
-              ...knownDevices,
-              [device.id]: device.name ?? knownDevices[device.id]?.name ?? null,
-            }),
-          );
         });
       } catch (err) {
         set(state => {
@@ -144,17 +123,6 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
         await wiRocBleManager.connectToDevice(deviceId);
         log.info('Successfully connected to', deviceId);
         setWiRocConnection(deviceId, state => (state.status = 'connected'));
-        if (!get().wiRocDevices[deviceId].apiBackend) {
-          const apiBackend = createBleApiBackend(deviceId);
-          setupReactQuerySubscriptionToDevice(
-            queryClient,
-            apiBackend,
-            deviceId,
-          );
-          set(state => {
-            state.wiRocDevices[deviceId].apiBackend = apiBackend;
-          });
-        }
         log.debug('Connected to', deviceId);
       } catch (err) {
         log.error('Error while connecting', err);
@@ -193,39 +161,5 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
         }
       }
     },
-
-    async syncKnownDevices() {
-      const knownDevices = await getKnownDevices();
-      for (const [deviceId, deviceName] of Object.entries(knownDevices)) {
-        set(state => {
-          state.wiRocDevices[deviceId] ??= {
-            ...(state.wiRocDevices[deviceId] ?? {
-              name: null,
-              data: null,
-              bleConnection: {
-                name: deviceName as string,
-                status: 'disconnected',
-                rssi: null,
-              },
-              apiBackend: null,
-            }),
-            name: deviceName as string,
-          };
-        });
-      }
-    },
   };
-};
-
-const getKnownDevices = async () => {
-  const knownDevicesString = await AsyncStorage.getItem('knownDevices');
-  if (!knownDevicesString) {
-    return {};
-  }
-  try {
-    return JSON.parse(knownDevicesString);
-  } catch (err) {
-    log.warn('Error while parsing knownDevices', err);
-    return {};
-  }
 };
