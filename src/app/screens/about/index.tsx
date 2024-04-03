@@ -11,7 +11,7 @@ export default function AboutScreen() {
             WiRoc Config
           </Text>
           <Text style={{fontSize: 20, fontWeight: 'bold', paddingTop: 14}}>
-            Version 13
+            Version 15
           </Text>
         </View>
         <View style={styles.containerColumn}>

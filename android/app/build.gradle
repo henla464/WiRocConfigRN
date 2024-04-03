@@ -78,8 +78,8 @@ android {
         applicationId "com.wirocconfigrn"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 13
-        versionName "v13"
+        versionCode 15
+        versionName "v15"
     }
     signingConfigs {
         release {
