@@ -7,10 +7,6 @@ import {name as appName} from './app.json';
 import {queryClient} from './queryClient';
 import App from './src/app';
 
-/**
- * @format
- */
-
 global.Buffer = require('buffer').Buffer;
 
 export default function Main() {

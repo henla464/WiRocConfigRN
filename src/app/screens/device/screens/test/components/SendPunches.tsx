@@ -73,14 +73,6 @@ export default function SendPunches() {
     });
 
     let noOfCompletedRows = completedPunches.length;
-    console.log(
-      'SendPunches:useEffect noOfCompletedRows: ' +
-        noOfCompletedRows +
-        ' no of punches in table: ' +
-        punches.length +
-        ' no of punches to send: ' +
-        numberOfPunches,
-    );
     if (
       punches.length === numberOfPunches &&
       numberOfPunches === noOfCompletedRows
@@ -101,10 +93,6 @@ export default function SendPunches() {
           message: 'SI Nummer måste fyllas i',
           type: 'info',
         });
-        console.log(
-          'SendPunches:startStopSendPunches: SI Card no is not an integer number',
-          siCardNo,
-        );
         return;
       }
 
@@ -140,7 +128,6 @@ export default function SendPunches() {
         />
         <SelectList
           setSelected={(val: string) => {
-            console.log(val);
             setNumberOfPunches(parseInt(val, 10));
           }}
           data={sendNumberList}
@@ -167,7 +154,6 @@ export default function SendPunches() {
       <View style={styles.containerRow}>
         <SelectList
           setSelected={(val: string) => {
-            console.log(val);
             setSendInterval(parseInt(val, 10));
           }}
           data={sendIntervalList}

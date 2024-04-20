@@ -1,7 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import {createBleApiBackend} from '@api/backends/ble';
-import {logger} from '@lib/hooks/useLogger';
+import {log} from '@lib/log';
 import {requestBlePermissions} from '@lib/utils/blePermissions';
 import {setupReactQuerySubscriptionToDevice} from '@lib/utils/reactQuery';
 
@@ -37,7 +37,7 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
   };
 
   wiRocBleManager.onDeviceDisconnected((device, wasExpected) => {
-    logger.info('BLE', 'onDeviceConnected', `Disconnected from ${device.id}`);
+    log.info('onDeviceConnected', `Disconnected from ${device.id}`);
     setWiRocConnection(device.id, state => (state.status = 'disconnected'));
     if (!wasExpected) {
       get().addNotification({
@@ -51,19 +51,18 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
     bleDevices: {},
     isScanning: false,
     stopBleScan: () => {
-      logger.info('BLE', 'stopScan', '[BLE] Stopping scan...');
+      log.info('Stopping scan...');
       wiRocBleManager.stopDeviceScan();
       set(state => {
         state.isScanning = false;
       });
     },
     startBleScan: async () => {
-      logger.info('BLE', 'startScan', 'Scanning...');
-      logger.info('BLE', 'startScan', 'Scanning...');
-      console.log('[BLE] Checking permissions...');
+      log.info('Scanning...');
+      log.info('Checking permissions...');
       const granted = await requestBlePermissions();
       if (!granted) {
-        console.log('[BLE] Permissions not granted');
+        log.info('Permissions not granted');
         return;
       }
       set(state => {
@@ -78,7 +77,7 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
 
           const isConnected = await device.isConnected();
 
-          console.log('[BLE] Scanned device', device.id);
+          log.info('Scanned device', device.id);
           if (device.id in get().wiRocDevices) {
             // We already have this device,
             // update connection status with latest info:
@@ -92,18 +91,14 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
             return;
           }
 
-          console.log('[BLE] Creating BLE API backend for device', device.id);
           const apiBackend = createBleApiBackend(device.id);
-          console.log(
-            '[BLE] Start listening for streaming data from',
-            device.id,
-          );
+          log.debug('Start listening for streaming data from', device.id);
           setupReactQuerySubscriptionToDevice(
             queryClient,
             apiBackend,
             device.id,
           );
-          console.log('[BLE] Adding device', device.id, 'to known devices');
+          log.debug('Adding device', device.id, 'to known devices');
           set(state => {
             state.wiRocDevices[device.id] = {
               name: device.name,
@@ -131,10 +126,10 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
           state.isScanning = false;
         });
         // TODO user message
-        console.error('Error on scan', err);
+        log.error('Error on scan', err);
       }
       setTimeout(() => {
-        console.log('[BLE] Stopping scan...');
+        log.info('Stopping scan...');
         wiRocBleManager.stopDeviceScan();
         set(state => {
           state.isScanning = false;
@@ -142,12 +137,12 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
       }, 10e3);
     },
     async connectBleDevice(deviceId) {
-      console.log('[BLE] Connecting to', deviceId);
+      log.info('Connecting to', deviceId);
       setWiRocConnection(deviceId, state => (state.status = 'connecting'));
 
       try {
         await wiRocBleManager.connectToDevice(deviceId);
-        console.log('[BLE] Successfully connected to', deviceId);
+        log.info('Successfully connected to', deviceId);
         setWiRocConnection(deviceId, state => (state.status = 'connected'));
         if (!get().wiRocDevices[deviceId].apiBackend) {
           const apiBackend = createBleApiBackend(deviceId);
@@ -160,22 +155,22 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
             state.wiRocDevices[deviceId].apiBackend = apiBackend;
           });
         }
-        console.log('[BLE] Connected to', deviceId);
+        log.debug('Connected to', deviceId);
       } catch (err) {
-        console.error('Error while connecting', err);
+        log.error('Error while connecting', err);
         setWiRocConnection(deviceId, state => (state.status = 'disconnected'));
         throw err;
       }
     },
     async disconnectBleDevice(deviceId) {
       try {
-        console.log('[BLE] Disconnecting from', deviceId);
+        log.info('Disconnecting from', deviceId);
         await wiRocBleManager.disconnectFromDevice(deviceId);
         // TODO cancel transactions and more?
         setWiRocConnection(deviceId, state => (state.status = 'disconnected'));
       } catch (err) {
         // TODO user message
-        console.error('Error while disconnecting', err);
+        log.error('Error while disconnecting', err);
         try {
           const isStillConnected = await wiRocBleManager.isDeviceConnected(
             deviceId,
@@ -187,7 +182,7 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
           );
         } catch {
           // TODO user message
-          console.error(
+          log.error(
             'Error while checking connection status after failed disconnect. Assuming disconnected state.',
             err,
           );
@@ -230,7 +225,7 @@ const getKnownDevices = async () => {
   try {
     return JSON.parse(knownDevicesString);
   } catch (err) {
-    console.warn('Error while parsing knownDevices', err);
+    log.warn('Error while parsing knownDevices', err);
     return {};
   }
 };

@@ -7,6 +7,7 @@ import {
 } from 'react-native-ble-plx';
 
 import {GettablePropName, SettablePropName} from '@api/transformers';
+import {log} from '@lib/log';
 
 import {chunkLengthToUse, createBleChunkHelper} from './bleChunkHelper';
 import {requestBlePermissions} from './blePermissions';
@@ -190,27 +191,26 @@ export const createWiRocBleManager = () => {
 
   const connectToDevice = async (deviceId: string) => {
     return new Promise<void>(async (resolve, reject) => {
-      console.log('[wiRocBleManager] Connecting to', deviceId);
+      log.debug('Connecting to', deviceId);
 
       if (await bleManager.isDeviceConnected(deviceId)) {
-        console.log('[wiRocBleManager] Already connected');
+        log.debug('Already connected');
         return;
       }
 
-      console.log('[wiRocBleManager] Checking if we know it already...');
+      log.debug('Checking if we know it already...');
       const [foundDevice] = await bleManager.devices([deviceId]);
       if (!foundDevice) {
-        console.log(
-          '[wiRocBleManager] Device not scanned. Will try to scan for it...',
-        );
-        console.log('[wiRocBleManager] Checking permissions...');
+        log.debug('Device not scanned. Will try to scan for it...');
+        log.debug('Checking permissions...');
         const granted = await requestBlePermissions();
         if (!granted) {
-          console.log('[wiRocBleManager] Permissions not granted');
+          log.debug('Permissions not granted');
           return;
         }
+        log.debug('Permissions granted');
         const timeout = setTimeout(() => {
-          console.log('[wiRocBleManager] Stopping scan...');
+          log.debug('Stopping scan...');
           bleManager.stopDeviceScan();
           // setWiRocConnection(deviceId, state => (state.status = 'disconnected'));
           clearTimeout(timeout);
@@ -222,11 +222,11 @@ export const createWiRocBleManager = () => {
             null,
             async (err, scannedDevice) => {
               if (err) {
-                console.error('Error while scanning for device', err);
+                log.error('Error while scanning for device', err);
                 clearTimeout(timeout);
                 reject(err);
               } else if (scannedDevice?.id === deviceId) {
-                console.log('[wiRocBleManager] Found device', deviceId);
+                log.debug('Found device', deviceId);
                 bleManager.stopDeviceScan();
                 clearTimeout(timeout);
                 resolveScan();
@@ -238,9 +238,9 @@ export const createWiRocBleManager = () => {
         resolve();
       }
 
-      console.log('[wiRocBleManager] Connecting to scanned device...');
+      log.debug('Connecting to scanned device...');
       await bleManager.connectToDevice(deviceId);
-      console.log('[wiRocBleManager] Connected to device', deviceId);
+      log.debug('Connected to device', deviceId);
       await bleManager.discoverAllServicesAndCharacteristicsForDevice(deviceId);
       bleManager.monitorCharacteristicForDevice(
         deviceId,
@@ -262,7 +262,7 @@ export const createWiRocBleManager = () => {
         `propertyNotificationTransaction${deviceId}`,
       );
 
-      console.log('[wiRocBleManager] Setting chunk size...');
+      log.debug('Setting chunk size...');
       // The main purpose of this command is to set chunk size to use.
       //
       // But the response of this request will also contain a bunch of
@@ -272,11 +272,11 @@ export const createWiRocBleManager = () => {
         propertyCharacteristic,
         `all\t${chunkLengthToUse}`,
       );
-      console.log('[wiRocBleManager] Setting chunk size done.');
+      log.debug('Setting chunk size done.');
 
       const [device] = await bleManager.devices([deviceId]);
 
-      console.log('[wiRocBleManager] Emitting onDeviceConnected...');
+      log.debug('Emitting onDeviceConnected...');
 
       onDeviceConnectedSubscribers.forEach(subscriber => subscriber(device));
 
@@ -294,7 +294,7 @@ export const createWiRocBleManager = () => {
         }
       });
 
-      console.log('[wiRocBleManager] connectToDevice done');
+      log.debug('connectToDevice done');
       resolve();
     });
   };
@@ -349,7 +349,7 @@ export const createWiRocBleManager = () => {
     key: SettablePropName,
     value: string,
   ) => {
-    console.log('[wiRocBleManager] writeProperty', deviceId, key, value);
+    log.debug('writeProperty', deviceId, key, value);
     return sendData(deviceId, propertyCharacteristic, `${key}\t${value}`);
   };
 
@@ -357,7 +357,7 @@ export const createWiRocBleManager = () => {
     deviceId: string,
     key: GettablePropName,
   ): Promise<string> => {
-    console.log('[wiRocBleManager] requestProperty', deviceId, key);
+    log.debug('requestProperty', deviceId, key);
     const data = await requestProperties(deviceId, [key]);
     const value = data[key];
     if (!value) {
@@ -370,7 +370,7 @@ export const createWiRocBleManager = () => {
     deviceId: string,
     keys: GettablePropName[],
   ) => {
-    console.log('[wiRocBleManager] requestProperties', deviceId, keys);
+    log.debug('requestProperties', deviceId, keys);
     let propNameToSend = keys.join('|') + '|';
     if (Buffer.from(propNameToSend, 'utf-8').length === chunkLengthToUse) {
       propNameToSend += ' ';
@@ -383,7 +383,7 @@ export const createWiRocBleManager = () => {
     characteristic: string,
     data: string,
   ) => {
-    console.log('[wiRocBleManager] sendData', deviceId, data);
+    log.debug('sendData', deviceId, data);
     await bleManager.writeCharacteristicWithResponseForDevice(
       deviceId,
       apiService,
@@ -396,7 +396,7 @@ export const createWiRocBleManager = () => {
       const onData = (_deviceId: string, responseString: string) => {
         blePropertyBuffer.unsubscribe(onData);
         const parsedData = parseWiRocBleProps(responseString);
-        console.log('[wiRocBleManager] parsed response', parsedData);
+        log.debug('parsed response', parsedData);
         resolve(parsedData);
       };
       blePropertyBuffer.subscribe(onData);
@@ -405,7 +405,7 @@ export const createWiRocBleManager = () => {
 
   const onPropertiesChanged = (callback: PropertiesChangedCallback) => {
     const bufferSubscription = blePropertyBuffer.subscribe((deviceId, data) => {
-      console.log('onPropertiesChanged', deviceId, data);
+      log.debug('onPropertiesChanged', deviceId, data);
       callback(deviceId, parseWiRocBleProps(data));
     });
     return () => {
@@ -416,7 +416,7 @@ export const createWiRocBleManager = () => {
 
   const onPunchesRecieved = (callback: PunchRecievedCallback) => {
     const bufferSubscription = blePunchesBuffer.subscribe((deviceId, data) => {
-      console.log('onPunchRecieved', deviceId, data, typeof data);
+      log.debug('onPunchRecieved', deviceId, data, typeof data);
       callback(deviceId, JSON.parse(data));
     });
     return () => {
@@ -428,7 +428,7 @@ export const createWiRocBleManager = () => {
   const onTestPunchesSent = (callback: TestPunchSentCallback) => {
     const bufferSubscription = bleTestPunchesBuffer.subscribe(
       (deviceId, data) => {
-        console.log('onTestPunchSent', deviceId, data, typeof data);
+        log.debug('onTestPunchSent', deviceId, data, typeof data);
         callback(deviceId, JSON.parse(data));
       },
     );
@@ -442,13 +442,13 @@ export const createWiRocBleManager = () => {
     deviceId: string,
     params: {numberOfPunches: number; sendInterval: number; siCardNo: string},
   ): Promise<void> => {
-    console.log('[wiRocBleManager] startSendTestPunches', deviceId, params);
+    log.debug('startSendTestPunches', deviceId, params);
     const data = await sendData(
       deviceId,
       testPunchesCharacteristic,
       `${params.numberOfPunches}\t${params.sendInterval}\t${params.siCardNo}`,
     );
-    console.log('startSendTestPunches response', data);
+    log.debug('startSendTestPunches response', data);
   };
 
   const onDeviceConnected = (callback: (device: Device) => void) => {
@@ -543,12 +543,11 @@ const parseWiRocBleProps = (
 
 function allPropertiesToObject(allString: string) {
   const all = allString.split('¤');
-  console.log('all', all);
 
   const data: Partial<Record<GettablePropName, string>> = {};
   for (const [index] of allPropertiesOrder.entries()) {
     if (index >= allPropertiesOrder.length) {
-      console.warn(
+      log.warn(
         `Unkown property in "all" response at index ${index}: ${all[index]}`,
       );
       continue;
@@ -556,6 +555,5 @@ function allPropertiesToObject(allString: string) {
     data[allPropertiesOrder[index] as GettablePropName] = all[index];
   }
 
-  console.log(JSON.stringify(data, null, 2));
   return data;
 }

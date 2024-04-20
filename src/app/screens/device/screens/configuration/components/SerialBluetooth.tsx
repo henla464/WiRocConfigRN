@@ -8,6 +8,7 @@ import {
   useWiRocPropertyMutation,
   useWiRocPropertyQuery,
 } from '@lib/hooks/useWiRocPropertyQuery';
+import {log} from '@lib/log';
 
 import {SectionComponentProps} from '../';
 import OnOffChip from './OnOffChip';
@@ -49,7 +50,7 @@ export default function SerialBluetooth({
   let noOfScans = useRef<number>(0);
 
   function startScan() {
-    console.log('startScan: noOfScans: ' + noOfScans.current);
+    log.debug('startScan: noOfScans: ' + noOfScans.current);
     if (noOfScans.current <= 8) {
       refetchDevices();
       noOfScans.current += 1;
@@ -69,7 +70,7 @@ export default function SerialBluetooth({
       setIsScanning(true);
       setInterval(5000);
       startScan();
-      console.log('INTERVAL: ' + interval);
+      log.debug('INTERVAL: ' + interval);
     }
   };
 
@@ -143,7 +144,7 @@ export default function SerialBluetooth({
                     } else if (item.Status === 'NotConnected') {
                       bindBt({btAddress: item.BTAddress, btName: item.Name});
                     } else if (item.Status === 'ReadError') {
-                      console.log('SerialBluetooth:ConnectButton ReadError');
+                      log.debug('SerialBluetooth:ConnectButton ReadError');
                     }
                   }}
                   style={styles.button}>

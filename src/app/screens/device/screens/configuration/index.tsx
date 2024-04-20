@@ -70,7 +70,6 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
         return formState.dirtyFields[key as SettablePropName];
       }),
     );
-    console.log('ConfigurationScreen: Saving changed values', changedData);
     mutate(changedData);
     reset(undefined, {
       keepValues: true,

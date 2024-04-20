@@ -1,3 +1,5 @@
+import {log} from '@lib/log';
+
 export const chunkLengthToUse: number = 150; // MTU of 153 (3 byte header) should work on all phones hopefully
 
 export type OnEmitCallback = (deviceId: string, data: string) => void;
@@ -21,8 +23,8 @@ export const createBleChunkHelper = () => {
     ]);
 
     if (newChunk.length >= chunkLengthToUse) {
-      console.log(
-        '[BLE-BUFFER] expecting more data, totalRecieved:',
+      log.debug(
+        'expecting more data, totalRecieved:',
         totalRecievedByDevice[deviceId].length,
         totalRecievedByDevice[deviceId].toString('utf8'),
       );
@@ -30,10 +32,7 @@ export const createBleChunkHelper = () => {
       return;
     }
 
-    console.debug(
-      '[BLE-BUFFER] Got all data, parsing...',
-      totalRecievedByDevice[deviceId],
-    );
+    log.debug('Got all data, parsing...', totalRecievedByDevice[deviceId]);
 
     const data = totalRecievedByDevice[deviceId].toString('utf8');
 

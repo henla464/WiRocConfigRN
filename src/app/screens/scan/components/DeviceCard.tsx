@@ -31,11 +31,6 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
     return null;
   }
 
-  console.log(
-    'DeviceCard: ' + bleConnection.name + ' ' + deviceId,
-    bleConnection,
-  );
-
   return (
     <Card
       style={{

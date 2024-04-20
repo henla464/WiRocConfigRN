@@ -1,3 +1,5 @@
+import {log} from '@lib/log';
+
 import {wiRocBleManager} from '../../app';
 import {WiRocApiBackend} from '../types';
 
@@ -8,9 +10,7 @@ export const createBleApiBackend = (deviceId: string): WiRocApiBackend => ({
     ]);
 
     if (!(propertyName in response)) {
-      console.log(
-        `[BLE-API] Value for "${propertyName}" was not found in response`,
-      );
+      log.info(`Value for "${propertyName}" was not found in response`);
       throw new Error(`Value for "${propertyName}" was not found in response`);
     }
 
@@ -26,9 +26,7 @@ export const createBleApiBackend = (deviceId: string): WiRocApiBackend => ({
     );
 
     if (!(propertyName in response)) {
-      console.log(
-        `[BLE-API] Value for "${propertyName}" was not found in response`,
-      );
+      log.info(`Value for "${propertyName}" was not found in response`);
       throw new Error(`Value for "${propertyName}" was not found in response`);
     }
 

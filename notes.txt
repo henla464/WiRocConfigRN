@@ -25,3 +25,26 @@ Så kan man avinstallera med
 adb devices
 hitta vilken device och ange den med -s
 adb -s 85ae3823 uninstall "com.wirocconfigrn"
+
+
+Filtering, filnamn och radnummer för loggar
+===
+Man kan använda react-native-debugger för att se radnummer och filnamn från loggar
+Installera react-native-debugger
+https://github.com/jhen0409/react-native-debugger
+
+Starta react-native-debugger
+
+När appen kör, tryck "d" i "npm start"-terminalen för att öppna debug-menyn inne i appen.
+I menyn, välj "Debug". Då ska appen ansluta till react-native-debugger.
+I react-native-debugger, tryck på kugghjulet uppe till höger, välj "Ignore List", välj
+"Add Pattern" och skriv in:
+
+/log\.ts$
+
+(behöver bara göras en gång)
+
+Då kommer de fil- och radnamn som visas i Console-tabben vara från "originalfilen",
+trots att själva console.log() anropas i log.ts-filen
+
+I react-native-debugger kan loggar filtreras på levels, regex m.m.

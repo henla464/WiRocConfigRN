@@ -7,6 +7,7 @@ import {
   getters,
   setters,
 } from '@api/transformers';
+import {log} from '@lib/log';
 import {useStore} from '@store';
 
 import {queryClient} from '../../../queryClient';
@@ -75,23 +76,19 @@ export const useWiRocPropertiesMutation = (deviceId: string) => {
         const propertyName = _propertyName as SetterName;
         const setter = setters[propertyName];
         if (!setter) {
-          console.warn(
-            '[REQ][useWiRocPropertiesMutation] No setter for property',
-            propertyName,
-            requestValue,
-          );
+          log.warn('No setter for property', propertyName, requestValue);
           throw new Error('No setter for property ' + propertyName);
         }
-        console.log('[REQ] Setting', propertyName, requestValue);
+        log.info('Setting', propertyName, requestValue);
         const response = await apiBackend.setProperty(
           propertyName,
           setter.serialize(requestValue as never), // ?? :'-(
         );
-        console.log('[REQ] Serialized response:', response);
+        log.debug('Serialized response:', response);
 
         const responseValue = setter.deserializeResponse(response);
 
-        console.log('[REQ] Deserialized response:', responseValue);
+        log.debug('Deserialized response:', responseValue);
 
         updateQueryDataForDevice(
           queryClient,
@@ -122,7 +119,7 @@ export const useWiRocPropertyMutation = <
   return useMutation<unknown, unknown, Value>({
     ...options,
     mutationFn: async requestValue => {
-      console.log('[REQ] Setting', propertyName, requestValue);
+      log.info('Setting', propertyName, requestValue);
 
       const setter = setters[propertyName];
 
@@ -135,9 +132,9 @@ export const useWiRocPropertyMutation = <
         serializedValue,
       );
 
-      console.log('[REQ] Serialized response:', response);
+      log.debug('Serialized response:', response);
       const responseValue = setter.deserializeResponse(response);
-      console.log('[REQ] Deserialized response:', response);
+      log.debug('Deserialized response:', response);
 
       updateQueryDataForDevice(
         queryClient,

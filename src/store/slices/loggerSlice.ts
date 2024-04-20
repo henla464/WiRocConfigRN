@@ -5,14 +5,13 @@ export interface LoggerSliceState {
 }
 
 export interface Log {
+  id: string;
   type: LogType;
   date: Date;
-  componentName: string;
-  functionName: string;
-  message: string;
+  args: any[];
 }
 
-export type LogType = 'debug' | 'info' | 'error';
+export type LogType = 'debug' | 'info' | 'warn' | 'error';
 
 export const createLoggerSlice: ImmerStateCreator<LoggerSliceState> = () => {
   return {

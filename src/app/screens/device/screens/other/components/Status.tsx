@@ -1,7 +1,7 @@
 import React, {useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
-import {Button, DataTable, Divider} from 'react-native-paper';
+import {Button, DataTable, Divider, Switch, Text} from 'react-native-paper';
 
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useNotify} from '@lib/hooks/useNotify';
@@ -10,7 +10,6 @@ import {
   useWiRocPropertyMutation,
   useWiRocPropertyQuery,
 } from '@lib/hooks/useWiRocPropertyQuery';
-import {formatLog} from '@lib/utils/formatLog';
 import {useStore} from '@store';
 
 export default function Status() {
@@ -18,6 +17,10 @@ export default function Status() {
   const notify = useNotify();
   const {addToast} = useToasts();
   const [isLogsVisible, setLogsVisible] = useState(false);
+  const [isDebugVisible, setDebugVisible] = useState(false);
+  const [isWarningVisible, setWarningVisible] = useState(true);
+  const [isErrorVisible, setErrorVisible] = useState(true);
+  const [isInfoVisible, setInfoVisible] = useState(true);
 
   const deviceId = useActiveWiRocDevice();
   const {data: {services} = {services: []}, refetch: refetchServices} =
@@ -171,8 +174,115 @@ export default function Status() {
           }}>
           {isLogsVisible ? 'Göm loggar' : 'Visa loggar'}
         </Button>
-        {isLogsVisible && <Text>{logs.map(formatLog).join('\n')}</Text>}
+        {isLogsVisible && (
+          <ScrollView horizontal>
+            <View>
+              <View style={{flexDirection: 'row', gap: 5}}>
+                <LogSwitch
+                  label="DEBUG"
+                  value={isDebugVisible}
+                  onValueChange={setDebugVisible}
+                />
+                <LogSwitch
+                  label="INFO"
+                  value={isInfoVisible}
+                  onValueChange={setInfoVisible}
+                />
+                <LogSwitch
+                  label="WARN"
+                  value={isWarningVisible}
+                  onValueChange={setWarningVisible}
+                />
+                <LogSwitch
+                  label="ERROR"
+                  value={isErrorVisible}
+                  onValueChange={setErrorVisible}
+                />
+              </View>
+              {logs
+                .filter(log => {
+                  if (log.type === 'debug') {
+                    return isDebugVisible;
+                  }
+                  if (log.type === 'info') {
+                    return isInfoVisible;
+                  }
+                  if (log.type === 'warn') {
+                    return isWarningVisible;
+                  }
+                  if (log.type === 'error') {
+                    return isErrorVisible;
+                  }
+                  return true;
+                })
+                .map(log => {
+                  return (
+                    <View
+                      key={log.id}
+                      style={{
+                        flexDirection: 'row',
+                        gap: 5,
+                      }}>
+                      <Text
+                        style={{
+                          fontFamily: 'monospace',
+                          fontWeight: 'bold',
+                          fontSize: 9,
+                        }}>
+                        {log.date.toISOString()}
+                      </Text>
+                      <Text
+                        style={{
+                          fontFamily: 'monospace',
+                          fontSize: 9,
+                          fontWeight: 'bold',
+                          color:
+                            log.type === 'error'
+                              ? 'red'
+                              : log.type === 'warn'
+                              ? 'orange'
+                              : log.type === 'debug'
+                              ? 'gray'
+                              : 'black',
+                        }}>
+                        {log.type.padEnd(5).toUpperCase()}
+                      </Text>
+                      <Text style={{fontFamily: 'monospace', fontSize: 9}}>
+                        {log.args
+                          .map(a => {
+                            if (typeof a === 'object' || Array.isArray(a)) {
+                              return JSON.stringify(a);
+                            }
+                            return a;
+                          })
+                          .join(' ')}
+                      </Text>
+                    </View>
+                  );
+                })}
+            </View>
+          </ScrollView>
+        )}
       </ScrollView>
+    </View>
+  );
+}
+
+interface LogSwitchProps {
+  label: string;
+  value: boolean;
+  onValueChange: (value: boolean) => void;
+}
+
+function LogSwitch({label, value, onValueChange}: LogSwitchProps) {
+  return (
+    <View
+      style={{
+        flexDirection: 'row',
+        alignItems: 'center',
+      }}>
+      <Text variant="labelMedium">{label}</Text>
+      <Switch value={value} onValueChange={onValueChange} />
     </View>
   );
 }

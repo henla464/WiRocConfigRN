@@ -28,7 +28,6 @@ export const createDemoApiBackend = (deviceName: string): WiRocApiBackend => {
   return {
     async getProperty(propertyName: GettablePropName) {
       const response = demoData[propertyName];
-      console.log('Getting property', propertyName, response);
       if (!response) {
         throw new Error(`Property ${propertyName} not found in demo data`);
       }
@@ -55,7 +54,6 @@ export const createDemoApiBackend = (deviceName: string): WiRocApiBackend => {
       }
 
       if (propertyName === 'connectwifi') {
-        console.log('Connecting to wifi', values);
         const newWifiList = chunk(demoData.listwifi!.split('\n'), 3)
           .map(([networkName, connected, rssi]) => ({
             networkName,
@@ -81,7 +79,6 @@ export const createDemoApiBackend = (deviceName: string): WiRocApiBackend => {
       }
 
       if (propertyName === 'disconnectwifi') {
-        console.log('Disconnecting from wifi', values);
         const newWifiList = chunk(demoData.listwifi!.split('\n'), 3)
           .map(([networkName, connected, rssi]) => ({
             networkName,

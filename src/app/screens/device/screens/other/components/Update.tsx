@@ -160,7 +160,6 @@ export default function Update() {
         </Text>
         <SelectList
           setSelected={(val: string) => {
-            console.log(val);
             setWiRocVersion(val);
           }}
           data={wiRocVersionList}
@@ -206,7 +205,6 @@ export default function Update() {
         </Text>
         <SelectList
           setSelected={(val: string) => {
-            console.log(val);
             setWiRocBLEAPIVersion(val);
           }}
           data={wiRocBLEAPIVersionList}
