@@ -41,6 +41,7 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
 
   const form = useForm<Partial<SettableValues>>({
     defaultValues: {},
+    mode: 'onChange',
   });
 
   const [scrollViewRef, setScrollViewRef] = useState<ScrollView | null>(null);
@@ -96,6 +97,8 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
         <Notifications />
         <SaveBanner
           visible={formState.isDirty}
+          isSaveDisabled={!formState.isValid}
+          errors={formState.errors}
           save={handleSubmit(onSubmit)}
           reload={() => reset()}
           onHideAnimationFinished={() => {

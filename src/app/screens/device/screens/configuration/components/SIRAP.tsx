@@ -1,18 +1,21 @@
 import React from 'react';
+import {useFormContext} from 'react-hook-form';
 import {StyleSheet, Switch, Text, View} from 'react-native';
-import MaskInput from 'react-native-mask-input';
-import {Icon, List, TextInput} from 'react-native-paper';
-import {RenderProps} from 'react-native-paper/lib/typescript/components/TextInput/types';
+import {HelperText, Icon, List, TextInput} from 'react-native-paper';
 
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 
 import {SectionComponentProps} from '../';
 import OnOffChip from './OnOffChip';
 
+const ipAddressRegex =
+  /^((?:[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])[.]){3}(?:[0-9]|[1-9][0-9]|1[0-9][0-9]|2[0-4][0-9]|25[0-5])$/;
+
 export default function SIRAP({
   deviceId,
   onDefaultValuesChange,
 }: SectionComponentProps) {
+  const form = useFormContext();
   const [
     {
       field: {value: isSIRAPSwitchedOn, onChange: setIsSIRAPSwitchedOn},
@@ -26,122 +29,57 @@ export default function SIRAP({
   const [
     {
       field: {value: ipAddress, onChange: setIpAddress},
+      fieldState: ipAddressFieldState,
     },
   ] = useConfigurationProperty(
     deviceId,
     'sendtosirapip',
     onDefaultValuesChange,
+    {
+      rules: {
+        pattern: {
+          value: ipAddressRegex,
+          message: 'Ogiltig IP-adress',
+        },
+        required: {
+          value: isSIRAPSwitchedOn,
+          message: 'IP-adress krävs när SIRAP är aktiverat',
+        },
+      },
+    },
   );
 
   const [
     {
       field: {value: ipPort, onChange: setIpPort},
+      fieldState: ipPortFieldState,
     },
   ] = useConfigurationProperty(
     deviceId,
     'sendtosirapipport',
     onDefaultValuesChange,
+    {
+      rules: {
+        required: {
+          value: isSIRAPSwitchedOn,
+          message: 'IP-port krävs när SIRAP är aktiverat',
+        },
+        pattern: {
+          value: /^[^0]\d*$/,
+          message: 'Ogiltigt portnummer',
+        },
+        validate: {
+          value: value => {
+            const number = parseInt(value, 10);
+            if (number < 1 || number > 65535) {
+              return 'Ogiltigt portnummer';
+            }
+          },
+        },
+      },
+    },
   );
 
-  let groupMaskForDiffLengthForNext = [
-    [/[1-9]/],
-    [/[1-9]/, /[\d.]/],
-    [/[1-9]/, /\d/, /[\d.]/],
-    [/[1-2]/, /\d/, /\d/, '.'],
-  ];
-  let groupMaskForDiffLengthForNext_LastGroup = [
-    [/[1-9]/],
-    [/[1-9]/, /\d/],
-    [/[1-2]/, /\d/, /\d/],
-    [/[1-2]/, /\d/, /\d/],
-  ];
-  function getMaskForGroup(
-    currentCharsInGroup: string,
-    lastGroup: boolean,
-  ): (RegExp | string)[] {
-    let noOfCharsInGroup = Math.min(currentCharsInGroup.length, 3);
-    if (!lastGroup) {
-      if (noOfCharsInGroup === 1) {
-        return groupMaskForDiffLengthForNext[noOfCharsInGroup];
-      } else if (noOfCharsInGroup === 2) {
-        // 2 characters
-        if (currentCharsInGroup[0] > '2') {
-          return [/\d/, /\d/, '.'];
-        } else if (
-          currentCharsInGroup[0] >= '2' &&
-          currentCharsInGroup[1] >= '6'
-        ) {
-          return [/[2]/, /\d/, '.'];
-        } else if (
-          currentCharsInGroup[0] === '2' &&
-          currentCharsInGroup[1] === '5'
-        ) {
-          return [/[2]/, /[5]/, /[0-5.]/];
-        } else {
-          return [/\d/, /\d/, /[\d.]/];
-        }
-      } else if (noOfCharsInGroup === 3) {
-        if (currentCharsInGroup[0] > '2') {
-          return [/\d/, /\d/, '.'];
-        } else if (
-          currentCharsInGroup[0] >= '2' &&
-          currentCharsInGroup[1] >= '6'
-        ) {
-          return [/\d/, /\d/, /\d/, '.'];
-        } else if (
-          currentCharsInGroup[0] === '2' &&
-          currentCharsInGroup[1] === '5'
-        ) {
-          return [/[2]/, /[5]/, /[0-5]/, '.'];
-        } else {
-          return groupMaskForDiffLengthForNext[noOfCharsInGroup];
-        }
-      } else {
-        return groupMaskForDiffLengthForNext[noOfCharsInGroup];
-      }
-    } else {
-      if (noOfCharsInGroup === 1) {
-        return groupMaskForDiffLengthForNext_LastGroup[noOfCharsInGroup];
-      } else if (noOfCharsInGroup === 2) {
-        // 2 characters
-        if (currentCharsInGroup[0] > '2') {
-          return [/\d/, /\d/];
-        } else if (
-          currentCharsInGroup[0] >= '2' &&
-          currentCharsInGroup[1] >= '6'
-        ) {
-          return [/[2]/, /\d/];
-        } else if (
-          currentCharsInGroup[0] === '2' &&
-          currentCharsInGroup[1] === '5'
-        ) {
-          return [/[2]/, /[5]/, /[0-5]/];
-        } else {
-          return [/\d/, /\d/, /[\d]/];
-        }
-      } else if (noOfCharsInGroup === 3) {
-        if (currentCharsInGroup[0] > '2') {
-          return [/\d/, /\d/];
-        } else if (
-          currentCharsInGroup[0] >= '2' &&
-          currentCharsInGroup[1] >= '6'
-        ) {
-          return [/\d/, /\d/];
-        } else if (
-          currentCharsInGroup[0] === '2' &&
-          currentCharsInGroup[1] === '5'
-        ) {
-          return [/[2]/, /[5]/, /[0-5]/];
-        } else {
-          return groupMaskForDiffLengthForNext_LastGroup[noOfCharsInGroup];
-        }
-      } else {
-        return groupMaskForDiffLengthForNext_LastGroup[noOfCharsInGroup];
-      }
-    }
-  }
-
-  // string pattern = @"\b(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b";
   return (
     <List.Accordion
       title="SIRAP-tcp/ip"
@@ -169,73 +107,38 @@ export default function SIRAP({
           </Text>
           <Switch
             value={isSIRAPSwitchedOn}
-            onValueChange={val => setIsSIRAPSwitchedOn(val)}
+            onValueChange={val => {
+              setIsSIRAPSwitchedOn(val);
+              form.trigger();
+            }}
           />
         </View>
       </View>
       <View>
-        <TextInput
-          value=" "
-          label="IP Adress"
-          keyboardType="numeric"
-          render={(props: RenderProps) => (
-            <MaskInput
-              {...props}
-              value={ipAddress}
-              maskAutoComplete={true}
-              onChangeText={masked => {
-                // let noOfDots = masked.split('.').length - 1;
-                // let lastIndexOfDot = masked.lastIndexOf('.');
-                // if (
-                //   lastIndexOfDot === masked.length - 4 &&
-                //   ipAddress.length < masked.length &&
-                //   noOfDots < 3
-                // ) {
-                //   masked = masked + '.';
-                // }
-                setIpAddress(masked);
-              }}
-              mask={text => {
-                let ipAddressParts =
-                  text === undefined ? [''] : text.split('.');
-                if (ipAddressParts.length === 1) {
-                  let mask1 = getMaskForGroup(ipAddressParts[0], false);
-                  return [...mask1];
-                } else if (ipAddressParts.length === 2) {
-                  let mask1 = getMaskForGroup(ipAddressParts[0], false);
-                  let mask2 = getMaskForGroup(ipAddressParts[1], false);
-                  return [...mask1, ...mask2];
-                } else if (ipAddressParts.length === 3) {
-                  let mask1 = getMaskForGroup(ipAddressParts[0], false);
-                  let mask2 = getMaskForGroup(ipAddressParts[1], false);
-                  let mask3 = getMaskForGroup(ipAddressParts[2], false);
-                  return [...mask1, ...mask2, ...mask3];
-                } else {
-                  let mask1 = getMaskForGroup(ipAddressParts[0], false);
-                  let mask2 = getMaskForGroup(ipAddressParts[1], false);
-                  let mask3 = getMaskForGroup(ipAddressParts[2], false);
-                  let mask4 = getMaskForGroup(ipAddressParts[3], true);
-                  return [...mask1, ...mask2, ...mask3, ...mask4];
-                }
-              }}
-            />
-          )}
-        />
-        <TextInput
-          value={ipPort?.toString()}
-          label="IP Port"
-          keyboardType="numeric"
-          render={(props: RenderProps) => (
-            <MaskInput
-              {...props}
-              value={ipPort?.toString()}
-              onChangeText={masked => {
-                setIpPort(parseInt(masked, 10));
-              }}
-              mask={[/\d/, /\d/, /\d/, /\d/, /\d/]}
-            />
-          )}
-        />
+        <View>
+          <TextInput
+            value={ipAddress}
+            onChangeText={setIpAddress}
+            label="IP-adress"
+            keyboardType="numeric"
+            error={ipAddressFieldState.invalid}
+          />
+          <HelperText type="error" visible={ipAddressFieldState.invalid}>
+            {ipAddressFieldState.error?.message}
+          </HelperText>
+        </View>
+        <View>
+          <TextInput
+            value={ipPort?.toString()}
+            onChangeText={setIpPort}
+            label="IP-port"
+            keyboardType="numeric"
+            error={ipPortFieldState.invalid}
+          />
+          <HelperText type="error" visible={ipPortFieldState.invalid}>
+            {ipPortFieldState.error?.message}
+          </HelperText>
+        </View>
       </View>
     </List.Accordion>
   );

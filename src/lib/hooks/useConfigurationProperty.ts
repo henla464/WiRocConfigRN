@@ -1,5 +1,5 @@
 import {useEffect} from 'react';
-import {useController} from 'react-hook-form';
+import {UseControllerProps, useController} from 'react-hook-form';
 
 import {
   GettablePropName,
@@ -29,6 +29,10 @@ export const useConfigurationProperty = <
   deviceId: string,
   propName: PropName,
   onDefaultValuesChange: (values: Partial<SettableValues>) => void,
+  controllerOptions?: Omit<
+    UseControllerProps<SettableValues, PropName>,
+    'name'
+  >,
 ) => {
   const query = useWiRocPropertyQuery<PropName>(deviceId, propName);
 
@@ -41,7 +45,10 @@ export const useConfigurationProperty = <
   }, [propName, onDefaultValuesChange, originalValue]);
 
   return [
-    useController<SettableValues, PropName>({name: propName}),
+    useController<SettableValues, PropName>({
+      ...controllerOptions,
+      name: propName,
+    }),
     query,
   ] as const;
 };

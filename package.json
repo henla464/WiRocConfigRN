@@ -32,7 +32,6 @@
     "react-native-device-info": "^10.2.0",
     "react-native-dropdown-select-list": "^2.0.5",
     "react-native-gesture-handler": "^2.13.4",
-    "react-native-mask-input": "^1.2.3",
     "react-native-modal-datetime-picker": "^17.1.0",
     "react-native-pager-view": "^6.2.2",
     "react-native-paper": "5.12.2",

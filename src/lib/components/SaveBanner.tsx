@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {FieldErrors} from 'react-hook-form';
 import {Animated} from 'react-native';
 import {Banner, Icon} from 'react-native-paper';
 
@@ -8,6 +9,8 @@ interface ISaveBannerProps {
   reload: () => void;
   onHideAnimationFinished: Animated.EndCallback;
   onShowAnimationFinished: Animated.EndCallback;
+  isSaveDisabled?: boolean;
+  errors?: FieldErrors;
 }
 
 export default function SaveBanner({
@@ -16,6 +19,8 @@ export default function SaveBanner({
   reload,
   onHideAnimationFinished,
   onShowAnimationFinished,
+  isSaveDisabled,
+  errors,
 }: ISaveBannerProps) {
   return (
     <Banner
@@ -33,6 +38,7 @@ export default function SaveBanner({
       actions={[
         {
           label: 'Spara konfigurationen',
+          disabled: isSaveDisabled,
           onPress: () => {
             save();
           },
@@ -43,8 +49,17 @@ export default function SaveBanner({
         },
       ]}
       icon={({size}) => <Icon source="content-save" size={size} />}>
-      Konfigurationen har ändrats i appen. Vill du spara ändringen eller
-      uppdatera från enheten?
+      {errors && Object.entries(errors).length > 0
+        ? `Konfigurationen innehåller fel som gör att den inte kan sparas just nu:\n${Object.entries(
+            errors,
+          )
+            .map(([path, error]) =>
+              typeof error?.message === 'string'
+                ? `• ${error.message}`
+                : `• Okänt fel i fält ${path}`,
+            )
+            .join('\n')}`
+        : 'Konfigurationen har ändrats i appen. Vill du spara ändringen eller uppdatera från enheten?'}
     </Banner>
   );
 }

@@ -48,7 +48,7 @@ interface Setter<T, R = T> {
 export const getters = {
   ischarging: booleanGetter(0),
   wirocdevicename: stringGetter(1),
-  sendtosirapipport: numberGetter(2),
+  sendtosirapipport: stringGetter(2),
   sendtosirapip: stringGetter(3),
   sendtosirapenabled: booleanGetter(4),
   acknowledgementrequested: booleanGetter(5),
@@ -97,7 +97,7 @@ export const getters = {
 
 export const setters = {
   wirocdevicename: stringSetter(),
-  sendtosirapipport: numberSetter(),
+  sendtosirapipport: stringSetter(),
   sendtosirapip: stringSetter(),
   sendtosirapenabled: booleanSetter(),
   acknowledgementrequested: booleanSetter(),
