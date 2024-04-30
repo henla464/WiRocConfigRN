@@ -75,7 +75,6 @@ export default function LoraRadio({
     {key: '4', value: '4', disabled: !isLoraRadioEnabled},
     {key: '5', value: '5', disabled: !isLoraRadioEnabled},
     {key: '6', value: '6', disabled: !isLoraRadioEnabled},
-    {key: '7', value: '7', disabled: !isLoraRadioEnabled},
   ];
 
   const codeRateList = [

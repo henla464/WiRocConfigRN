@@ -1,8 +1,8 @@
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import React, {useEffect, useRef, useState} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import {ScrollView, StyleSheet, Text, View} from 'react-native';
 import {SelectList} from 'react-native-dropdown-select-list';
-import {Button, DataTable, Icon, TextInput} from 'react-native-paper';
+import {Button, DataTable, Divider, Icon, TextInput} from 'react-native-paper';
 
 import {TestPunch} from '@api/types';
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
@@ -13,7 +13,7 @@ export default function SendPunches() {
   const deviceId = useActiveWiRocDevice();
   const queryClient = useQueryClient();
   const apiBackend = useStore(state => state.wiRocDevices[deviceId].apiBackend);
-  const [siCardNo, setSiCardNo] = useState<string>('');
+  const [siCardNo, setSiCardNo] = useState<string>('16777215');
   const [numberOfPunches, setNumberOfPunches] = useState(1);
   const [isSending, setIsSending] = useState(false);
   const [sendInterval, setSendInterval] = useState(1000);
@@ -108,12 +108,29 @@ export default function SendPunches() {
     }
   };
 
+  const getStatusDisplayName = (status: String) => {
+    switch (status) {
+      case 'Acked':
+        return 'Bekr.';
+      case 'Not Acked':
+        return 'Ej bekr.';
+      case 'Sent':
+        return 'Skickad';
+      case 'Not added':
+        return 'Ej till.';
+      case 'Added':
+        return 'Tillagd';
+      default:
+        return status;
+    }
+  };
+
   return (
     <View style={styles.container}>
       <View style={styles.containerRow}>
         <TextInput
           value={siCardNo}
-          label="SportIdent-nummber"
+          label="SportIdent-nummer"
           onChangeText={text => {
             if (text === '') {
               setSiCardNo('');
@@ -124,7 +141,7 @@ export default function SendPunches() {
             }
           }}
           keyboardType="number-pad"
-          style={{flex: 1}}
+          style={{flex: 1, backgroundColor: 'white'}}
         />
         <SelectList
           setSelected={(val: string) => {
@@ -135,7 +152,7 @@ export default function SendPunches() {
           search={false}
           placeholder={'Antal'}
           dropdownTextStyles={{fontSize: 30, flex: 1}}
-          dropdownStyles={{backgroundColor: 'gray'}}
+          dropdownStyles={{backgroundColor: 'white'}}
           inputStyles={{
             fontSize: 18,
             fontWeight: '900',
@@ -161,7 +178,7 @@ export default function SendPunches() {
           search={false}
           placeholder={'Interval'}
           dropdownTextStyles={{fontSize: 30, flex: 1}}
-          dropdownStyles={{backgroundColor: 'gray'}}
+          dropdownStyles={{backgroundColor: 'white'}}
           inputStyles={{
             fontSize: 18,
             fontWeight: '900',
@@ -185,44 +202,105 @@ export default function SendPunches() {
           {isSending ? 'Sluta skicka' : 'Skicka'}
         </Button>
       </View>
+      <Divider bold={true} style={{marginTop: 5, height: 2}} />
       <View style={styles.tableContainer}>
         <DataTable style={styles.table}>
           <DataTable.Header style={styles.row}>
-            <DataTable.Title>SI nummber</DataTable.Title>
-            <DataTable.Title>Tid</DataTable.Title>
-            <DataTable.Title>RSSI</DataTable.Title>
-            <DataTable.Title>Försök</DataTable.Title>
-            <DataTable.Title>Status</DataTable.Title>
+            <DataTable.Title textStyle={{fontSize: 20}} style={{flex: 14}}>
+              SI Nr
+            </DataTable.Title>
+            <DataTable.Title
+              textStyle={{fontSize: 20}}
+              style={{flex: 11, justifyContent: 'center'}}>
+              Tid
+            </DataTable.Title>
+            <DataTable.Title
+              textStyle={{fontSize: 20}}
+              style={(styles.centered, {flex: 7})}>
+              RSSI
+            </DataTable.Title>
+            <DataTable.Title
+              textStyle={{fontSize: 20}}
+              style={(styles.centered, {flex: 7})}>
+              Förs.
+            </DataTable.Title>
+            <DataTable.Title
+              textStyle={{fontSize: 20}}
+              style={(styles.centered, {flex: 10})}>
+              Status
+            </DataTable.Title>
           </DataTable.Header>
-
-          <ScrollView>
-            {punches.map(punch => (
-              <DataTable.Row key={punch.Id} style={styles.row}>
-                <DataTable.Cell>{punch.SINo}</DataTable.Cell>
-                <DataTable.Cell>{punch.Time}</DataTable.Cell>
-                <DataTable.Cell>{punch.RSSI}</DataTable.Cell>
-                <DataTable.Cell
-                  style={
-                    punch.NoOfSendTries > 1
-                      ? styles.failure
-                      : punch.Status === 'Acked'
-                      ? styles.success
-                      : null
-                  }>
-                  {punch.NoOfSendTries}
+          <Divider bold={true} />
+          <ScrollView contentContainerStyle={{flexGrow: 1}} style={{}}>
+            <View>
+              {punches.map(punch => (
+                <DataTable.Row key={punch.Id} style={styles.row}>
+                  <DataTable.Cell textStyle={{fontSize: 22}} style={{flex: 14}}>
+                    {punch.SINo}
+                  </DataTable.Cell>
+                  <DataTable.Cell
+                    textStyle={{fontSize: 22}}
+                    style={(styles.centered, {flex: 12})}>
+                    {punch.Time}
+                  </DataTable.Cell>
+                  <DataTable.Cell
+                    textStyle={{fontSize: 22}}
+                    style={{flex: 6, justifyContent: 'center'}}>
+                    {punch.RSSI}
+                  </DataTable.Cell>
+                  <DataTable.Cell
+                    textStyle={{fontSize: 22}}
+                    style={[
+                      punch.NoOfSendTries > 1
+                        ? styles.failure
+                        : punch.Status === 'Acked'
+                        ? styles.success
+                        : styles.centered,
+                      {flex: 7},
+                    ]}>
+                    {punch.NoOfSendTries}
+                  </DataTable.Cell>
+                  <DataTable.Cell
+                    textStyle={{fontSize: 22}}
+                    style={[
+                      punch.Status === 'Acked'
+                        ? styles.success
+                        : punch.Status === 'Not acked'
+                        ? styles.failure
+                        : styles.centered,
+                      {flex: 10},
+                    ]}>
+                    {getStatusDisplayName(punch.Status)}
+                  </DataTable.Cell>
+                </DataTable.Row>
+              ))}
+              <Divider bold={true} />
+              <DataTable.Row key={'footer'} style={styles.row}>
+                <DataTable.Cell textStyle={{fontSize: 22}} style={{flex: 31}}>
+                  Procent lyckade
                 </DataTable.Cell>
                 <DataTable.Cell
-                  style={
-                    punch.Status === 'Acked'
-                      ? styles.success
-                      : punch.Status === 'Not acked'
-                      ? styles.failure
-                      : null
-                  }>
-                  {punch.Status}
+                  textStyle={{fontSize: 22}}
+                  style={{flex: 8, justifyContent: 'center'}}>
+                  {Math.round(
+                    (100 * punches.filter(p => p.Status === 'Acked').length) /
+                      punches
+                        .map(p => p.NoOfSendTries)
+                        .reduce((a, b) => a + b, 0),
+                  )}
+                  {'%'}
+                </DataTable.Cell>
+                <DataTable.Cell
+                  textStyle={{fontSize: 22}}
+                  style={{flex: 10, justifyContent: 'center'}}>
+                  {Math.round(
+                    (100 * punches.filter(p => p.Status === 'Acked').length) /
+                      punches.length,
+                  )}
+                  {'%'}
                 </DataTable.Cell>
               </DataTable.Row>
-            ))}
+            </View>
           </ScrollView>
         </DataTable>
       </View>
@@ -234,21 +312,28 @@ const styles = StyleSheet.create({
   table: {
     paddingRight: 0,
     marginRight: 0,
+    flex: 1,
   },
   row: {
     paddingRight: 5,
-    paddingLeft: 10,
+    paddingLeft: 5,
   },
   tableContainer: {
     paddingRight: 0,
     marginTop: 0,
-    backgroundColor: 'lightgray',
+    backgroundColor: 'white',
+    flex: 1,
   },
   success: {
-    backgroundColor: 'green',
+    backgroundColor: 'palegreen',
+    justifyContent: 'center',
   },
   failure: {
-    backgroundColor: 'red',
+    backgroundColor: 'salmon',
+    justifyContent: 'center',
+  },
+  centered: {
+    justifyContent: 'center',
   },
   container: {
     flex: 1,
@@ -257,7 +342,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingRight: 5,
     paddingBottom: 0,
-    backgroundColor: 'lightgray',
+    backgroundColor: 'white',
   },
   containerRow: {
     flexDirection: 'row',
@@ -267,7 +352,7 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingRight: 0,
     paddingBottom: 0,
-    backgroundColor: 'lightgray',
+    backgroundColor: 'white',
   },
   button: {
     padding: 10,
