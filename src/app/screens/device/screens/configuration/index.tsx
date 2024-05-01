@@ -125,29 +125,32 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
             setCurrentScrollPosition(e.nativeEvent.contentOffset.y);
           }}
           style={{marginTop: mTop}}>
-          <List.AccordionGroup>
-            <View>
-              <Divider bold={true} />
-              <Text style={styles.header}>Indata</Text>
-              <Divider bold={true} />
-              <USB {...commonSectionProps} />
-              <SerialBluetooth {...commonSectionProps} />
-              {hasSRR && <SRR {...commonSectionProps} />}
-            </View>
-            <View>
-              <Divider bold={true} />
-              <Text style={styles.header}>In- och utdata</Text>
-              <Divider bold={true} />
-              <LoraRadio {...commonSectionProps} />
-              <RS232 {...commonSectionProps} />
-            </View>
-            <View>
-              <Divider bold={true} />
-              <Text style={styles.header}>Utdata</Text>
-              <Divider bold={true} />
-              <SIRAP {...commonSectionProps} />
-            </View>
-          </List.AccordionGroup>
+          <View style={{backgroundColor: 'orange'}}>
+            <Divider bold={true} />
+            <Text style={styles.header}>Indata</Text>
+            <Divider bold={true} />
+            <USB {...commonSectionProps} />
+            <Divider bold={true} />
+            <SerialBluetooth {...commonSectionProps} />
+            <Divider bold={true} />
+            {hasSRR && <SRR {...commonSectionProps} />}
+            {hasSRR && <Divider bold={true} />}
+          </View>
+          <View style={{backgroundColor: 'orange'}}>
+            <Divider bold={true} />
+            <Text style={styles.header}>In- och utdata</Text>
+            <Divider bold={true} />
+            <LoraRadio {...commonSectionProps} />
+            <Divider bold={true} />
+            <RS232 {...commonSectionProps} />
+          </View>
+          <View style={{backgroundColor: 'orange'}}>
+            <Divider bold={true} />
+            <Text style={styles.header}>Utdata</Text>
+            <Divider bold={true} />
+            <SIRAP {...commonSectionProps} />
+            <Divider bold={true} />
+          </View>
         </ScrollView>
       </SafeAreaView>
     </FormProvider>
@@ -159,6 +162,7 @@ const styles = StyleSheet.create({
     padding: 10,
     fontWeight: 'bold',
     fontSize: 20,
+    backgroundColor: 'rgb(233, 223, 235)',
   },
   accordionHeader: {
     flexDirection: 'row',

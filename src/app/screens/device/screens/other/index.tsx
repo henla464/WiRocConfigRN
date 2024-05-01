@@ -40,8 +40,8 @@ export default function OtherScreen() {
         <Tab.Screen name="Databas" component={Database} />
         {hasRTC ? <Tab.Screen name="Väckning" component={WakeUp} /> : null}
         <Tab.Screen name="Status" component={Status} />
-        <Tab.Screen name="Settings" component={Settings} />
-        <Tab.Screen name="Update" component={Update} />
+        <Tab.Screen name="Inställningar" component={Settings} />
+        <Tab.Screen name="Uppdatera" component={Update} />
       </Tab.Navigator>
     </>
   );

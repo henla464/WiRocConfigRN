@@ -1,6 +1,6 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
-import {Checkbox, Icon, List} from 'react-native-paper';
+import {Checkbox, Divider, Icon, List} from 'react-native-paper';
 
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 
@@ -11,6 +11,9 @@ export default function USB({
   deviceId,
   onDefaultValuesChange,
 }: SectionComponentProps) {
+  const [expanded, setExpanded] = React.useState(false);
+  const handlePress = () => setExpanded(!expanded);
+
   const [
     {
       field: {value: isOneWay, onChange: setIsOneWay},
@@ -34,6 +37,18 @@ export default function USB({
     <List.Accordion
       title="USB"
       id="usb"
+      expanded={expanded}
+      onPress={handlePress}
+      theme={{
+        colors: {
+          primary: 'black',
+          background: expanded ? 'orange' : 'rgb(255, 251, 255)',
+        },
+      }}
+      style={{
+        backgroundColor: 'rgb(255, 251, 255)',
+        marginLeft: 10,
+      }}
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
           <OnOffChip on={true} />
@@ -44,6 +59,7 @@ export default function USB({
           )}
         </View>
       )}>
+      <Divider bold={true} />
       <View style={styles.container}>
         <View style={styles.mainCheckBoxContainer}>
           <Checkbox.Item
@@ -80,26 +96,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   container: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    paddingLeft: 18,
-    paddingTop: 1,
-    paddingRight: 10,
-    paddingBottom: 1,
-    backgroundColor: 'lightgray',
+    backgroundColor: 'rgb(255, 251, 255)',
+    marginLeft: 10,
   },
   mainCheckBoxContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 0,
-    margin: 0,
+    alignItems: 'flex-start',
   },
   secondaryCheckBoxContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     paddingLeft: 25,
   },
   checkBoxLabel: {

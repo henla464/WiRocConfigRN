@@ -142,7 +142,6 @@ const styles = StyleSheet.create({
     height: '100%',
     paddingRight: 0,
     marginTop: 0,
-    backgroundColor: 'lightgray',
   },
   container: {
     flex: 1,
@@ -151,7 +150,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingRight: 5,
     paddingBottom: 0,
-    backgroundColor: 'lightgray',
+    backgroundColor: 'rgb(255, 251, 255)',
   },
   containerRow: {
     flexDirection: 'row',
@@ -161,7 +160,6 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingRight: 0,
     paddingBottom: 5,
-    backgroundColor: 'lightgray',
   },
   header: {
     fontSize: 20,

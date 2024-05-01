@@ -1,6 +1,13 @@
 import React, {useRef, useState} from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import {Button, Checkbox, DataTable, Icon, List} from 'react-native-paper';
+import {
+  Button,
+  Checkbox,
+  DataTable,
+  Divider,
+  Icon,
+  List,
+} from 'react-native-paper';
 
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 import useInterval from '@lib/hooks/useInterval';
@@ -19,6 +26,8 @@ export default function SerialBluetooth({
 }: SectionComponentProps) {
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [interval, setInterval] = useState<number | null>(null);
+  const [expanded, setExpanded] = React.useState(false);
+  const handlePress = () => setExpanded(!expanded);
 
   const {data: serialBTDevices = [], refetch: refetchDevices} =
     useWiRocPropertyQuery(deviceId, 'scanbtaddresses', {
@@ -78,6 +87,18 @@ export default function SerialBluetooth({
     <List.Accordion
       title="Seriell Bluetooth"
       id="serialBluetooth"
+      expanded={expanded}
+      onPress={handlePress}
+      theme={{
+        colors: {
+          primary: 'black',
+          background: expanded ? 'orange' : 'rgb(255, 251, 255)',
+        },
+      }}
+      style={{
+        backgroundColor: 'rgb(255, 251, 255)',
+        marginLeft: 10,
+      }}
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
           <OnOffChip on={isBTDeviceConfigured} />
@@ -88,8 +109,9 @@ export default function SerialBluetooth({
           )}
         </View>
       )}>
+      <Divider bold={true} />
       <View style={styles.container}>
-        <View style={styles.mainCheckBoxContainer}>
+        <View style={styles.containerCheckBox}>
           <Checkbox.Item
             label="Envägs, lyssna passivt"
             position="leading"
@@ -100,64 +122,64 @@ export default function SerialBluetooth({
             labelStyle={styles.checkBoxLabel}
           />
         </View>
-      </View>
-      <View>
-        <Button
-          icon=""
-          loading={isScanning}
-          mode="contained"
-          onPress={() => startStopScan()}
-          style={styles.scanButton}>
-          Sök Bluetooth enheter
-        </Button>
-      </View>
-      <View style={styles.tableContainer}>
-        <DataTable style={styles.table}>
-          <DataTable.Header style={styles.row}>
-            <DataTable.Title>Namn</DataTable.Title>
-            <DataTable.Title>BT adress/Status</DataTable.Title>
-            <DataTable.Title style={styles.buttonColumnCell}>
-              <View>
-                <Text> </Text>
-              </View>
-            </DataTable.Title>
-          </DataTable.Header>
-
-          {serialBTDevices.map(item => (
-            <DataTable.Row key={item.BTAddress} style={styles.row}>
-              <DataTable.Cell>{item.Name}</DataTable.Cell>
-              <DataTable.Cell>
-                <View style={styles.btAddressCell}>
-                  <Text numberOfLines={2} ellipsizeMode="tail">
-                    {item.BTAddress + '\n' + item.Status}
-                  </Text>
+        <View>
+          <Button
+            icon=""
+            loading={isScanning}
+            mode="contained"
+            onPress={() => startStopScan()}
+            style={styles.scanButton}>
+            Sök Bluetooth enheter
+          </Button>
+        </View>
+        <View style={styles.tableContainer}>
+          <DataTable style={styles.table}>
+            <DataTable.Header style={styles.row}>
+              <DataTable.Title>Namn</DataTable.Title>
+              <DataTable.Title>BT adress/Status</DataTable.Title>
+              <DataTable.Title style={styles.buttonColumnCell}>
+                <View>
+                  <Text> </Text>
                 </View>
-              </DataTable.Cell>
-              <DataTable.Cell style={styles.buttonCell} numeric>
-                <Button
-                  icon=""
-                  loading={false}
-                  mode="contained"
-                  onPress={() => {
-                    if (item.Status === 'Connected') {
-                      releaseBt(item.BTAddress);
-                    } else if (item.Status === 'NotConnected') {
-                      bindBt({btAddress: item.BTAddress, btName: item.Name});
-                    } else if (item.Status === 'ReadError') {
-                      log.debug('SerialBluetooth:ConnectButton ReadError');
-                    }
-                  }}
-                  style={styles.button}>
-                  {item.Status === 'Connected'
-                    ? 'Koppla ifrån'
-                    : item.Status === 'NotConnected'
-                    ? 'Anslut'
-                    : 'ReadError'}
-                </Button>
-              </DataTable.Cell>
-            </DataTable.Row>
-          ))}
-        </DataTable>
+              </DataTable.Title>
+            </DataTable.Header>
+
+            {serialBTDevices.map(item => (
+              <DataTable.Row key={item.BTAddress} style={styles.row}>
+                <DataTable.Cell>{item.Name}</DataTable.Cell>
+                <DataTable.Cell>
+                  <View style={styles.btAddressCell}>
+                    <Text numberOfLines={2} ellipsizeMode="tail">
+                      {item.BTAddress + '\n' + item.Status}
+                    </Text>
+                  </View>
+                </DataTable.Cell>
+                <DataTable.Cell style={styles.buttonCell} numeric>
+                  <Button
+                    icon=""
+                    loading={false}
+                    mode="contained"
+                    onPress={() => {
+                      if (item.Status === 'Connected') {
+                        releaseBt(item.BTAddress);
+                      } else if (item.Status === 'NotConnected') {
+                        bindBt({btAddress: item.BTAddress, btName: item.Name});
+                      } else if (item.Status === 'ReadError') {
+                        log.debug('SerialBluetooth:ConnectButton ReadError');
+                      }
+                    }}
+                    style={styles.button}>
+                    {item.Status === 'Connected'
+                      ? 'Koppla ifrån'
+                      : item.Status === 'NotConnected'
+                      ? 'Anslut'
+                      : 'ReadError'}
+                  </Button>
+                </DataTable.Cell>
+              </DataTable.Row>
+            ))}
+          </DataTable>
+        </View>
       </View>
     </List.Accordion>
   );
@@ -187,24 +209,13 @@ const styles = StyleSheet.create({
   tableContainer: {
     paddingRight: 0,
     marginTop: 0,
-    backgroundColor: 'lightgray',
   },
   container: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    paddingLeft: 18,
-    paddingTop: 1,
-    paddingRight: 10,
-    paddingBottom: 0,
-    backgroundColor: 'lightgray',
+    marginLeft: 10,
+    backgroundColor: 'rgb(255, 251, 255)',
   },
-  mainCheckBoxContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 0,
-    margin: 0,
+  containerCheckBox: {
+    alignItems: 'flex-start',
   },
   checkBoxLabel: {
     marginLeft: 5,

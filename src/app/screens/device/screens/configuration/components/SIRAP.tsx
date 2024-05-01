@@ -1,7 +1,7 @@
 import React from 'react';
 import {useFormContext} from 'react-hook-form';
 import {StyleSheet, Switch, Text, View} from 'react-native';
-import {HelperText, Icon, List, TextInput} from 'react-native-paper';
+import {Divider, HelperText, Icon, List, TextInput} from 'react-native-paper';
 
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 
@@ -15,6 +15,9 @@ export default function SIRAP({
   deviceId,
   onDefaultValuesChange,
 }: SectionComponentProps) {
+  const [expanded, setExpanded] = React.useState(false);
+  const handlePress = () => setExpanded(!expanded);
+
   const form = useFormContext();
   const [
     {
@@ -84,6 +87,18 @@ export default function SIRAP({
     <List.Accordion
       title="SIRAP-tcp/ip"
       id="sirap"
+      expanded={expanded}
+      onPress={handlePress}
+      theme={{
+        colors: {
+          primary: 'black',
+          background: expanded ? 'orange' : 'rgb(255, 251, 255)',
+        },
+      }}
+      style={{
+        backgroundColor: 'rgb(255, 251, 255)',
+        marginLeft: 10,
+      }}
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
           <OnOffChip on={isSIRAPSwitchedOn} />
@@ -94,6 +109,7 @@ export default function SIRAP({
           )}
         </View>
       )}>
+      <Divider bold={true} />
       <View style={styles.container}>
         <View style={styles.switchContainer}>
           <Text
@@ -113,8 +129,6 @@ export default function SIRAP({
             }}
           />
         </View>
-      </View>
-      <View>
         <View>
           <TextInput
             value={ipAddress}
@@ -122,6 +136,7 @@ export default function SIRAP({
             label="IP-adress"
             keyboardType="numeric"
             error={ipAddressFieldState.invalid}
+            style={{backgroundColor: 'rgb(255, 251, 255)'}}
           />
           <HelperText type="error" visible={ipAddressFieldState.invalid}>
             {ipAddressFieldState.error?.message}
@@ -134,6 +149,7 @@ export default function SIRAP({
             label="IP-port"
             keyboardType="numeric"
             error={ipPortFieldState.invalid}
+            style={{backgroundColor: 'rgb(255, 251, 255)'}}
           />
           <HelperText type="error" visible={ipPortFieldState.invalid}>
             {ipPortFieldState.error?.message}
@@ -150,19 +166,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   container: {
+    backgroundColor: 'rgb(255, 251, 255)',
+    marginLeft: 10,
+  },
+  switchContainer: {
+    flexDirection: 'row',
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
     paddingLeft: 18,
-    paddingTop: 1,
+    paddingTop: 14,
     paddingRight: 10,
     paddingBottom: 1,
-    backgroundColor: 'lightgray',
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   switch: {
     marginLeft: 10,

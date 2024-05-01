@@ -92,7 +92,6 @@ const styles = StyleSheet.create({
   tableContainer: {
     paddingRight: 0,
     marginTop: 0,
-    backgroundColor: 'white',
   },
   container: {
     flex: 1,
@@ -101,7 +100,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingRight: 5,
     paddingBottom: 0,
-    backgroundColor: 'white',
+    backgroundColor: 'rgb(255, 251, 255)',
   },
   containerRow: {
     flexDirection: 'row',
@@ -111,7 +110,6 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingRight: 0,
     paddingBottom: 0,
-    backgroundColor: 'white',
   },
   button: {
     padding: 10,

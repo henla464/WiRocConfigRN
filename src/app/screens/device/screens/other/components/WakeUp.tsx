@@ -228,7 +228,6 @@ const styles = StyleSheet.create({
   tableContainer: {
     paddingRight: 0,
     marginTop: 0,
-    backgroundColor: 'lightgray',
   },
   container: {
     flex: 1,
@@ -237,7 +236,7 @@ const styles = StyleSheet.create({
     paddingTop: 20,
     paddingRight: 5,
     paddingBottom: 0,
-    backgroundColor: 'lightgray',
+    backgroundColor: 'rgb(255, 251, 255)',
   },
   containerRow: {
     flexDirection: 'row',
@@ -247,7 +246,6 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingRight: 0,
     paddingBottom: 5,
-    backgroundColor: 'lightgray',
   },
   containerRowCenter: {
     flexDirection: 'row',
@@ -257,7 +255,6 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingRight: 0,
     paddingBottom: 5,
-    backgroundColor: 'lightgray',
   },
   button: {
     flex: 1,

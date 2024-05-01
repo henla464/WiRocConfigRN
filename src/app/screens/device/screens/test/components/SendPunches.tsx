@@ -141,7 +141,7 @@ export default function SendPunches() {
             }
           }}
           keyboardType="number-pad"
-          style={{flex: 1, backgroundColor: 'white'}}
+          style={{flex: 1, backgroundColor: 'rgb(255, 251, 255)'}}
         />
         <SelectList
           setSelected={(val: string) => {
@@ -152,7 +152,7 @@ export default function SendPunches() {
           search={false}
           placeholder={'Antal'}
           dropdownTextStyles={{fontSize: 30, flex: 1}}
-          dropdownStyles={{backgroundColor: 'white'}}
+          dropdownStyles={{backgroundColor: 'rgb(255, 251, 255)'}}
           inputStyles={{
             fontSize: 18,
             fontWeight: '900',
@@ -178,7 +178,7 @@ export default function SendPunches() {
           search={false}
           placeholder={'Interval'}
           dropdownTextStyles={{fontSize: 30, flex: 1}}
-          dropdownStyles={{backgroundColor: 'white'}}
+          dropdownStyles={{backgroundColor: 'rgb(255, 251, 255)'}}
           inputStyles={{
             fontSize: 18,
             fontWeight: '900',
@@ -321,7 +321,6 @@ const styles = StyleSheet.create({
   tableContainer: {
     paddingRight: 0,
     marginTop: 0,
-    backgroundColor: 'white',
     flex: 1,
   },
   success: {
@@ -342,7 +341,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingRight: 5,
     paddingBottom: 0,
-    backgroundColor: 'white',
+    backgroundColor: 'rgb(255, 251, 255)',
   },
   containerRow: {
     flexDirection: 'row',
@@ -352,7 +351,6 @@ const styles = StyleSheet.create({
     paddingTop: 8,
     paddingRight: 0,
     paddingBottom: 0,
-    backgroundColor: 'white',
   },
   button: {
     padding: 10,

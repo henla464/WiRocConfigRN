@@ -1,6 +1,12 @@
 import React from 'react';
 import {StyleSheet, Switch, Text, View} from 'react-native';
-import {Checkbox, Icon, List, SegmentedButtons} from 'react-native-paper';
+import {
+  Checkbox,
+  Divider,
+  Icon,
+  List,
+  SegmentedButtons,
+} from 'react-native-paper';
 
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 
@@ -11,6 +17,9 @@ export default function SRR({
   deviceId,
   onDefaultValuesChange,
 }: SectionComponentProps) {
+  const [expanded, setExpanded] = React.useState(false);
+  const handlePress = () => setExpanded(!expanded);
+
   const [
     {
       field: {value: isSRREnabled, onChange: setIsSRREnabled},
@@ -73,6 +82,18 @@ export default function SRR({
     <List.Accordion
       title="SportIdent SRR"
       id="srr"
+      expanded={expanded}
+      onPress={handlePress}
+      theme={{
+        colors: {
+          primary: 'black',
+          background: expanded ? 'orange' : 'rgb(255, 251, 255)',
+        },
+      }}
+      style={{
+        backgroundColor: 'rgb(255, 251, 255)',
+        marginLeft: 10,
+      }}
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
           <Text>{SRRMode === 'RECEIVE' ? 'Ta emot' : 'Skicka'}</Text>
@@ -84,89 +105,94 @@ export default function SRR({
           )}
         </View>
       )}>
-      <View style={styles.containerColumn}>
-        <View style={styles.switchContainer}>
-          <Text
-            style={{
-              fontSize: 20,
-              fontWeight: 'bold',
-              alignItems: 'center',
-            }}>
-            Aktivera:{' '}
-          </Text>
-          <Switch
-            value={isSRREnabled}
-            onValueChange={val => setIsSRREnabled(val)}
+      <Divider bold={true} />
+      <View style={styles.container}>
+        <View style={styles.containerColumn}>
+          <View style={styles.switchContainer}>
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: 'bold',
+                alignItems: 'center',
+              }}>
+              Aktivera:{' '}
+            </Text>
+            <Switch
+              value={isSRREnabled}
+              onValueChange={val => setIsSRREnabled(val)}
+            />
+          </View>
+
+          <SegmentedButtons
+            value={SRRMode}
+            onValueChange={setSRRMode}
+            buttons={[
+              {
+                icon: 'login',
+                value: 'RECEIVE',
+                label: 'Ta emot',
+                disabled: !isSRREnabled,
+              },
+              {
+                icon: 'pan-horizontal',
+                value: 'SEND',
+                label: 'Skicka',
+                disabled: true,
+              },
+            ]}
           />
         </View>
+        <View style={styles.containerRow}>
+          <Checkbox
+            disabled={!isSRREnabled}
+            status={isRedChannelEnabled ? 'checked' : 'unchecked'}
+            onPress={() => {
+              setIsRedChannelEnabled(!isRedChannelEnabled);
+            }}
+          />
+          <Text>Röd kanal</Text>
+        </View>
+        <View style={styles.containerRow2}>
+          <Checkbox
+            disabled={
+              !isSRREnabled || !isRedChannelEnabled || SRRMode === 'SEND'
+            }
+            status={isRedChannelListenOnly ? 'checked' : 'unchecked'}
+            onPress={() => {
+              setIsRedChannelListenOnly(!isRedChannelListenOnly);
+            }}
+          />
+          <Text>Lyssna endast (röd kanal)</Text>
+        </View>
+        <View style={styles.containerRow3}>
+          <Text>(bekräfta inte stämplingar)</Text>
+        </View>
 
-        <SegmentedButtons
-          value={SRRMode}
-          onValueChange={setSRRMode}
-          buttons={[
-            {
-              icon: 'login',
-              value: 'RECEIVE',
-              label: 'Ta emot',
-              disabled: !isSRREnabled,
-            },
-            {
-              icon: 'pan-horizontal',
-              value: 'SEND',
-              label: 'Skicka',
-              disabled: true,
-            },
-          ]}
-        />
-      </View>
-      <View style={styles.containerRow}>
-        <Checkbox
-          disabled={!isSRREnabled}
-          status={isRedChannelEnabled ? 'checked' : 'unchecked'}
-          onPress={() => {
-            setIsRedChannelEnabled(!isRedChannelEnabled);
-          }}
-        />
-        <Text>Röd kanal</Text>
-      </View>
-      <View style={styles.containerRow2}>
-        <Checkbox
-          disabled={!isSRREnabled || !isRedChannelEnabled || SRRMode === 'SEND'}
-          status={isRedChannelListenOnly ? 'checked' : 'unchecked'}
-          onPress={() => {
-            setIsRedChannelListenOnly(!isRedChannelListenOnly);
-          }}
-        />
-        <Text>Lyssna endast (röd kanal)</Text>
-      </View>
-      <View style={styles.containerRow3}>
-        <Text>(bekräfta inte stämplingar)</Text>
-      </View>
-
-      <View style={styles.containerRow}>
-        <Checkbox
-          disabled={!isSRREnabled}
-          status={isBlueChannelEnabled ? 'checked' : 'unchecked'}
-          onPress={() => {
-            setIsBlueChannelEnabled(!isBlueChannelEnabled);
-          }}
-        />
-        <Text>Blå kanal</Text>
-      </View>
-      <View style={styles.containerRow2}>
-        <Checkbox
-          disabled={
-            !isSRREnabled || !isBlueChannelEnabled || SRRMode === 'SEND'
-          }
-          status={isBlueChannelListenOnly ? 'checked' : 'unchecked'}
-          onPress={() => {
-            SetIsBlueChannelListenOnly(!isBlueChannelListenOnly);
-          }}
-        />
-        <Text>Lyssna endast (blå kanal)</Text>
-      </View>
-      <View style={styles.containerRow3}>
-        <Text>(bekräfta inte stämplingar)</Text>
+        <View style={styles.containerRow}>
+          <Checkbox
+            disabled={!isSRREnabled}
+            status={isBlueChannelEnabled ? 'checked' : 'unchecked'}
+            onPress={() => {
+              setIsBlueChannelEnabled(!isBlueChannelEnabled);
+            }}
+          />
+          <Text>Blå kanal</Text>
+        </View>
+        <View style={styles.containerRow2}>
+          <Checkbox
+            disabled={
+              !isSRREnabled || !isBlueChannelEnabled || SRRMode === 'SEND'
+            }
+            status={isBlueChannelListenOnly ? 'checked' : 'unchecked'}
+            onPress={() => {
+              SetIsBlueChannelListenOnly(!isBlueChannelListenOnly);
+            }}
+          />
+          <Text>Lyssna endast (blå kanal)</Text>
+        </View>
+        <View style={styles.containerRow3}>
+          <Text>(bekräfta inte stämplingar)</Text>
+        </View>
       </View>
     </List.Accordion>
   );
@@ -178,14 +204,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   container: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingLeft: 18,
-    paddingTop: 1,
-    paddingRight: 10,
-    paddingBottom: 1,
-    backgroundColor: 'lightgray',
+    backgroundColor: 'rgb(255, 251, 255)',
+    marginLeft: 10,
   },
   containerColumn: {
     flex: 1,
@@ -194,7 +214,6 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingRight: 10,
     paddingBottom: 1,
-    backgroundColor: 'lightgray',
 
     alignItems: 'center',
   },
@@ -218,7 +237,6 @@ const styles = StyleSheet.create({
     paddingTop: 1,
     paddingRight: 10,
     paddingBottom: 1,
-    backgroundColor: 'lightgray',
   },
   containerRow2: {
     flex: 1,
@@ -229,7 +247,6 @@ const styles = StyleSheet.create({
     paddingTop: 1,
     paddingRight: 10,
     paddingBottom: 1,
-    backgroundColor: 'lightgray',
   },
   containerRow3: {
     flex: 1,
@@ -240,7 +257,6 @@ const styles = StyleSheet.create({
     paddingTop: 1,
     paddingRight: 10,
     paddingBottom: 10,
-    backgroundColor: 'lightgray',
   },
   switch: {
     marginLeft: 10,

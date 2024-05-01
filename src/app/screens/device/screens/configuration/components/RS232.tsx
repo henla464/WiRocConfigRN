@@ -1,6 +1,6 @@
 import React from 'react';
 import {StyleSheet, Text, View} from 'react-native';
-import {Checkbox, Icon, List, RadioButton} from 'react-native-paper';
+import {Checkbox, Divider, Icon, List, RadioButton} from 'react-native-paper';
 
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 
@@ -11,6 +11,9 @@ export default function RS232({
   deviceId,
   onDefaultValuesChange,
 }: SectionComponentProps) {
+  const [expanded, setExpanded] = React.useState(false);
+  const handlePress = () => setExpanded(!expanded);
+
   const [
     {
       field: {value: sendReceive, onChange: setSendReceive},
@@ -40,6 +43,18 @@ export default function RS232({
     <List.Accordion
       title="Seriell RS232"
       id="rs232"
+      expanded={expanded}
+      onPress={handlePress}
+      theme={{
+        colors: {
+          primary: 'black',
+          background: expanded ? 'orange' : 'rgb(255, 251, 255)',
+        },
+      }}
+      style={{
+        backgroundColor: 'rgb(255, 251, 255)',
+        marginLeft: 10,
+      }}
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
           <Text>{sendReceive === 'RECEIVE' ? 'Ta emot' : 'Skicka'}</Text>
@@ -51,51 +66,54 @@ export default function RS232({
           )}
         </View>
       )}>
-      <RadioButton.Group
-        onValueChange={newValue => {
-          setSendReceive(newValue);
-          setIs4800bps(false);
-          if (newValue === 'SEND') {
-            setIsOneWay(false);
-          }
-        }}
-        value={sendReceive}>
-        <View style={styles.containerRow}>
-          <RadioButton.Item
-            label="Ta emot"
-            position="leading"
-            value="RECEIVE"
-          />
-          <RadioButton.Item label="Skicka" position="leading" value="SEND" />
-        </View>
-        <View style={styles.containerColumn}>
-          <View style={styles.mainCheckBoxContainer}>
-            <Checkbox.Item
-              label="Envägs, lyssna passivt"
+      <Divider bold={true} />
+      <View style={styles.container}>
+        <RadioButton.Group
+          onValueChange={newValue => {
+            setSendReceive(newValue);
+            setIs4800bps(false);
+            if (newValue === 'SEND') {
+              setIsOneWay(false);
+            }
+          }}
+          value={sendReceive}>
+          <View style={styles.containerRow}>
+            <RadioButton.Item
+              label="Ta emot"
               position="leading"
-              status={isOneWay ? 'checked' : 'unchecked'}
-              onPress={() => {
-                if (isOneWay) {
-                  setIs4800bps(false);
-                }
-                setIsOneWay(!isOneWay);
-              }}
-              disabled={sendReceive === 'SEND'}
-              labelStyle={styles.checkBoxLabel}
+              value="RECEIVE"
             />
+            <RadioButton.Item label="Skicka" position="leading" value="SEND" />
           </View>
-          <View style={styles.secondaryCheckBoxContainer}>
-            <Checkbox.Item
-              label="Använd 4800 bps"
-              position="leading"
-              status={is4800bps ? 'checked' : 'unchecked'}
-              onPress={() => setIs4800bps(!is4800bps)}
-              labelStyle={styles.checkBoxLabel}
-              disabled={!isOneWay && sendReceive === 'RECEIVE'}
-            />
+          <View style={styles.containerColumn}>
+            <View style={styles.mainCheckBoxContainer}>
+              <Checkbox.Item
+                label="Envägs, lyssna passivt"
+                position="leading"
+                status={isOneWay ? 'checked' : 'unchecked'}
+                onPress={() => {
+                  if (isOneWay) {
+                    setIs4800bps(false);
+                  }
+                  setIsOneWay(!isOneWay);
+                }}
+                disabled={sendReceive === 'SEND'}
+                labelStyle={styles.checkBoxLabel}
+              />
+            </View>
+            <View style={styles.secondaryCheckBoxContainer}>
+              <Checkbox.Item
+                label="Använd 4800 bps"
+                position="leading"
+                status={is4800bps ? 'checked' : 'unchecked'}
+                onPress={() => setIs4800bps(!is4800bps)}
+                labelStyle={styles.checkBoxLabel}
+                disabled={!isOneWay && sendReceive === 'RECEIVE'}
+              />
+            </View>
           </View>
-        </View>
-      </RadioButton.Group>
+        </RadioButton.Group>
+      </View>
     </List.Accordion>
   );
 }
@@ -105,6 +123,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
   },
+  container: {
+    backgroundColor: 'rgb(255, 251, 255)',
+    marginLeft: 10,
+  },
   containerRow: {
     flex: 1,
     flexDirection: 'row',
@@ -113,7 +135,6 @@ const styles = StyleSheet.create({
     paddingTop: 1,
     paddingRight: 10,
     paddingBottom: 1,
-    backgroundColor: 'lightgray',
   },
   containerColumn: {
     flex: 1,
@@ -123,7 +144,6 @@ const styles = StyleSheet.create({
     paddingTop: 1,
     paddingRight: 10,
     paddingBottom: 1,
-    backgroundColor: 'lightgray',
   },
   mainCheckBoxContainer: {
     flexDirection: 'row',

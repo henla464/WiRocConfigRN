@@ -167,7 +167,7 @@ export default function Update() {
           search={false}
           placeholder={'Antal'}
           dropdownTextStyles={{fontSize: 30, flex: 1}}
-          dropdownStyles={{backgroundColor: 'gray'}}
+          dropdownStyles={{backgroundColor: 'rgb(255, 251, 255)'}}
           inputStyles={{
             fontSize: 18,
             fontWeight: '900',
@@ -212,7 +212,7 @@ export default function Update() {
           search={false}
           placeholder={'Antal'}
           dropdownTextStyles={{fontSize: 30, flex: 1}}
-          dropdownStyles={{backgroundColor: 'gray'}}
+          dropdownStyles={{backgroundColor: 'rgb(255, 251, 255)'}}
           inputStyles={{
             fontSize: 18,
             fontWeight: '900',
@@ -255,7 +255,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingRight: 10,
     paddingBottom: 0,
-    backgroundColor: 'lightgray',
+    backgroundColor: 'rgb(255, 251, 255)',
   },
   containerRow: {
     flexDirection: 'row',
@@ -265,7 +265,6 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingRight: 0,
     paddingBottom: 5,
-    backgroundColor: 'lightgray',
   },
   header: {
     fontSize: 20,

@@ -89,7 +89,7 @@ const styles = StyleSheet.create({
   },
   modalView: {
     margin: 20,
-    backgroundColor: 'white',
+    backgroundColor: 'rgb(255, 251, 255)',
     borderRadius: 20,
     paddingLeft: 30,
     paddingTop: 30,
@@ -117,7 +117,6 @@ const styles = StyleSheet.create({
     paddingTop: 0,
     paddingRight: 0,
     paddingBottom: 5,
-    backgroundColor: 'white',
   },
   button: {
     marginLeft: 10,
@@ -125,5 +124,6 @@ const styles = StyleSheet.create({
   },
   textInput: {
     margin: 10,
+    backgroundColor: 'rgb(255, 251, 255)',
   },
 });
