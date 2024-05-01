@@ -20,16 +20,16 @@ interface DeviceCardProps {
 export default function DeviceCard({deviceId}: DeviceCardProps) {
   const notify = useNotify();
 
-  const bleConnection = useStore(
-    state => state.wiRocDevices[deviceId].bleConnection,
-  );
+  const device = useStore(state => state.wiRocDevices[deviceId]);
   const connectDevice = useStore(state => state.connectBleDevice);
   const disconnectDevice = useStore(state => state.disconnectBleDevice);
   const navigation = useNavigation();
 
-  if (!bleConnection) {
+  if (!device || !device.bleConnection) {
     return null;
   }
+
+  const {name, bleConnection} = device;
 
   return (
     <Card
@@ -38,7 +38,7 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
         opacity: bleConnection.rssi === null ? 0.5 : 1,
       }}>
       <Card.Content>
-        <Title>{bleConnection.name ?? deviceId}</Title>
+        <Title>{name ?? deviceId}</Title>
         <Paragraph>{deviceId}</Paragraph>
         {bleConnection.rssi === null ? (
           <Paragraph>Previously seen device</Paragraph>
