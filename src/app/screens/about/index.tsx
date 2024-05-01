@@ -1,17 +1,16 @@
 import React from 'react';
-import {SafeAreaView, ScrollView, StyleSheet, Text, View} from 'react-native';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+import {ScrollView, StyleSheet, Text, View} from 'react-native';
 
 export default function AboutScreen() {
   return (
-    <SafeAreaView style={Colors.lighter}>
+    <View style={styles.container}>
       <ScrollView>
         <View style={styles.containerColumn}>
           <Text style={{fontSize: 30, fontWeight: 'bold', paddingTop: 14}}>
             WiRoc Config
           </Text>
           <Text style={{fontSize: 20, fontWeight: 'bold', paddingTop: 14}}>
-            Version 15
+            Version 16
           </Text>
         </View>
         <View style={styles.containerColumn}>
@@ -21,7 +20,7 @@ export default function AboutScreen() {
           </Text>
         </View>
       </ScrollView>
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -29,12 +28,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     flexDirection: 'row',
-    alignItems: 'center',
+
     paddingLeft: 18,
     paddingTop: 1,
     paddingRight: 10,
     paddingBottom: 1,
-    backgroundColor: 'lightgray',
+    backgroundColor: 'rgb(255, 251, 255)',
   },
   containerColumn: {
     flex: 1,
@@ -43,8 +42,6 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingRight: 10,
     paddingBottom: 10,
-    backgroundColor: 'lightgray',
-
     alignItems: 'center',
   },
 });

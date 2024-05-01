@@ -78,8 +78,8 @@ android {
         applicationId "com.wirocconfigrn"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 15
-        versionName "v15"
+        versionCode 16
+        versionName "v16"
     }
     signingConfigs {
         release {
@@ -103,7 +103,7 @@ android {
             // see https://reactnative.dev/docs/signed-apk-android.
             signingConfig signingConfigs.release
             minifyEnabled enableProguardInReleaseBuilds
-            shrinkResources true
+            shrinkResources false
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
         }
         debug {
