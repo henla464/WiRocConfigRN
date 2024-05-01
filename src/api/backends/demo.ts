@@ -120,7 +120,7 @@ class DemoDevice {
       return 'OK';
     }
 
-    if (propertyName === 'settings') {
+    if (propertyName === 'setting') {
       const updated = [
         ...JSON.parse(this.demoData.settings!).settings,
         {

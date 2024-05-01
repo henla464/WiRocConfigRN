@@ -21,9 +21,9 @@ export default function Settings() {
   const [currentValue, setCurrentValue] = useState<string>('');
   const [newSetting, setNewSetting] = useState<boolean>(false);
 
-  const {mutate: updateSettings} = useWiRocPropertyMutation(
+  const {mutate: updateSetting} = useWiRocPropertyMutation(
     deviceId,
-    'settings',
+    'setting',
     {
       onError: () => {
         notify({type: 'error', message: 'Kunde inte uppdatera'});
@@ -58,7 +58,7 @@ export default function Settings() {
     keyName: string,
     keyValue: string,
   ): Promise<void> => {
-    updateSettings({Key: keyName, Value: keyValue});
+    updateSetting({Key: keyName, Value: keyValue});
     setShowModal(false);
   };
 

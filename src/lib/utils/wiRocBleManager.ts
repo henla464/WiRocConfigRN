@@ -348,7 +348,7 @@ export const createWiRocBleManager = () => {
     key: SettablePropName,
     value: string,
   ) => {
-    log.debug('writeProperty', deviceId, key, value);
+    log.debug('writeProperty', deviceId, key, value.replace(/\t/g, '\\t'));
     return sendData(deviceId, propertyCharacteristic, `${key}\t${value}`);
   };
 
@@ -528,7 +528,13 @@ const parseWiRocBleProps = (
 
   const out: Partial<Record<GettablePropName, string>> = {};
   for (const propertyResponse of propertyResponses) {
-    const [propName, propValue] = propertyResponse.split('\t');
+    const firstTab = propertyResponse.indexOf('\t');
+    if (firstTab === -1) {
+      log.warn(`Invalid BLE property format: ${propertyResponse}`);
+      continue;
+    }
+    const propName = propertyResponse.slice(0, firstTab);
+    const propValue = propertyResponse.slice(firstTab + 1);
 
     if (propName === 'all') {
       return allPropertiesToObject(propValue);

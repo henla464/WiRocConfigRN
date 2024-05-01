@@ -133,12 +133,28 @@ export const updateQueryDataForDevice = (
       )}`,
     );
     if (propertyName === 'settings') {
-      log.debug('[${deviceId}] Merging settings');
-      log.debug('[${deviceId}] Current:', type, current, current?.settings);
+      const newSetting = value as {Key: string; value: string};
+
+      log.debug(`[${deviceId}] Merging settings`);
+      log.debug(`[${deviceId}] Current:`, type, current, current?.settings);
+      const updatedSettings: {Key: string; Value: string}[] = (
+        current?.settings ?? []
+      ).map((setting: {Key: string; Value: string}) => {
+        if (setting?.Key === newSetting?.Key) {
+          return newSetting;
+        }
+        return setting;
+      });
+
+      if (!updatedSettings.some(setting => setting?.Key === newSetting?.Key)) {
+        updatedSettings.push(newSetting);
+      }
+
       const updatedValue = {
-        settings: [...(current?.settings ?? []), value],
+        settings: updatedSettings,
       };
-      log.debug('[${deviceId}] Updated:', type, updatedValue);
+
+      log.debug(`[${deviceId}] Updated:`, type, updatedValue);
       return updatedValue;
     }
     return value;

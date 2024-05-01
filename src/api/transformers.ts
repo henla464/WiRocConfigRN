@@ -144,7 +144,7 @@ export const setters = {
   'rtc/wakeupenabled': booleanSetter(),
   'rtc/clearwakeup': voidSetter(),
 
-  settings: settingsSetter(),
+  setting: settingSetter(),
 };
 
 function bindRfCommSetter(): Setter<
@@ -266,7 +266,7 @@ function jsonGetter<T>(): Getter<T> {
   };
 }
 
-function settingsSetter(): Setter<Setting, Setting> {
+function settingSetter(): Setter<Setting, Setting> {
   return {
     serialize: value => [value.Key, value.Value],
     deserializeResponse: (value: string) => {
