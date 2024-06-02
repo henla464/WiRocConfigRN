@@ -3,6 +3,8 @@ import {
   BleErrorCode,
   BleManager,
   Device,
+  ScanMode,
+  ScanOptions,
   Subscription,
 } from 'react-native-ble-plx';
 
@@ -53,6 +55,10 @@ type TestPunchSentCallback = (
   },
 ) => void;
 
+let scanOption: ScanOptions = {
+  scanMode: ScanMode.LowPower,
+};
+
 export const createWiRocBleManager = () => {
   const onDeviceConnectedSubscribers = new Set<(device: Device) => void>();
   const onDeviceDisconnectedSubscribers = new Set<
@@ -68,14 +74,18 @@ export const createWiRocBleManager = () => {
   const isDisconnecting: Record<string, boolean> = {};
 
   const startDeviceScan = (callback: (device: Device) => void) => {
-    bleManager.startDeviceScan([apiService], null, async (error, device) => {
-      if (error) {
-        throw error;
-      }
-      if (device) {
-        callback(device);
-      }
-    });
+    bleManager.startDeviceScan(
+      [apiService],
+      scanOption,
+      async (error, device) => {
+        if (error) {
+          throw error;
+        }
+        if (device) {
+          callback(device);
+        }
+      },
+    );
   };
 
   const stopDeviceScan = () => {
