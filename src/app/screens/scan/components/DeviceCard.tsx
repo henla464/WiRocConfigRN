@@ -12,6 +12,7 @@ import {
 
 import {useNotify} from '@lib/hooks/useNotify';
 import {useStore} from '@store';
+import {WiRocDevice} from '@store/slices/wiRocDevicesSlice';
 
 interface DeviceCardProps {
   deviceId: string;
@@ -35,16 +36,16 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
     <Card
       style={{
         ...styles.card,
-        opacity: bleConnection.rssi === null ? 0.5 : 1,
+        opacity: getRssiValue(device) === 0 ? 0.5 : 1,
       }}>
       <Card.Content>
         <Title>{name ?? deviceId}</Title>
         <Paragraph>{deviceId}</Paragraph>
-        {bleConnection.rssi === null ? (
+        {getRssiValue(device) === 0 ? (
           <Paragraph>Previously seen device</Paragraph>
         ) : (
           <ProgressBar
-            progress={getRssiWidth(bleConnection.rssi ?? 0)}
+            progress={getRssiWidth(getRssiValue(device))}
             style={styles.progressBar}
             color={MD3Colors.primary30}
           />
@@ -96,6 +97,13 @@ const styles = StyleSheet.create({
     padding: 0,
   },
 });
+
+function getRssiValue(device: WiRocDevice) {
+  if ((Date.now() - device.lastSeen) / 1000 > 10) {
+    return 0;
+  }
+  return device.bleConnection?.rssi ?? 0;
+}
 
 function getRssiWidth(rssi: number) {
   let rssiWidth: number = 100; // Used when RSSI is zero or greater.

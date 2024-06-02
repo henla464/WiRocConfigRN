@@ -22,6 +22,9 @@ export interface WiRocDevicesSliceState {
 export interface WiRocDevice {
   name: string | null;
 
+  /** Last time this device was updated, ie. seen by the app. In milliseconds since epoch. */
+  lastSeen: number;
+
   /**
    * Information about the BLE connection, if any, to the device.
    */

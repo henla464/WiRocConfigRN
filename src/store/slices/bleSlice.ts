@@ -91,6 +91,7 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
           get().addWiRocDevice(device.id, {
             apiBackend: 'ble',
             name: device.name,
+            lastSeen: Date.now(),
             bleConnection: {
               deviceId: device.id,
               name: device.name,
@@ -113,7 +114,7 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
         set(state => {
           state.isScanning = false;
         });
-      }, 10e3);
+      }, 20e3);
     },
     async connectBleDevice(deviceId) {
       log.info('Connecting to', deviceId);
