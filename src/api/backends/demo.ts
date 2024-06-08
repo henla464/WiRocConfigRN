@@ -298,9 +298,10 @@ class DemoDevice {
           Status: 'Not Added',
           SINo: parseInt(options.siCardNo, 10),
           NoOfSendTries: 0,
-          SubscrId: 0,
+          Type: 'TestPunch',
           RSSI: 0,
           Time: new Date().toISOString(),
+          TypeName: 'LORA',
         };
 
         sentPunches = produce(sentPunches, draft => {

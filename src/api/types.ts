@@ -30,11 +30,12 @@ export interface TestPunch {
   Id: number;
   MsgId: number;
   Status: string;
+  Type: string;
   SINo: number;
   NoOfSendTries: number;
-  SubscrId: number;
   RSSI: number;
   Time: string;
+  TypeName: string;
 }
 
 export type PropertiesChangedCallback = (

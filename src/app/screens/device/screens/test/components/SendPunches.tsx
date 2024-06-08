@@ -65,16 +65,21 @@ export default function SendPunches() {
     let ackReq = true; // todo: use real value?
     let completedPunches = punches.filter(punch => {
       return (
-        (punch.Status === 'Acked' && ackReq) ||
-        (punch.Status === 'Not acked' && !ackReq) ||
-        (punch.NoOfSendTries > 1 &&
-          (punch.Status === 'Not sent' || punch.Status === 'Not acked'))
+        punch.Type === 'TestPunch' &&
+        punch.TypeName === 'LORA' &&
+        ((punch.Status === 'Acked' && ackReq) ||
+          (punch.Status === 'Not acked' && !ackReq) ||
+          (punch.NoOfSendTries > 1 &&
+            (punch.Status === 'Not sent' || punch.Status === 'Not acked')))
       );
     });
 
+    let testPunches = punches.filter(punch => {
+      return punch.Type === 'TestPunch';
+    });
     let noOfCompletedRows = completedPunches.length;
     if (
-      punches.length === numberOfPunches &&
+      testPunches.length === numberOfPunches &&
       numberOfPunches === noOfCompletedRows
     ) {
       // all received, stop listening
@@ -112,7 +117,7 @@ export default function SendPunches() {
     switch (status) {
       case 'Acked':
         return 'Bekr.';
-      case 'Not Acked':
+      case 'Not acked':
         return 'Ej bekr.';
       case 'Sent':
         return 'Skickad';
@@ -235,11 +240,18 @@ export default function SendPunches() {
             <View>
               {punches.map(punch => (
                 <DataTable.Row key={punch.Id} style={styles.row}>
-                  <DataTable.Cell textStyle={{fontSize: 22}} style={{flex: 14}}>
+                  <DataTable.Cell
+                    textStyle={{fontSize: 22}}
+                    style={[
+                      {flex: 14},
+                      punch.Type === 'Punch'
+                        ? styles.punchBackgroundColor
+                        : styles.testPunchBackgroundColor,
+                    ]}>
                     {punch.SINo}
                   </DataTable.Cell>
                   <DataTable.Cell
-                    textStyle={{fontSize: 22}}
+                    textStyle={{fontSize: 20}}
                     style={(styles.centered, {flex: 12})}>
                     {punch.Time}
                   </DataTable.Cell>
@@ -261,7 +273,7 @@ export default function SendPunches() {
                     {punch.NoOfSendTries}
                   </DataTable.Cell>
                   <DataTable.Cell
-                    textStyle={{fontSize: 22}}
+                    textStyle={{fontSize: 20}}
                     style={[
                       punch.Status === 'Acked'
                         ? styles.success
@@ -285,6 +297,9 @@ export default function SendPunches() {
                   {Math.round(
                     (100 * punches.filter(p => p.Status === 'Acked').length) /
                       punches
+                        .filter(punch => {
+                          return punch.Status !== 'Punch';
+                        })
                         .map(p => p.NoOfSendTries)
                         .reduce((a, b) => a + b, 0),
                   )}
@@ -295,7 +310,9 @@ export default function SendPunches() {
                   style={{flex: 10, justifyContent: 'center'}}>
                   {Math.round(
                     (100 * punches.filter(p => p.Status === 'Acked').length) /
-                      punches.length,
+                      punches.filter(punch => {
+                        return punch.Status !== 'Punch';
+                      }).length,
                   )}
                   {'%'}
                 </DataTable.Cell>
@@ -355,4 +372,8 @@ const styles = StyleSheet.create({
   button: {
     padding: 10,
   },
+  punchBackgroundColor: {
+    backgroundColor: 'lightsteelblue',
+  },
+  testPunchBackgroundColor: {},
 });

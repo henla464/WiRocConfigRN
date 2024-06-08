@@ -48,9 +48,10 @@ type TestPunchSentCallback = (
       Status: string;
       SINo: number;
       NoOfSendTries: number;
-      SubscrId: number;
+      Type: string;
       RSSI: number;
       Time: string;
+      TypeName: string;
     }>;
   },
 ) => void;
