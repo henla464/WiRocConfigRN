@@ -1,6 +1,6 @@
 import {CommonActions, useNavigation} from '@react-navigation/native';
 import React from 'react';
-import {StyleSheet} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {
   Button,
   Card,
@@ -38,47 +38,63 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
         ...styles.card,
         opacity: getRssiValue(device) === 0 ? 0.5 : 1,
       }}>
-      <Card.Content>
-        <Title>{name ?? deviceId}</Title>
-        <Paragraph>{deviceId}</Paragraph>
-        {getRssiValue(device) === 0 ? (
-          <Paragraph>Previously seen device</Paragraph>
-        ) : (
-          <ProgressBar
-            progress={getRssiWidth(getRssiValue(device))}
-            style={styles.progressBar}
-            color={MD3Colors.primary30}
-          />
-        )}
-      </Card.Content>
-      <Card.Actions>
-        <Button
-          loading={bleConnection.status === 'connecting'}
-          onPress={async () => {
-            if (bleConnection.status === 'connected') {
-              disconnectDevice(deviceId);
-            } else {
-              try {
-                await connectDevice(deviceId);
-                navigation.dispatch(
-                  CommonActions.reset({
-                    index: 0,
-                    routes: [{name: 'Device', params: {deviceId}}],
-                  }),
-                );
-              } catch (err) {
-                notify({
-                  type: 'error',
-                  message: `Kunde inte ansluta till enheten: ${
-                    err instanceof Error ? err.message : 'Okänt fel'
-                  }`,
-                });
-              }
-            }
+      <Card.Content
+        style={{
+          flexDirection: 'row',
+          marginRight: 0,
+          paddingRight: 6,
+          paddingTop: 6,
+          paddingBottom: 6,
+        }}>
+        <View
+          style={{
+            flex: 2,
+            paddingRight: 10,
+            paddingBottom: 8,
+            paddingTop: 0,
           }}>
-          {bleConnection.status === 'connected' ? 'Koppla från' : 'Anslut'}
-        </Button>
-      </Card.Actions>
+          <Title>{name ?? deviceId}</Title>
+          <Paragraph>{deviceId}</Paragraph>
+          {getRssiValue(device) === 0 ? (
+            <Paragraph>Previously seen device</Paragraph>
+          ) : (
+            <ProgressBar
+              progress={getRssiWidth(getRssiValue(device))}
+              style={styles.progressBar}
+              color={MD3Colors.primary30}
+            />
+          )}
+        </View>
+        <View style={{justifyContent: 'center', paddingRight: 0, width: 130}}>
+          <Button
+            mode="outlined"
+            loading={bleConnection.status === 'connecting'}
+            onPress={async () => {
+              if (bleConnection.status === 'connected') {
+                disconnectDevice(deviceId);
+              } else {
+                try {
+                  await connectDevice(deviceId);
+                  navigation.dispatch(
+                    CommonActions.reset({
+                      index: 0,
+                      routes: [{name: 'Device', params: {deviceId}}],
+                    }),
+                  );
+                } catch (err) {
+                  notify({
+                    type: 'error',
+                    message: `Kunde inte ansluta till enheten: ${
+                      err instanceof Error ? err.message : 'Okänt fel'
+                    }`,
+                  });
+                }
+              }
+            }}>
+            {bleConnection.status === 'connected' ? 'Koppla från' : 'Anslut'}
+          </Button>
+        </View>
+      </Card.Content>
     </Card>
   );
 }
