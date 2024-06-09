@@ -1,5 +1,5 @@
 import {CommonActions, useNavigation} from '@react-navigation/native';
-import React from 'react';
+import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {
   Button,
@@ -10,6 +10,7 @@ import {
   Title,
 } from 'react-native-paper';
 
+import useInterval from '@lib/hooks/useInterval';
 import {useNotify} from '@lib/hooks/useNotify';
 import {useStore} from '@store';
 import {WiRocDevice} from '@store/slices/wiRocDevicesSlice';
@@ -18,6 +19,8 @@ interface DeviceCardProps {
   deviceId: string;
 }
 
+const RECENTLY_SEEN_TIMEOUT = 10e3;
+
 export default function DeviceCard({deviceId}: DeviceCardProps) {
   const notify = useNotify();
 
@@ -25,6 +28,11 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
   const connectDevice = useStore(state => state.connectBleDevice);
   const disconnectDevice = useStore(state => state.disconnectBleDevice);
   const navigation = useNavigation();
+  const [now, setNow] = useState(() => Date.now());
+
+  useInterval(() => {
+    setNow(Date.now());
+  }, 2000);
 
   if (!device || !device.bleConnection) {
     return null;
@@ -32,11 +40,13 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
 
   const {name, bleConnection} = device;
 
+  const rssiValue = getRssiValue(device, now);
+
   return (
     <Card
       style={{
         ...styles.card,
-        opacity: getRssiValue(device) === 0 ? 0.5 : 1,
+        opacity: rssiValue === 0 ? 0.5 : 1,
       }}>
       <Card.Content
         style={{
@@ -55,15 +65,20 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
           }}>
           <Title>{name ?? deviceId}</Title>
           <Paragraph>{deviceId}</Paragraph>
-          {getRssiValue(device) === 0 ? (
-            <Paragraph>Previously seen device</Paragraph>
-          ) : (
-            <ProgressBar
-              progress={getRssiWidth(getRssiValue(device))}
-              style={styles.progressBar}
-              color={MD3Colors.primary30}
-            />
-          )}
+          <View
+            style={{
+              height: 27,
+            }}>
+            {rssiValue === 0 ? (
+              <Paragraph>Tidigare sedd enhet</Paragraph>
+            ) : (
+              <ProgressBar
+                progress={getRssiWidth(rssiValue)}
+                style={styles.progressBar}
+                color={MD3Colors.primary30}
+              />
+            )}
+          </View>
         </View>
         <View style={{justifyContent: 'center', paddingRight: 0, width: 130}}>
           <Button
@@ -114,10 +129,11 @@ const styles = StyleSheet.create({
   },
 });
 
-function getRssiValue(device: WiRocDevice) {
-  if ((Date.now() - device.lastSeen) / 1000 > 10) {
+function getRssiValue(device: WiRocDevice, now: number) {
+  if (now - device.lastSeen > RECENTLY_SEEN_TIMEOUT) {
     return 0;
   }
+
   return device.bleConnection?.rssi ?? 0;
 }
 

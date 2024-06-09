@@ -82,6 +82,9 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
               state =>
                 (state.status = isConnected ? 'connected' : 'disconnected'),
             );
+            set(state => {
+              state.wiRocDevices[device.id].lastSeen = Date.now();
+            });
             return;
           }
 
