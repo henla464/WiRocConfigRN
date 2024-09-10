@@ -9,6 +9,7 @@ import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
 
 import Database from './components/Database';
+import HAM from './components/HAM';
 import Settings from './components/Settings';
 import Status from './components/Status';
 import Update from './components/Update';
@@ -41,6 +42,7 @@ export default function OtherScreen() {
         {hasRTC ? <Tab.Screen name="Väckning" component={WakeUp} /> : null}
         <Tab.Screen name="Status" component={Status} />
         <Tab.Screen name="Inställningar" component={Settings} />
+        <Tab.Screen name="Amatörradio" component={HAM} />
         <Tab.Screen name="Uppdatera" component={Update} />
       </Tab.Navigator>
     </>

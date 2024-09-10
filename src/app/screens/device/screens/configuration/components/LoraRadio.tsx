@@ -1,5 +1,5 @@
 import React from 'react';
-import {Alert, StyleSheet, Switch, Text, View} from 'react-native';
+import {StyleSheet, Switch, Text, View} from 'react-native';
 import {SelectList} from 'react-native-dropdown-select-list';
 import {
   Checkbox,
@@ -79,6 +79,11 @@ export default function LoraRadio({
     {key: '4', value: '4', disabled: !isLoraRadioEnabled},
     {key: '5', value: '5', disabled: !isLoraRadioEnabled},
     {key: '6', value: '6', disabled: !isLoraRadioEnabled},
+    {key: 'HAM1', value: 'HAM1', disabled: !isLoraRadioEnabled},
+    {key: 'HAM2', value: 'HAM2', disabled: !isLoraRadioEnabled},
+    {key: 'HAM3', value: 'HAM3', disabled: !isLoraRadioEnabled},
+    {key: 'HAM4', value: 'HAM4', disabled: !isLoraRadioEnabled},
+    {key: 'HAM5', value: 'HAM5', disabled: !isLoraRadioEnabled},
   ];
 
   const codeRateList = [
@@ -241,7 +246,7 @@ export default function LoraRadio({
           </Text>
           <SelectList
             setSelected={(val: string) => {
-              setChannel(parseInt(val, 10));
+              setChannel(val);
             }}
             data={channelList}
             save="key"
@@ -250,7 +255,7 @@ export default function LoraRadio({
             disabledItemStyles={{backgroundColor: 'gray'}}
             disabledTextStyles={{fontSize: 30}}
             dropdownTextStyles={{fontSize: 30}}
-            dropdownStyles={{backgroundColor: 'gray'}}
+            dropdownStyles={{backgroundColor: 'rgb(255, 251, 255)'}}
             inputStyles={{
               fontSize: 60,
               fontWeight: '900',
@@ -258,10 +263,17 @@ export default function LoraRadio({
                 ? 'rgb(100,100,100)'
                 : 'rgb(155,155,155)',
             }}
-            boxStyles={{
-              width: 120,
-              alignItems: 'center',
-            }}
+            boxStyles={
+              channel?.length > 1
+                ? {
+                    width: 240,
+                    alignItems: 'center',
+                  }
+                : {
+                    width: 120,
+                    alignItems: 'center',
+                  }
+            }
             arrowicon={
               <Icon
                 source="chevron-down"

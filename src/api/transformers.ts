@@ -53,7 +53,7 @@ export const getters = {
   sendtosirapenabled: booleanGetter(4),
   acknowledgementrequested: booleanGetter(5),
   datarate: numberGetter(6),
-  channel: numberGetter(7),
+  channel: stringGetter(7),
   batterylevel: numberGetter(8),
   ipaddress: stringGetter(9),
   power: numberGetter(10),
@@ -93,6 +93,9 @@ export const getters = {
   'rtc/datetime': stringGetter(),
   'rtc/wakeup': stringGetter(),
   'rtc/wakeupenabled': booleanGetter(),
+
+  'ham/enabled': booleanGetter(26),
+  'ham/callsign': stringGetter(),
 };
 
 export const setters = {
@@ -102,7 +105,7 @@ export const setters = {
   sendtosirapenabled: booleanSetter(),
   acknowledgementrequested: booleanSetter(),
   datarate: numberSetter(),
-  channel: numberSetter(),
+  channel: stringSetter(),
   ipaddress: stringSetter(),
   power: numberSetter(),
   lorarange: unionSetter<LoraRange>(),
@@ -143,6 +146,9 @@ export const setters = {
   'rtc/wakeup': stringSetter(),
   'rtc/wakeupenabled': booleanSetter(),
   'rtc/clearwakeup': voidSetter(),
+
+  'ham/enabled': booleanSetter(),
+  'ham/callsign': stringSetter(),
 
   setting: settingSetter(),
 };

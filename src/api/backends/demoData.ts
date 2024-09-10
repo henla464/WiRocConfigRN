@@ -393,4 +393,6 @@ export const demoData: Readonly<Partial<Record<GettablePropName, string>>> = {
   power: '22',
   coderate: '0',
   'lora/enabled': '1',
+  'ham/enabled': '0',
+  'ham/callsign': '',
 };

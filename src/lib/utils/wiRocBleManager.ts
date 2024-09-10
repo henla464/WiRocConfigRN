@@ -530,6 +530,7 @@ const allPropertiesOrder: GettablePropName[] = [
   'forcers2324800baudrate',
   'btserialonewayreceive',
   'forcebtserial4800baudrate',
+  'ham/enabled',
 ];
 
 const parseWiRocBleProps = (
