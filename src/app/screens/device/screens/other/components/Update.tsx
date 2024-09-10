@@ -145,7 +145,7 @@ export default function Update() {
       onError: () => {
         notify({
           type: 'error',
-          message: 'Kunde inte uppdatera WiRoc BLE API version',
+          message: 'Kunde inte uppdatera WiRoc version',
         });
       },
     },
