@@ -32,6 +32,13 @@ export default function HAM() {
   });
 
   //const {data: isHamEnabled} = useWiRocPropertyQuery(deviceId, 'ham/enabled');
+  const [
+    {
+      field: {value: channel, onChange: setChannel},
+    },
+  ] = useConfigurationProperty(deviceId, 'channel', onDefaultValuesChange, {
+    control: form.control,
+  });
 
   const [
     {
@@ -51,6 +58,12 @@ export default function HAM() {
     onDefaultValuesChange,
     {
       control: form.control,
+      rules: {
+        required: {
+          value: isHamEnabled,
+          message: 'Anropssignal krävs när amatörradiokanalerna är aktiverade',
+        },
+      },
     },
   );
 
@@ -96,6 +109,9 @@ export default function HAM() {
             label="Amatörradio"
             position="leading"
             onPress={() => {
+              if (isHamEnabled && channel.startsWith('HAM')) {
+                setChannel('1');
+              }
               setHamEnabled(!isHamEnabled);
             }}
           />

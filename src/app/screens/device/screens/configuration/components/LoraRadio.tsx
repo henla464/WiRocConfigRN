@@ -72,6 +72,12 @@ export default function LoraRadio({
     onDefaultValuesChange,
   );
 
+  const [
+    {
+      field: {value: isHamEnabled},
+    },
+  ] = useConfigurationProperty(deviceId, 'ham/enabled', onDefaultValuesChange);
+
   const channelList = [
     {key: '1', value: '1', disabled: !isLoraRadioEnabled},
     {key: '2', value: '2', disabled: !isLoraRadioEnabled},
@@ -79,11 +85,31 @@ export default function LoraRadio({
     {key: '4', value: '4', disabled: !isLoraRadioEnabled},
     {key: '5', value: '5', disabled: !isLoraRadioEnabled},
     {key: '6', value: '6', disabled: !isLoraRadioEnabled},
-    {key: 'HAM1', value: 'HAM1', disabled: !isLoraRadioEnabled},
-    {key: 'HAM2', value: 'HAM2', disabled: !isLoraRadioEnabled},
-    {key: 'HAM3', value: 'HAM3', disabled: !isLoraRadioEnabled},
-    {key: 'HAM4', value: 'HAM4', disabled: !isLoraRadioEnabled},
-    {key: 'HAM5', value: 'HAM5', disabled: !isLoraRadioEnabled},
+    {
+      key: 'HAM1',
+      value: 'HAM1',
+      disabled: !isLoraRadioEnabled || !isHamEnabled,
+    },
+    {
+      key: 'HAM2',
+      value: 'HAM2',
+      disabled: !isLoraRadioEnabled || !isHamEnabled,
+    },
+    {
+      key: 'HAM3',
+      value: 'HAM3',
+      disabled: !isLoraRadioEnabled || !isHamEnabled,
+    },
+    {
+      key: 'HAM4',
+      value: 'HAM4',
+      disabled: !isLoraRadioEnabled || !isHamEnabled,
+    },
+    {
+      key: 'HAM5',
+      value: 'HAM5',
+      disabled: !isLoraRadioEnabled || !isHamEnabled,
+    },
   ];
 
   const codeRateList = [
