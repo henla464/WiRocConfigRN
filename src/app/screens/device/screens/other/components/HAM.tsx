@@ -31,7 +31,6 @@ export default function HAM() {
     mode: 'onChange',
   });
 
-  //const {data: isHamEnabled} = useWiRocPropertyQuery(deviceId, 'ham/enabled');
   const [
     {
       field: {value: channel, onChange: setChannel},

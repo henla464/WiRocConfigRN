@@ -1,6 +1,6 @@
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import React, {useEffect, useRef, useState} from 'react';
-import {ScrollView, StyleSheet, Text, View} from 'react-native';
+import {ScrollView, StyleSheet, View} from 'react-native';
 import {SelectList} from 'react-native-dropdown-select-list';
 import {Button, DataTable, Divider, Icon, TextInput} from 'react-native-paper';
 
@@ -8,6 +8,7 @@ import {TestPunch} from '@api/types';
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useNotify} from '@lib/hooks/useNotify';
 import {useWiRocDeviceApi} from '@lib/hooks/useWiRocDeviceApi';
+import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
 
 export default function SendPunches() {
   const deviceId = useActiveWiRocDevice();
@@ -61,8 +62,12 @@ export default function SendPunches() {
     {key: '15000', value: '15 s'},
   ];
 
+  const {data: ackReq} = useWiRocPropertyQuery(
+    deviceId,
+    'acknowledgementrequested',
+  );
+
   useEffect(() => {
-    let ackReq = true; // todo: use real value?
     let completedPunches = punches.filter(punch => {
       return (
         punch.Type === 'TestPunch' &&
@@ -86,7 +91,7 @@ export default function SendPunches() {
       wiRocDeviceApi.stopWatchingTestPunches();
       setIsSending(false);
     }
-  }, [punches, numberOfPunches, deviceId, wiRocDeviceApi]);
+  }, [punches, ackReq, numberOfPunches, deviceId, wiRocDeviceApi]);
 
   const startStopSendPunches = async () => {
     if (isSending) {
@@ -212,7 +217,7 @@ export default function SendPunches() {
         <DataTable style={styles.table}>
           <DataTable.Header style={styles.row}>
             <DataTable.Title textStyle={{fontSize: 20}} style={{flex: 14}}>
-              SI Nr
+              {ackReq ? 'ASI Nr' : 'NSI Nr'}
             </DataTable.Title>
             <DataTable.Title
               textStyle={{fontSize: 20}}
@@ -275,7 +280,9 @@ export default function SendPunches() {
                   <DataTable.Cell
                     textStyle={{fontSize: 20}}
                     style={[
-                      punch.Status === 'Acked'
+                      !ackReq
+                        ? null
+                        : punch.Status === 'Acked'
                         ? styles.success
                         : punch.Status === 'Not acked'
                         ? styles.failure
