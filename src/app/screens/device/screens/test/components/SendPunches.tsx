@@ -257,18 +257,31 @@ export default function SendPunches() {
                   </DataTable.Cell>
                   <DataTable.Cell
                     textStyle={{fontSize: 20}}
-                    style={(styles.centered, {flex: 12})}>
+                    style={[
+                      punch.Type === 'Punch'
+                        ? styles.punchBackgroundColor
+                        : styles.testPunchBackgroundColor,
+                      styles.centered,
+                      {flex: 12},
+                    ]}>
                     {punch.Time}
                   </DataTable.Cell>
                   <DataTable.Cell
                     textStyle={{fontSize: 22}}
-                    style={{flex: 6, justifyContent: 'center'}}>
+                    style={[
+                      {flex: 6, justifyContent: 'center'},
+                      punch.Type === 'Punch'
+                        ? styles.punchBackgroundColor
+                        : styles.testPunchBackgroundColor,
+                    ]}>
                     {punch.RSSI}
                   </DataTable.Cell>
                   <DataTable.Cell
                     textStyle={{fontSize: 22}}
                     style={[
-                      punch.NoOfSendTries > 1
+                      punch.Type === 'Punch'
+                        ? [styles.punchBackgroundColor, styles.centered]
+                        : punch.NoOfSendTries > 1
                         ? styles.failure
                         : punch.Status === 'Acked'
                         ? styles.success
@@ -280,7 +293,9 @@ export default function SendPunches() {
                   <DataTable.Cell
                     textStyle={{fontSize: 20}}
                     style={[
-                      !ackReq
+                      punch.Type === 'Punch'
+                        ? styles.punchBackgroundColor
+                        : !ackReq
                         ? null
                         : punch.Status === 'Acked'
                         ? styles.success
@@ -380,7 +395,7 @@ const styles = StyleSheet.create({
     padding: 10,
   },
   punchBackgroundColor: {
-    backgroundColor: 'lightsteelblue',
+    backgroundColor: 'lightgray',
   },
   testPunchBackgroundColor: {},
 });
