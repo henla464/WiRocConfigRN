@@ -11,11 +11,6 @@ import {
   useWiRocPropertyQuery,
 } from '@lib/hooks/useWiRocPropertyQuery';
 
-interface ISelectItem {
-  key: string;
-  value: string;
-}
-
 const configObj = require('../../../../../../../config/config.json');
 
 interface IReleaseItem {
@@ -59,7 +54,7 @@ export default function Update() {
     'wirocbleapiversion',
   );
 
-  const {data: wiRocPythonReleases} = useQuery({
+  const {data: wiRocPythonReleases = []} = useQuery<IReleaseItem[]>({
     enabled: HWVersion !== undefined && HWRevision !== undefined,
     queryKey: ['wiRocPythonReleases', HWVersion, HWRevision],
     queryFn: async () => {
@@ -82,7 +77,7 @@ export default function Update() {
     },
   });
 
-  const {data: wiRocBleReleases} = useQuery({
+  const {data: wiRocBleReleases = []} = useQuery<IReleaseItem[]>({
     enabled: HWVersion !== undefined && HWRevision !== undefined,
     queryKey: ['wiRocBleReleases', HWVersion, HWRevision],
     queryFn: async () => {
@@ -105,13 +100,15 @@ export default function Update() {
     },
   });
 
-  const wiRocVersionList: ISelectItem[] = wiRocPythonReleases?.map(rel => {
-    return {key: rel.releaseName, value: rel.releaseName};
-  });
+  const wiRocVersionList = wiRocPythonReleases.map(rel => ({
+    key: rel.releaseName,
+    value: rel.releaseName,
+  }));
 
-  const wiRocBLEAPIVersionList: ISelectItem[] = wiRocBleReleases?.map(rel => {
-    return {key: rel.releaseName, value: rel.releaseName};
-  });
+  const wiRocBLEAPIVersionList = wiRocBleReleases.map(rel => ({
+    key: rel.releaseName,
+    value: rel.releaseName,
+  }));
 
   const {mutate: updateBLEAPIVersion} = useWiRocPropertyMutation(
     deviceId,
