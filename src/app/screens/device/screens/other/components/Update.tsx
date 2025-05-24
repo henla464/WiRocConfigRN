@@ -151,6 +151,28 @@ export default function Update() {
     },
   );
 
+  const {mutate: setDateTime} = useWiRocPropertyMutation(
+    deviceId,
+    'rtc/datetime',
+  );
+
+  const SetWiRocDateAndTime = () => {
+    var options: Intl.DateTimeFormatOptions = {
+      localeMatcher: 'lookup',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      formatMatcher: 'best fit',
+      hour12: false,
+    };
+
+    let dateTimeString = new Date().toLocaleDateString('sv', options);
+    setDateTime(dateTimeString);
+  };
+
   // wiRocVersion
   return (
     <View style={styles.container}>
@@ -191,6 +213,7 @@ export default function Update() {
           mode="contained"
           onPress={() => {
             if (wiRocVersion) {
+              SetWiRocDateAndTime();
               updateWiRocVersion(wiRocVersion);
             }
           }}
@@ -236,6 +259,7 @@ export default function Update() {
           mode="contained"
           onPress={() => {
             if (wiRocBLEAPIVersion) {
+              SetWiRocDateAndTime();
               updateBLEAPIVersion(wiRocBLEAPIVersion);
             }
           }}

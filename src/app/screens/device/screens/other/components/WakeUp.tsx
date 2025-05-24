@@ -70,7 +70,7 @@ export default function WakeUp() {
     //dateTimeString = dateTimeString.replaceAll('T', ' ');
     //dateTimeString = dateTimeString.substring(0, 19);
     setPhoneDateTime(dateTimeString);
-  }, 10000);
+  }, 1000);
 
   const SaveWakeUp = (data: Partial<SettableValues>) => {
     if (data['rtc/wakeupenabled'] && data['rtc/wakeup']) {
@@ -104,6 +104,8 @@ export default function WakeUp() {
     let dateTimeString = new Date().toLocaleDateString('sv', options);
     setDateTime(dateTimeString);
   };
+
+  const {data: hasRTC} = useWiRocPropertyQuery(deviceId, 'hashw/rtc');
 
   return (
     <ScrollView contentContainerStyle={{flexGrow: 1}}>
@@ -148,69 +150,74 @@ export default function WakeUp() {
             Sätt WiRoc-enhetens datum & tid
           </Button>
         </View>
-
-        <View style={styles.containerRowCenter}>
-          <Text style={styles.header}>Väckningstid</Text>
-        </View>
-        <View style={[styles.containerRow, {paddingRight: 20}]}>
-          <Text style={styles.text}>
-            Aktivera väckning efter att enheten har stängts av:
-          </Text>
-          <IconButton
-            icon="information-outline"
-            selected
-            size={40}
-            onPress={() => {
-              setIsInformationModalVisible(true);
-            }}
-          />
-          <Controller
-            control={form.control}
-            name="rtc/wakeupenabled"
-            render={({field: {value, onChange}}) => (
-              <Switch
-                style={{marginRight: 40, flex: 0.5}}
-                value={value}
-                onValueChange={onChange}
+        {hasRTC && (
+          <View>
+            <View style={styles.containerRowCenter}>
+              <Text style={styles.header}>Väckningstid</Text>
+            </View>
+            <View style={[styles.containerRow, {paddingRight: 20}]}>
+              <Text style={styles.text}>
+                Aktivera väckning efter att enheten har stängts av:
+              </Text>
+              <IconButton
+                icon="information-outline"
+                selected
+                size={40}
+                onPress={() => {
+                  setIsInformationModalVisible(true);
+                }}
               />
-            )}
-          />
-        </View>
-        <View style={styles.containerRowCenter}>
-          <Controller
-            control={form.control}
-            name="rtc/wakeup"
-            render={({field: {value, onChange}}) => (
-              <>
-                <Button
-                  disabled={!form.watch('rtc/wakeupenabled')}
-                  icon=""
-                  mode="outlined"
-                  onPress={() => setIsTimePickerVisible(true)}
-                  style={styles.wakeUpButton}
-                  labelStyle={
-                    form.watch('rtc/wakeupenabled')
-                      ? styles.wakeUpButtonLabelStyle
-                      : styles.wakeUpButtonDisabledLabelStyle
-                  }
-                  contentStyle={styles.wakeUpButtonContent}>
-                  {value}
-                </Button>
-                <DateTimePickerModal
-                  isVisible={isTimePickerVisible}
-                  mode="time"
-                  onConfirm={date => {
-                    onChange(date.toLocaleTimeString('sv-SE').substring(0, 5));
-                    setIsTimePickerVisible(false);
-                  }}
-                  onCancel={() => {
-                    setIsTimePickerVisible(false);
-                  }}
-                />
-              </>
-            )}
-          />
-        </View>
+              <Controller
+                control={form.control}
+                name="rtc/wakeupenabled"
+                render={({field: {value, onChange}}) => (
+                  <Switch
+                    style={{marginRight: 40, flex: 0.5}}
+                    value={value}
+                    onValueChange={onChange}
+                  />
+                )}
+              />
+            </View>
+            <View style={styles.containerRowCenter}>
+              <Controller
+                control={form.control}
+                name="rtc/wakeup"
+                render={({field: {value, onChange}}) => (
+                  <>
+                    <Button
+                      disabled={!form.watch('rtc/wakeupenabled')}
+                      icon=""
+                      mode="outlined"
+                      onPress={() => setIsTimePickerVisible(true)}
+                      style={styles.wakeUpButton}
+                      labelStyle={
+                        form.watch('rtc/wakeupenabled')
+                          ? styles.wakeUpButtonLabelStyle
+                          : styles.wakeUpButtonDisabledLabelStyle
+                      }
+                      contentStyle={styles.wakeUpButtonContent}>
+                      {value}
+                    </Button>
+                    <DateTimePickerModal
+                      isVisible={isTimePickerVisible}
+                      mode="time"
+                      onConfirm={date => {
+                        onChange(
+                          date.toLocaleTimeString('sv-SE').substring(0, 5),
+                        );
+                        setIsTimePickerVisible(false);
+                      }}
+                      onCancel={() => {
+                        setIsTimePickerVisible(false);
+                      }}
+                    />
+                  </>
+                )}
+              />
+            </View>
+          </View>
+        )}
       </View>
     </ScrollView>
   );

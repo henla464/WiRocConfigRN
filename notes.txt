@@ -48,3 +48,11 @@ Då kommer de fil- och radnamn som visas i Console-tabben vara från "originalfi
 trots att själva console.log() anropas i log.ts-filen
 
 I react-native-debugger kan loggar filtreras på levels, regex m.m.
+
+
+================
+Generate release
+npx react-native build-android --mode=release
+
+app bundle skapas i:
+ /home/henla464/Documents/WiRoc/WiRocConfigRN/android/app/build/outputs/bundle/release
