@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import {Alert, Modal, StyleSheet, Text, View} from 'react-native';
-import {Button, TextInput} from 'react-native-paper';
+import {Alert, Modal, StyleSheet, View} from 'react-native';
+import {Button, TextInput, Text} from 'react-native-paper';
 
 interface ISettingsModalProps {
   modalVisible: boolean;

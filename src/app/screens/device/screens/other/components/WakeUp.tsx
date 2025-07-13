@@ -1,10 +1,10 @@
 import {useQueryClient} from '@tanstack/react-query';
 import React, {useEffect, useState} from 'react';
 import {Controller, useForm} from 'react-hook-form';
-import {StyleSheet, Switch, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import {Button, IconButton} from 'react-native-paper';
+import {Button, IconButton, Switch, Text} from 'react-native-paper';
 
 import {SettableValues} from '@api/transformers';
 import SaveBanner from '@lib/components/SaveBanner';

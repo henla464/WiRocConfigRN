@@ -1,5 +1,5 @@
 import React, {useRef, useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {
   Button,
   Checkbox,
@@ -7,6 +7,7 @@ import {
   Divider,
   Icon,
   List,
+  Text,
 } from 'react-native-paper';
 
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
@@ -172,8 +173,8 @@ export default function SerialBluetooth({
                     {item.Status === 'Connected'
                       ? 'Koppla ifrån'
                       : item.Status === 'NotConnected'
-                      ? 'Anslut'
-                      : 'ReadError'}
+                        ? 'Anslut'
+                        : 'ReadError'}
                   </Button>
                 </DataTable.Cell>
               </DataTable.Row>

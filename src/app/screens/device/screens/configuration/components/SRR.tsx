@@ -1,11 +1,13 @@
 import React from 'react';
-import {StyleSheet, Switch, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {
   Checkbox,
   Divider,
   Icon,
   List,
   SegmentedButtons,
+  Switch,
+  Text,
 } from 'react-native-paper';
 
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';

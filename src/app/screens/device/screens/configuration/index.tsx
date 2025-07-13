@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
-import {SafeAreaView, ScrollView, StyleSheet, Text, View} from 'react-native';
-import {Divider, List, MaterialBottomTabScreenProps} from 'react-native-paper';
+import {SafeAreaView, ScrollView, StyleSheet, View} from 'react-native';
+import {Divider, MaterialBottomTabScreenProps, Text} from 'react-native-paper';
 import {Colors} from 'react-native/Libraries/NewAppScreen';
 
 import {SettablePropName, SettableValues} from '@api/transformers';

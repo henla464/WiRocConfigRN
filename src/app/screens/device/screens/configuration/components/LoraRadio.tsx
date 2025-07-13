@@ -1,5 +1,5 @@
 import React from 'react';
-import {StyleSheet, Switch, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {SelectList} from 'react-native-dropdown-select-list';
 import {
   Checkbox,
@@ -8,6 +8,8 @@ import {
   List,
   RadioButton,
   SegmentedButtons,
+  Switch,
+  Text,
 } from 'react-native-paper';
 
 import {LoraMode, LoraRange} from '@api/index';

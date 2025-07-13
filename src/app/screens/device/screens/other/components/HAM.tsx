@@ -1,6 +1,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import {FormProvider, useForm} from 'react-hook-form';
-import {StyleSheet, Text, View} from 'react-native';
+import {useForm} from 'react-hook-form';
+import {StyleSheet, View} from 'react-native';
 import {Checkbox, TextInput} from 'react-native-paper';
 
 import {SettablePropName, SettableValues} from '@api/transformers';

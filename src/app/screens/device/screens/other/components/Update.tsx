@@ -1,8 +1,8 @@
 import {useQuery} from '@tanstack/react-query';
 import React, {useState} from 'react';
-import {StyleSheet, Text, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import {SelectList} from 'react-native-dropdown-select-list';
-import {Button, Icon} from 'react-native-paper';
+import {Button, Icon, Text} from 'react-native-paper';
 
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useNotify} from '@lib/hooks/useNotify';

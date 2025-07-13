@@ -1,7 +1,15 @@
 import React from 'react';
 import {useFormContext} from 'react-hook-form';
-import {StyleSheet, Switch, Text, View} from 'react-native';
-import {Divider, HelperText, Icon, List, TextInput} from 'react-native-paper';
+import {StyleSheet, View} from 'react-native';
+import {
+  Divider,
+  HelperText,
+  Icon,
+  List,
+  TextInput,
+  Switch,
+  Text,
+} from 'react-native-paper';
 
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 

@@ -1,6 +1,6 @@
 import React from 'react';
-import {Modal, StyleSheet, Text, View} from 'react-native';
-import {Button} from 'react-native-paper';
+import {Modal, StyleSheet, View} from 'react-native';
+import {Button, Text} from 'react-native-paper';
 
 interface IInformationModalProps {
   modalVisible: boolean;

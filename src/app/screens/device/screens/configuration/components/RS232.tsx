@@ -1,6 +1,13 @@
 import React from 'react';
-import {StyleSheet, Text, View} from 'react-native';
-import {Checkbox, Divider, Icon, List, RadioButton} from 'react-native-paper';
+import {StyleSheet, View} from 'react-native';
+import {
+  Checkbox,
+  Divider,
+  Icon,
+  List,
+  RadioButton,
+  Text,
+} from 'react-native-paper';
 
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 
