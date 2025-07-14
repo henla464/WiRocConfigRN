@@ -1,4 +1,27 @@
 {
-  "name": "WiRocConfigRN",
-  "displayName": "WiRocConfigRN"
+  "expo": {
+    "name": "WiRocConfigRN",
+    "slug": "WiRocConfigRN",
+    "version": "1.0.0",
+    "icon": "./images/icon-512x512.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./images/icon-512x512.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.wirocconfigrn"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./images/icon-512x512.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.wirocconfigrn"
+    },
+    "plugins": ["react-native-ble-plx"]
+  }
 }

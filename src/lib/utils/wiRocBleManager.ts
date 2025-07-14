@@ -60,7 +60,7 @@ let scanOption: ScanOptions = {
   scanMode: ScanMode.LowPower,
 };
 
-export const createWiRocBleManager = () => {
+const createWiRocBleManager = () => {
   const onDeviceConnectedSubscribers = new Set<(device: Device) => void>();
   const onDeviceDisconnectedSubscribers = new Set<
     (device: Device, wasExpected: boolean) => void
@@ -574,3 +574,5 @@ function allPropertiesToObject(allString: string) {
 
   return data;
 }
+
+export const wiRocBleManager = createWiRocBleManager();
