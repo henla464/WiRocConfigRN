@@ -1,18 +1,9 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
-import {SelectList} from 'react-native-dropdown-select-list';
-import {
-  Checkbox,
-  Divider,
-  Icon,
-  List,
-  RadioButton,
-  SegmentedButtons,
-  Switch,
-  Text,
-} from 'react-native-paper';
+import {Divider, Icon, List, Switch, Text} from 'react-native-paper';
 
 import {LoraMode, LoraRange} from '@api/index';
+import {ListItemMenu, ListItemMenuItem} from '@lib/components/ListItemMenu';
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 
 import {SectionComponentProps} from '../';
@@ -80,104 +71,78 @@ export default function LoraRadio({
     },
   ] = useConfigurationProperty(deviceId, 'ham/enabled', onDefaultValuesChange);
 
-  const channelList = [
-    {key: '1', value: '1', disabled: !isLoraRadioEnabled},
-    {key: '2', value: '2', disabled: !isLoraRadioEnabled},
-    {key: '3', value: '3', disabled: !isLoraRadioEnabled},
-    {key: '4', value: '4', disabled: !isLoraRadioEnabled},
-    {key: '5', value: '5', disabled: !isLoraRadioEnabled},
-    {key: '6', value: '6', disabled: !isLoraRadioEnabled},
-    {
-      key: 'HAM1',
-      value: 'HAM1',
-      disabled: !isLoraRadioEnabled || !isHamEnabled,
-    },
-    {
-      key: 'HAM2',
-      value: 'HAM2',
-      disabled: !isLoraRadioEnabled || !isHamEnabled,
-    },
-    {
-      key: 'HAM3',
-      value: 'HAM3',
-      disabled: !isLoraRadioEnabled || !isHamEnabled,
-    },
-    {
-      key: 'HAM4',
-      value: 'HAM4',
-      disabled: !isLoraRadioEnabled || !isHamEnabled,
-    },
-    {
-      key: 'HAM5',
-      value: 'HAM5',
-      disabled: !isLoraRadioEnabled || !isHamEnabled,
-    },
+  const modeOptions = [
+    {value: 'RECEIVER', label: 'Mottagare', icon: 'login'},
+    {value: 'SENDER', label: 'Sändare', icon: 'logout'},
+    {value: 'REPEATER', label: 'Repeterare', icon: 'pan-horizontal'},
   ];
+  const selectedModeOption = modeOptions.find(m => m.value === loraMode);
 
-  const codeRateList = [
-    {
-      key: '0',
-      value: '4/5 (1 ECC bit, 4 data bits)',
-      disabled: !isLoraRadioEnabled,
-    },
-    {
-      key: '1',
-      value: '4/6 (2 ECC bits, 4 data bits)',
-      disabled: !isLoraRadioEnabled,
-    },
-    {
-      key: '2',
-      value: '4/7 (3 ECC bits, 4 data bits)',
-      disabled: !isLoraRadioEnabled,
-    },
-    {
-      key: '3',
-      value: '4/8 (4 ECC bits, 4 data bits)',
-      disabled: !isLoraRadioEnabled,
-    },
+  const channelOptions = [
+    {value: '1', label: '1'},
+    {value: '2', label: '2'},
+    {value: '3', label: '3'},
+    {value: '4', label: '4'},
+    {value: '5', label: '5'},
+    {value: '6', label: '6'},
+    {value: 'HAM1', label: 'HAM1', disabled: !isHamEnabled},
+    {value: 'HAM2', label: 'HAM2', disabled: !isHamEnabled},
+    {value: 'HAM3', label: 'HAM3', disabled: !isHamEnabled},
+    {value: 'HAM4', label: 'HAM4', disabled: !isHamEnabled},
+    {value: 'HAM5', label: 'HAM5', disabled: !isHamEnabled},
   ];
+  const selectedChannelOption = channelOptions.find(c => c.value === channel);
 
-  const loraPowerList = [
-    {key: '1', value: '1 dBm', disabled: !isLoraRadioEnabled},
-    {key: '2', value: '2 dBm', disabled: !isLoraRadioEnabled},
-    {key: '3', value: '3 dbm', disabled: !isLoraRadioEnabled},
-    {key: '4', value: '4 dbm', disabled: !isLoraRadioEnabled},
-    {key: '5', value: '5 dbm', disabled: !isLoraRadioEnabled},
-    {key: '6', value: '6 dbm', disabled: !isLoraRadioEnabled},
-    {key: '7', value: '7 dbm', disabled: !isLoraRadioEnabled},
-    {key: '8', value: '8 dbm', disabled: !isLoraRadioEnabled},
-    {key: '9', value: '9 dbm', disabled: !isLoraRadioEnabled},
-    {key: '10', value: '10 dbm', disabled: !isLoraRadioEnabled},
-    {key: '11', value: '11 dbm', disabled: !isLoraRadioEnabled},
-    {key: '12', value: '12 dbm', disabled: !isLoraRadioEnabled},
-    {key: '13', value: '13 dbm', disabled: !isLoraRadioEnabled},
-    {key: '14', value: '14 dbm', disabled: !isLoraRadioEnabled},
-    {key: '15', value: '15 dbm', disabled: !isLoraRadioEnabled},
-    {
-      key: '16',
-      value: '16 dbm (max 11 element yagi)',
-      disabled: !isLoraRadioEnabled,
-    },
-    {key: '17', value: '17 dbm', disabled: !isLoraRadioEnabled},
-    {key: '18', value: '18 dbm', disabled: !isLoraRadioEnabled},
-    {
-      key: '19',
-      value: '19 dbm (max 7 element yagi)',
-      disabled: !isLoraRadioEnabled,
-    },
-    {key: '20', value: '20 dbm', disabled: !isLoraRadioEnabled},
-    {key: '21', value: '21 dbm', disabled: !isLoraRadioEnabled},
-    {
-      key: '22',
-      value: '22 dbm (max 4 element yagi)',
-      disabled: !isLoraRadioEnabled,
-    },
+  const codeRateOptions = [
+    {value: 0, label: '4/5 (1 ECC bit, 4 data bits)'},
+    {value: 1, label: '4/6 (2 ECC bits, 4 data bits)'},
+    {value: 2, label: '4/7 (3 ECC bits, 4 data bits)'},
+    {value: 3, label: '4/8 (4 ECC bits, 4 data bits)'},
   ];
+  const selectedCodeRateOption = codeRateOptions.find(
+    c => c.value === codeRate,
+  );
+
+  const rangeOptions = [
+    {label: 'Ultra Long 73 bps', value: 'UL'},
+    {label: 'eXtra Long 134 bps', value: 'XL'},
+    {label: 'Long 244 bps', value: 'L'},
+    {label: 'Medium Long 439 bps', value: 'ML'},
+    {label: 'Medium short 781 bps', value: 'MS'},
+    {label: 'Short 1367 bps', value: 'S'},
+  ];
+  const selectedRangeOption = rangeOptions.find(r => r.value === loraRange);
+
+  const powerOptions = [
+    {value: 1, label: '1 dBm'},
+    {value: 2, label: '2 dBm'},
+    {value: 3, label: '3 dbm'},
+    {value: 4, label: '4 dbm'},
+    {value: 5, label: '5 dbm'},
+    {value: 6, label: '6 dbm'},
+    {value: 7, label: '7 dbm'},
+    {value: 8, label: '8 dbm'},
+    {value: 9, label: '9 dbm'},
+    {value: 10, label: '10 dbm'},
+    {value: 11, label: '11 dbm'},
+    {value: 12, label: '12 dbm'},
+    {value: 13, label: '13 dbm'},
+    {value: 14, label: '14 dbm'},
+    {value: 15, label: '15 dbm'},
+    {value: 16, label: '16 dbm (max 11 element yagi)'},
+    {value: 17, label: '17 dbm'},
+    {value: 18, label: '18 dbm'},
+    {value: 19, label: '19 dbm (max 7 element yagi)'},
+    {value: 20, label: '20 dbm'},
+    {value: 21, label: '21 dbm'},
+    {value: 22, label: '22 dbm (max 4 element yagi)'},
+  ];
+  const selectedPowerOption = powerOptions.find(p => p.value === loraPower);
 
   return (
     <List.Accordion
       id="lora"
-      title="Lora Radio"
+      title="Lora-radio"
       expanded={expanded}
       onPress={handlePress}
       theme={{
@@ -193,13 +158,14 @@ export default function LoraRadio({
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
           <Text>
-            {loraMode
-              ? {
-                  RECEIVER: 'Mottagare',
-                  SENDER: 'Sändare',
-                  REPEATER: 'Repeater',
-                }[loraMode]
-              : ''}
+            {selectedModeOption &&
+            selectedChannelOption &&
+            selectedRangeOption ? (
+              <>
+                {selectedModeOption.label} ∙ {selectedChannelOption.label} ∙{' '}
+                {selectedRangeOption.value}
+              </>
+            ) : null}
           </Text>
           {typeof isLoraRadioEnabled === 'boolean' && (
             <OnOffChip on={isLoraRadioEnabled} />
@@ -214,275 +180,125 @@ export default function LoraRadio({
       <Divider bold={true} />
       <View style={styles.container}>
         <View style={styles.containerColumn}>
-          <View style={styles.switchContainer}>
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: 'bold',
-                alignItems: 'center',
-              }}>
-              Aktivera:{' '}
-            </Text>
-            <Switch
-              disabled={typeof isLoraRadioEnabled !== 'boolean'}
-              value={isLoraRadioEnabled}
-              onValueChange={val => {
-                setLoraRadioEnabled(val);
-              }}
-            />
-          </View>
-          <Text
+          <List.Item
+            title="Lora-radio"
+            description={isLoraRadioEnabled ? 'På' : 'Av'}
+            disabled={typeof isLoraRadioEnabled !== 'boolean'}
             style={{
-              fontSize: 20,
-              fontWeight: 'bold',
-              alignItems: 'center',
-              paddingBottom: 8,
-            }}>
-            Radio funktion
-          </Text>
-          {loraMode && (
-            <SegmentedButtons
-              value={loraMode}
-              onValueChange={value => {
-                setLoraMode(value as LoraMode);
-              }}
-              buttons={[
-                {
-                  icon: 'login',
-                  value: 'RECEIVER',
-                  label: 'Mottagare',
-                  disabled: !isLoraRadioEnabled,
-                },
-                {
-                  icon: 'pan-horizontal',
-                  value: 'REPEATER',
-                  label: 'Repeater',
-                  disabled: !isLoraRadioEnabled,
-                },
-                {
-                  icon: 'logout',
-                  value: 'SENDER',
-                  label: 'Sändare',
-                  disabled: !isLoraRadioEnabled,
-                },
-              ]}
-            />
-          )}
-
-          <Text style={{fontSize: 40, fontWeight: 'bold', paddingTop: 10}}>
-            Kanal
-          </Text>
-          <SelectList
-            setSelected={(val: string) => {
-              setChannel(val);
+              opacity:
+                typeof isLoraRadioEnabled === 'boolean' ? undefined : 0.5,
             }}
-            data={channelList}
-            save="key"
-            search={false}
-            placeholder={' '}
-            disabledItemStyles={{backgroundColor: 'gray'}}
-            disabledTextStyles={{fontSize: 30}}
-            dropdownTextStyles={{fontSize: 30}}
-            dropdownStyles={{backgroundColor: 'rgb(255, 251, 255)'}}
-            inputStyles={{
-              fontSize: 60,
-              fontWeight: '900',
-              color: isLoraRadioEnabled
-                ? 'rgb(100,100,100)'
-                : 'rgb(155,155,155)',
-            }}
-            boxStyles={
-              channel?.length > 1
-                ? {
-                    width: 240,
-                    alignItems: 'center',
-                  }
-                : {
-                    width: 120,
-                    alignItems: 'center',
-                  }
-            }
-            arrowicon={
-              <Icon
-                source="chevron-down"
-                size={35}
-                color={
-                  isLoraRadioEnabled ? 'rgb(100,100,100)' : 'rgb(155,155,155)'
-                }
+            left={props => <List.Icon {...props} icon="power" />}
+            right={props => (
+              <Switch
+                {...props}
+                value={isLoraRadioEnabled}
+                onValueChange={setLoraRadioEnabled}
               />
-            }
-            defaultOption={{key: channel, value: channel}}
+            )}
           />
-
-          <Text style={{fontSize: 30, fontWeight: 'bold', paddingTop: 14}}>
-            Räckvidd - datahastighet
-          </Text>
-          <RadioButton.Group
-            onValueChange={value => {
-              setLoraRange(value as LoraRange);
-            }}
-            value={loraRange ?? ''}>
-            <RadioButton.Item
-              label="Ultra Long 73 bps"
-              value="UL"
-              labelVariant="titleLarge"
-              disabled={!isLoraRadioEnabled}
-              style={{
-                flexDirection: 'row-reverse',
-                paddingBottom: 3,
-                paddingTop: 3,
-              }}
-            />
-            <RadioButton.Item
-              label="eXtra Long 134 bps"
-              value="XL"
-              labelVariant="titleLarge"
-              disabled={!isLoraRadioEnabled}
-              style={{
-                flexDirection: 'row-reverse',
-                paddingBottom: 3,
-                paddingTop: 3,
-              }}
-            />
-            <RadioButton.Item
-              label="Long 244 bps"
-              value="L"
-              labelVariant="titleLarge"
-              disabled={!isLoraRadioEnabled}
-              style={{
-                flexDirection: 'row-reverse',
-                paddingBottom: 3,
-                paddingTop: 3,
-              }}
-            />
-            <RadioButton.Item
-              label="Medium Long 439 bps"
-              value="ML"
-              labelVariant="titleLarge"
-              disabled={!isLoraRadioEnabled}
-              style={{
-                flexDirection: 'row-reverse',
-                paddingBottom: 3,
-                paddingTop: 3,
-              }}
-            />
-            <RadioButton.Item
-              label="Medium short 781 bps"
-              value="MS"
-              labelVariant="titleLarge"
-              disabled={!isLoraRadioEnabled}
-              style={{
-                flexDirection: 'row-reverse',
-                paddingBottom: 3,
-                paddingTop: 3,
-              }}
-            />
-            <RadioButton.Item
-              label="Short 1367 bps"
-              value="S"
-              labelVariant="titleLarge"
-              disabled={!isLoraRadioEnabled}
-              style={{
-                flexDirection: 'row-reverse',
-                paddingBottom: 3,
-                paddingTop: 3,
-              }}
-            />
-          </RadioButton.Group>
-          <Text style={{fontSize: 30, fontWeight: 'bold', paddingTop: 14}}>
-            Begär bekräftelse
-          </Text>
-          <View style={styles.mainCheckBoxContainer}>
-            <Checkbox.Item
-              label="Begär att mottagaren bekräftar mottagen stämpling"
-              position="leading"
-              status={acknowledgementRequested ? 'checked' : 'unchecked'}
-              onPress={() => {
-                setAcknowledgementRequested(!acknowledgementRequested);
-              }}
-              disabled={!isLoraRadioEnabled}
-              labelStyle={styles.checkBoxLabel}
-            />
-          </View>
-          <Text style={{fontSize: 30, fontWeight: 'bold', paddingTop: 14}}>
-            Code Rate
-          </Text>
-          <SelectList
-            setSelected={(val: string) => {
-              setCodeRate(parseInt(val, 10));
-            }}
-            data={codeRateList}
-            save="key"
-            search={false}
-            placeholder={' '}
-            disabledItemStyles={{backgroundColor: 'gray'}}
-            disabledTextStyles={{fontSize: 20}}
-            dropdownTextStyles={{fontSize: 20}}
-            dropdownStyles={{backgroundColor: 'gray'}}
-            inputStyles={{
-              fontSize: 20,
-              fontWeight: '900',
-              color: isLoraRadioEnabled
-                ? 'rgb(100,100,100)'
-                : 'rgb(155,155,155)',
-            }}
-            boxStyles={{
-              alignItems: 'center',
-            }}
-            arrowicon={
-              <Icon
-                source="chevron-down"
-                size={35}
-                color={
-                  isLoraRadioEnabled ? 'rgb(100,100,100)' : 'rgb(155,155,155)'
-                }
+          <ListItemMenu
+            disabled={!isLoraRadioEnabled}
+            title="Radiofunktion"
+            description={selectedModeOption?.label}
+            icon={selectedModeOption?.icon}>
+            {modeOptions.map(item => (
+              <ListItemMenuItem
+                key={item.value}
+                title={item.label}
+                leadingIcon={item.icon}
+                onPress={() => {
+                  setLoraMode(item.value as LoraMode);
+                }}
               />
-            }
-            defaultOption={codeRateList.find(item => {
-              return parseInt(item.key, 10) === codeRate;
-            })}
-          />
-
-          <Text style={{fontSize: 30, fontWeight: 'bold', paddingTop: 14}}>
-            Uteffekt
-          </Text>
-
-          <SelectList
-            setSelected={(val: string) => {
-              setLoraPower(parseInt(val, 10));
-            }}
-            data={loraPowerList}
-            save="key"
-            search={false}
-            placeholder={' '}
-            dropdownShown={isLoraRadioEnabled ? undefined : false}
-            disabledItemStyles={{backgroundColor: 'gray'}}
-            disabledTextStyles={{fontSize: 20}}
-            dropdownTextStyles={{fontSize: 20}}
-            dropdownStyles={{backgroundColor: 'gray'}}
-            inputStyles={{
-              fontSize: 20,
-              fontWeight: '900',
-              color: isLoraRadioEnabled
-                ? 'rgb(100,100,100)'
-                : 'rgb(155,155,155)',
-            }}
-            boxStyles={{
-              alignItems: 'center',
-            }}
-            arrowicon={
-              <Icon
-                source="chevron-down"
-                size={35}
-                color={
-                  isLoraRadioEnabled ? 'rgb(100,100,100)' : 'rgb(155,155,155)'
-                }
+            ))}
+          </ListItemMenu>
+          <ListItemMenu
+            disabled={!isLoraRadioEnabled}
+            icon="sine-wave"
+            title="Kanal"
+            description={selectedChannelOption?.label}>
+            {channelOptions.map(item => (
+              <ListItemMenuItem
+                key={item.value}
+                title={item.label}
+                onPress={() => {
+                  setChannel(item.value);
+                }}
+                disabled={item.disabled}
               />
+            ))}
+          </ListItemMenu>
+          <ListItemMenu
+            disabled={!isLoraRadioEnabled}
+            icon="signal-distance-variant"
+            title="Räckvidd / Datahastighet"
+            description={
+              rangeOptions.find(r => r.value === loraRange)?.label ?? '?'
+            }>
+            {rangeOptions.map(item => (
+              <ListItemMenuItem
+                key={item.value}
+                title={item.label}
+                onPress={() => {
+                  setLoraRange(item.value as LoraRange);
+                }}
+              />
+            ))}
+          </ListItemMenu>
+          <List.Item
+            left={props => <List.Icon {...props} icon="reply" />}
+            disabled={!isLoraRadioEnabled}
+            style={{
+              opacity: isLoraRadioEnabled ? undefined : 0.5,
+            }}
+            title="Begär bekräftelse"
+            description={
+              acknowledgementRequested
+                ? 'Mottagaren ska bekräfta mottagen stämpling'
+                : 'Mottagaren bekräftar inte mottagen stämpling'
             }
-            defaultOption={loraPowerList.find(item => {
-              return parseInt(item.key, 10) === loraPower;
-            })}
+            right={props => (
+              <Switch
+                {...props}
+                value={acknowledgementRequested}
+                onValueChange={value => {
+                  setAcknowledgementRequested(value);
+                }}
+                disabled={!isLoraRadioEnabled}
+              />
+            )}
           />
+          <ListItemMenu
+            disabled={!isLoraRadioEnabled}
+            icon="code-json"
+            title="Code Rate"
+            description={selectedCodeRateOption?.label}>
+            {codeRateOptions.map(item => (
+              <ListItemMenuItem
+                key={item.value}
+                title={item.label}
+                onPress={() => {
+                  setCodeRate(item.value);
+                }}
+              />
+            ))}
+          </ListItemMenu>
+          <ListItemMenu
+            disabled={!isLoraRadioEnabled}
+            icon="transmission-tower-export"
+            title="Uteffekt"
+            description={selectedPowerOption?.label}>
+            {powerOptions.map(item => (
+              <ListItemMenuItem
+                key={item.value}
+                title={item.label}
+                onPress={() => {
+                  setLoraPower(item.value);
+                }}
+              />
+            ))}
+          </ListItemMenu>
         </View>
       </View>
     </List.Accordion>
@@ -506,25 +322,5 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     paddingBottom: 10,
     alignItems: 'center',
-  },
-  switch: {
-    marginLeft: 10,
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingBottom: 20,
-    alignSelf: 'flex-start',
-  },
-  mainCheckBoxContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 0,
-    margin: 0,
-  },
-  checkBoxLabel: {
-    marginLeft: 5,
   },
 });
