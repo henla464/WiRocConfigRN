@@ -6,7 +6,7 @@ import {createMaterialBottomTabNavigator} from 'react-native-paper/react-navigat
 import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
 import {useStore} from '@store';
 
-import {wiRocBleManager} from '../../';
+import {wiRocBleManager} from '@lib/utils/wiRocBleManager';
 import {RootDrawerParamList} from '../../types';
 import ConfigurationScreen from './screens/configuration';
 import OtherScreen from './screens/other';

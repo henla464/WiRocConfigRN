@@ -1,8 +1,12 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
 import {SafeAreaView, ScrollView, StyleSheet, View} from 'react-native';
-import {Divider, MaterialBottomTabScreenProps, Text} from 'react-native-paper';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
+import {
+  Divider,
+  MaterialBottomTabScreenProps,
+  Text,
+  useTheme,
+} from 'react-native-paper';
 
 import {SettablePropName, SettableValues} from '@api/transformers';
 import {Notifications} from '@lib/components/Notifications';
@@ -90,9 +94,11 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
     onDefaultValuesChange,
   };
 
+  const {colors} = useTheme();
+
   return (
     <FormProvider {...form}>
-      <SafeAreaView style={Colors.lighter}>
+      <SafeAreaView>
         <Notifications />
         <SaveBanner
           visible={formState.isDirty}

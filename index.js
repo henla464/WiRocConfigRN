@@ -1,3 +1,4 @@
+import {registerRootComponent} from 'expo';
 import {QueryClientProvider} from '@tanstack/react-query';
 import * as React from 'react';
 import {AppRegistry} from 'react-native';
@@ -22,4 +23,4 @@ export default function Main() {
   );
 }
 
-AppRegistry.registerComponent(appName, () => Main);
+registerRootComponent(Main);
