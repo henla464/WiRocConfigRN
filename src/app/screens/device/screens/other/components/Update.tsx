@@ -1,8 +1,7 @@
 import {useQuery} from '@tanstack/react-query';
 import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
-import {SelectList} from 'react-native-dropdown-select-list';
-import {Button, Icon, Text} from 'react-native-paper';
+import {Button, Dialog, List, Menu, Portal, Text} from 'react-native-paper';
 
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useNotify} from '@lib/hooks/useNotify';
@@ -170,100 +169,127 @@ export default function Update() {
     setDateTime(dateTimeString);
   };
 
-  // wiRocVersion
+  const [isVersionMenuOpen, setVersionMenuOpen] = useState(false);
+  const [isBleVersionMenuOpen, setBleVersionMenuOpen] = useState(false);
+
   return (
     <View style={styles.container}>
-      <View style={(styles.containerRow, {width: '100%'})}>
-        <Text style={{fontSize: 18, fontWeight: 'bold', marginTop: 30}}>
-          Nuvarande WiRoc version: v{currentWiRocVersion}
-        </Text>
-        <SelectList
-          setSelected={(val: string) => {
-            setWiRocVersion(val);
-          }}
-          data={wiRocVersionList}
-          save="key"
-          search={false}
-          placeholder={'Antal'}
-          dropdownTextStyles={{fontSize: 30, flex: 1}}
-          dropdownStyles={{backgroundColor: 'rgb(255, 251, 255)'}}
-          inputStyles={{
-            fontSize: 18,
-            fontWeight: '900',
-          }}
-          boxStyles={{
-            alignItems: 'center',
-            paddingRight: 0,
-            marginLeft: 0,
-            marginTop: 20,
-          }}
-          arrowicon={<Icon source="chevron-down" size={35} color={'black'} />}
-          defaultOption={{
-            key: 'v' + currentWiRocVersion,
-            value: 'v' + currentWiRocVersion,
-          }}
-        />
-      </View>
-      <View style={styles.containerRow}>
-        <Button
-          icon=""
-          mode="contained"
-          onPress={() => {
-            if (wiRocVersion) {
-              SetWiRocDateAndTime();
-              updateWiRocVersion(wiRocVersion);
-            }
-          }}
-          style={[styles.button, {flex: 1, marginRight: 0, marginTop: 20}]}>
-          Uppdatera till ny WiRoc version
-        </Button>
-      </View>
-
-      <View style={(styles.containerRow, {width: '100%', marginTop: 40})}>
-        <Text style={{fontSize: 18, fontWeight: 'bold', marginTop: 30}}>
-          Nuvarande WiRoc BLE API version: v{currentWiRocBLEAPIVersion}
-        </Text>
-        <SelectList
-          setSelected={(val: string) => {
-            setWiRocBLEAPIVersion(val);
-          }}
-          data={wiRocBLEAPIVersionList}
-          save="key"
-          search={false}
-          placeholder={'Antal'}
-          dropdownTextStyles={{fontSize: 30, flex: 1}}
-          dropdownStyles={{backgroundColor: 'rgb(255, 251, 255)'}}
-          inputStyles={{
-            fontSize: 18,
-            fontWeight: '900',
-          }}
-          boxStyles={{
-            alignItems: 'center',
-            paddingRight: 0,
-            marginLeft: 0,
-            marginTop: 20,
-          }}
-          arrowicon={<Icon source="chevron-down" size={35} color={'black'} />}
-          defaultOption={{
-            key: 'v' + currentWiRocBLEAPIVersion,
-            value: 'v' + currentWiRocBLEAPIVersion,
-          }}
-        />
-      </View>
-      <View style={styles.containerRow}>
-        <Button
-          icon=""
-          mode="contained"
-          onPress={() => {
-            if (wiRocBLEAPIVersion) {
-              SetWiRocDateAndTime();
-              updateBLEAPIVersion(wiRocBLEAPIVersion);
-            }
-          }}
-          style={[styles.button, {flex: 1, marginRight: 0, marginTop: 20}]}>
-          Uppdatera till ny WiRoc BLE API version
-        </Button>
-      </View>
+      <Menu
+        visible={isVersionMenuOpen}
+        onDismiss={() => setVersionMenuOpen(false)}
+        anchorPosition="bottom"
+        anchor={
+          <List.Item
+            title="Uppdatera WiRoc"
+            description={`Nuvarande WiRoc version: v${currentWiRocVersion}`}
+            left={props => <List.Icon icon="radio-handheld" {...props} />}
+            right={props => <List.Icon icon="chevron-right" {...props} />}
+            onPress={() => setVersionMenuOpen(true)}
+          />
+        }>
+        {wiRocVersionList.map(item => (
+          <Menu.Item
+            key={item.key}
+            onPress={() => {
+              setWiRocVersion(item.key);
+              setVersionMenuOpen(false);
+            }}
+            title={item.value}
+          />
+        ))}
+      </Menu>
+      <Menu
+        visible={isBleVersionMenuOpen}
+        onDismiss={() => setBleVersionMenuOpen(false)}
+        anchorPosition="bottom"
+        anchor={
+          <List.Item
+            title="Uppdatera WiRoc BLE API"
+            description={`Nuvarande WiRoc BLE API version: v${currentWiRocBLEAPIVersion}`}
+            left={props => <List.Icon icon="bluetooth" {...props} />}
+            right={props => <List.Icon icon="chevron-right" {...props} />}
+            onPress={() => setBleVersionMenuOpen(true)}
+          />
+        }>
+        {wiRocBLEAPIVersionList.map(item => (
+          <Menu.Item
+            key={item.key}
+            onPress={() => {
+              setWiRocBLEAPIVersion(item.key);
+              setBleVersionMenuOpen(false);
+            }}
+            title={item.value}
+          />
+        ))}
+      </Menu>
+      <Portal>
+        <Dialog
+          visible={wiRocVersion !== null}
+          onDismiss={() => {
+            setWiRocVersion(null);
+          }}>
+          <Dialog.Icon icon="alert" />
+          <Dialog.Title>Uppdatera WiRoc</Dialog.Title>
+          <Dialog.Content>
+            <Text>
+              Är du säker på att du vill uppdatera WiRoc från version{' '}
+              {currentWiRocVersion} till version {wiRocVersion}?
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button
+              onPress={() => {
+                setWiRocVersion(null);
+              }}>
+              Avbryt
+            </Button>
+            <Button
+              onPress={() => {
+                if (wiRocVersion) {
+                  SetWiRocDateAndTime();
+                  updateWiRocVersion(wiRocVersion);
+                  setWiRocVersion(null);
+                }
+              }}>
+              Uppdatera
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
+      <Portal>
+        <Dialog
+          visible={wiRocBLEAPIVersion !== null}
+          onDismiss={() => {
+            setWiRocBLEAPIVersion(null);
+          }}>
+          <Dialog.Icon icon="alert" />
+          <Dialog.Title>Uppdatera WiRoc BLE API</Dialog.Title>
+          <Dialog.Content>
+            <Text>
+              Är du säker på att du vill uppdatera WiRoc BLE API från version{' '}
+              {currentWiRocBLEAPIVersion} till version {wiRocBLEAPIVersion}?
+            </Text>
+          </Dialog.Content>
+          <Dialog.Actions>
+            <Button
+              onPress={() => {
+                setWiRocBLEAPIVersion(null);
+              }}>
+              Avbryt
+            </Button>
+            <Button
+              onPress={() => {
+                if (wiRocBLEAPIVersion) {
+                  SetWiRocDateAndTime();
+                  updateBLEAPIVersion(wiRocBLEAPIVersion);
+                  setWiRocBLEAPIVersion(null);
+                }
+              }}>
+              Uppdatera
+            </Button>
+          </Dialog.Actions>
+        </Dialog>
+      </Portal>
     </View>
   );
 }
@@ -277,23 +303,5 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     paddingBottom: 0,
     backgroundColor: 'rgb(255, 251, 255)',
-  },
-  containerRow: {
-    flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    paddingLeft: 0,
-    paddingTop: 0,
-    paddingRight: 0,
-    paddingBottom: 5,
-  },
-  header: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-  button: {
-    padding: 10,
-    margin: 10,
-    marginLeft: 0,
   },
 });
