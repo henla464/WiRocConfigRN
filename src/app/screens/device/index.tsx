@@ -1,7 +1,6 @@
 import {DrawerScreenProps} from '@react-navigation/drawer';
 import React, {useEffect} from 'react';
 import {Icon} from 'react-native-paper';
-import {createMaterialBottomTabNavigator} from 'react-native-paper/react-navigation';
 
 import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
 import {useStore} from '@store';
@@ -12,8 +11,10 @@ import ConfigurationScreen from './screens/configuration';
 import OtherScreen from './screens/other';
 import TestScreen from './screens/test';
 import {ConfigurationTabParamList} from './types';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {MaterialBottomNavigationTabBar} from '@lib/components/MaterialBottomNavigationTabBar';
 
-const Tab = createMaterialBottomTabNavigator<ConfigurationTabParamList>();
+const Tab = createBottomTabNavigator<ConfigurationTabParamList>();
 
 type Props = DrawerScreenProps<RootDrawerParamList, 'Device'>;
 
@@ -56,7 +57,9 @@ export default function DeviceScreen(props: Props) {
 function Content() {
   return (
     <>
-      <Tab.Navigator>
+      <Tab.Navigator
+        screenOptions={{animation: 'shift', headerShown: false}}
+        tabBar={MaterialBottomNavigationTabBar}>
         <Tab.Screen
           name="configuration"
           component={ConfigurationScreen}
