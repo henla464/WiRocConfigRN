@@ -1,7 +1,7 @@
 import {log} from '@lib/log';
 import {requestBlePermissions} from '@lib/utils/blePermissions';
 
-import {wiRocBleManager} from '../../app';
+import {wiRocBleManager} from '@lib/utils/wiRocBleManager';
 import {ImmerStateCreator} from '../types';
 import {WiRocBleConnection} from './wiRocDevicesSlice';
 
@@ -59,6 +59,7 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
         log.info('Permissions not granted');
         return;
       }
+      log.info('Permissions granted');
       set(state => {
         state.isScanning = true;
       });
@@ -144,9 +145,8 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
         // TODO user message
         log.error('Error while disconnecting', err);
         try {
-          const isStillConnected = await wiRocBleManager.isDeviceConnected(
-            deviceId,
-          );
+          const isStillConnected =
+            await wiRocBleManager.isDeviceConnected(deviceId);
           setWiRocConnection(
             deviceId,
             state =>

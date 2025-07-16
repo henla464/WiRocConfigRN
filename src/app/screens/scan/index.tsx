@@ -1,7 +1,6 @@
 import React from 'react';
 import {SafeAreaView, ScrollView, StatusBar, StyleSheet} from 'react-native';
 import {Button} from 'react-native-paper';
-import {Colors} from 'react-native/Libraries/NewAppScreen';
 import {useShallow} from 'zustand/react/shallow';
 
 import {Notifications} from '@lib/components/Notifications';
@@ -15,8 +14,8 @@ export default function ScanForDevicesScreen() {
   );
 
   return (
-    <SafeAreaView style={Colors.lighter}>
-      <StatusBar barStyle={'dark-content'} backgroundColor={Colors.lighter} />
+    <SafeAreaView>
+      <StatusBar barStyle={'dark-content'} />
       <Notifications />
       <ScrollView>
         <ScanButton />

@@ -72,12 +72,12 @@ export default function NavigationHeader({deviceId}: {deviceId: string}) {
             !isCharging && batteryLevelRounded === 0
               ? 'battery-alert-variant-outline'
               : batteryLevelRounded === 0
-              ? 'battery-charging-10'
-              : !isCharging && batteryLevelRounded === 100
-              ? 'battery'
-              : 'battery-' +
-                (isCharging ? 'charging-' : '') +
-                batteryLevelRounded
+                ? 'battery-charging-10'
+                : !isCharging && batteryLevelRounded === 100
+                  ? 'battery'
+                  : 'battery-' +
+                    (isCharging ? 'charging-' : '') +
+                    batteryLevelRounded
           }
           onPress={() => {
             refetchBatteryLevel();
@@ -109,5 +109,6 @@ const styles = StyleSheet.create({
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'flex-end',
   },
 });

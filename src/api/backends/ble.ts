@@ -1,6 +1,6 @@
 import {log} from '@lib/log';
 
-import {wiRocBleManager} from '../../app';
+import {wiRocBleManager} from '@lib/utils/wiRocBleManager';
 import {WiRocApiBackend} from '../types';
 
 export const createBleApiBackend = (deviceId: string): WiRocApiBackend => ({
