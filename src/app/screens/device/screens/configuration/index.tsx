@@ -97,69 +97,71 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
   const {colors} = useTheme();
 
   return (
-    <FormProvider {...form}>
-      <SafeAreaView>
-        <Notifications />
-        <SaveBanner
-          visible={formState.isDirty}
-          isSaveDisabled={!formState.isValid}
-          errors={formState.errors}
-          save={handleSubmit(onSubmit)}
-          reload={() => reset()}
-          onHideAnimationFinished={() => {
-            setMTop(0);
-            scrollViewRef?.scrollTo({
-              x: 0,
-              y: currentScrollPosition - 133,
-              animated: false,
-            });
-          }}
-          onShowAnimationFinished={() => {
-            setMTop(133);
-            scrollViewRef?.scrollTo({
-              x: 0,
-              y: currentScrollPosition + 133,
-              animated: false,
-            });
-          }}
-        />
-        <ScrollView
-          ref={ref => {
-            setScrollViewRef(ref);
-          }}
-          onScroll={e => {
-            setCurrentScrollPosition(e.nativeEvent.contentOffset.y);
-          }}
-          style={{marginTop: mTop}}>
-          <View style={{backgroundColor: 'orange'}}>
-            <Divider bold={true} />
-            <Text style={styles.header}>Indata</Text>
-            <Divider bold={true} />
-            <USB {...commonSectionProps} />
-            <Divider bold={true} />
-            <SerialBluetooth {...commonSectionProps} />
-            <Divider bold={true} />
-            {hasSRR && <SRR {...commonSectionProps} />}
-            {hasSRR && <Divider bold={true} />}
-          </View>
-          <View style={{backgroundColor: 'orange'}}>
-            <Divider bold={true} />
-            <Text style={styles.header}>In- och utdata</Text>
-            <Divider bold={true} />
-            <LoraRadio {...commonSectionProps} />
-            <Divider bold={true} />
-            <RS232 {...commonSectionProps} />
-          </View>
-          <View style={{backgroundColor: 'orange'}}>
-            <Divider bold={true} />
-            <Text style={styles.header}>Utdata</Text>
-            <Divider bold={true} />
-            <SIRAP {...commonSectionProps} />
-            <Divider bold={true} />
-          </View>
-        </ScrollView>
-      </SafeAreaView>
-    </FormProvider>
+    <View style={{flex: 1, backgroundColor: colors.background}}>
+      <FormProvider {...form}>
+        <SafeAreaView>
+          <Notifications />
+          <SaveBanner
+            visible={formState.isDirty}
+            isSaveDisabled={!formState.isValid}
+            errors={formState.errors}
+            save={handleSubmit(onSubmit)}
+            reload={() => reset()}
+            onHideAnimationFinished={() => {
+              setMTop(0);
+              scrollViewRef?.scrollTo({
+                x: 0,
+                y: currentScrollPosition - 133,
+                animated: false,
+              });
+            }}
+            onShowAnimationFinished={() => {
+              setMTop(133);
+              scrollViewRef?.scrollTo({
+                x: 0,
+                y: currentScrollPosition + 133,
+                animated: false,
+              });
+            }}
+          />
+          <ScrollView
+            ref={ref => {
+              setScrollViewRef(ref);
+            }}
+            onScroll={e => {
+              setCurrentScrollPosition(e.nativeEvent.contentOffset.y);
+            }}
+            style={{marginTop: mTop}}>
+            <View style={{backgroundColor: 'orange'}}>
+              <Divider bold={true} />
+              <Text style={styles.header}>Indata</Text>
+              <Divider bold={true} />
+              <USB {...commonSectionProps} />
+              <Divider bold={true} />
+              <SerialBluetooth {...commonSectionProps} />
+              <Divider bold={true} />
+              {hasSRR && <SRR {...commonSectionProps} />}
+              {hasSRR && <Divider bold={true} />}
+            </View>
+            <View style={{backgroundColor: 'orange'}}>
+              <Divider bold={true} />
+              <Text style={styles.header}>In- och utdata</Text>
+              <Divider bold={true} />
+              <LoraRadio {...commonSectionProps} />
+              <Divider bold={true} />
+              <RS232 {...commonSectionProps} />
+            </View>
+            <View style={{backgroundColor: 'orange'}}>
+              <Divider bold={true} />
+              <Text style={styles.header}>Utdata</Text>
+              <Divider bold={true} />
+              <SIRAP {...commonSectionProps} />
+              <Divider bold={true} />
+            </View>
+          </ScrollView>
+        </SafeAreaView>
+      </FormProvider>
+    </View>
   );
 }
 
