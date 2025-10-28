@@ -6,7 +6,6 @@ import 'react-native-gesture-handler';
 
 import {DeviceAppBar} from '@lib/components/DeviceAppBar';
 import {WiRocDeviceSubscriber} from '@lib/utils/reactQuery';
-import {createWiRocBleManager} from '@lib/utils/wiRocBleManager';
 import {useStore} from '@store/index';
 
 import {DrawerContent} from './drawer';
@@ -20,8 +19,6 @@ import {RootDrawerParamList} from './types';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator<RootDrawerParamList>();
-
-export const wiRocBleManager = createWiRocBleManager();
 
 function Root() {
   const activeDeviceId = useStore(state => state.activeDeviceId);
