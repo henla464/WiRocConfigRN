@@ -72,6 +72,7 @@ signingConfigs {
 
 The values for MYAPP_UPLOAD_STORE_FILE etc is found in
 ~/.gradle/gradle.properties
+=============================
 
 Generate release
 npx react-native build-android --mode=release
