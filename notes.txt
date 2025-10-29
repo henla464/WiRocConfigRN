@@ -51,6 +51,28 @@ I react-native-debugger kan loggar filtreras på levels, regex m.m.
 
 
 ================
+android/app/build.gradle should have signing configuration
+and in buildconfiguration it should point out the release signing config
+signingConfigs {
+        release {
+            if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
+                storeFile file(MYAPP_UPLOAD_STORE_FILE)
+                storePassword MYAPP_UPLOAD_STORE_PASSWORD
+                keyAlias MYAPP_UPLOAD_KEY_ALIAS
+                keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+            }
+        }
+        debug {
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
+        }
+    }
+
+The values for MYAPP_UPLOAD_STORE_FILE etc is found in
+~/.gradle/gradle.properties
+
 Generate release
 npx react-native build-android --mode=release
 

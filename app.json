@@ -2,7 +2,7 @@
   "expo": {
     "name": "WiRocConfigRN",
     "slug": "WiRocConfigRN",
-    "version": "1.0.0",
+    "version": "v19",
     "icon": "./images/icon-512x512.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -16,12 +16,27 @@
       "bundleIdentifier": "com.wirocconfigrn"
     },
     "android": {
+      "enableHermes": true,
       "adaptiveIcon": {
         "foregroundImage": "./images/icon-512x512.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.wirocconfigrn"
+      "package": "com.wirocconfigrn",
+      "versionCode": 19
     },
-    "plugins": ["react-native-ble-plx"]
+    "plugins": [
+      "react-native-ble-plx",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "compileSdkVersion": 35,
+            "targetSdkVersion": 35,
+            "buildToolsVersion": "35.0.0",
+            "minSdkVersion": 24
+          }
+        }
+      ]
+    ]
   }
 }
