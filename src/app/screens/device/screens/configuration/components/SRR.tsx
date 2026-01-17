@@ -14,6 +14,8 @@ import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 
 import {SectionComponentProps} from '../';
 import OnOffChip from './OnOffChip';
+import {ListItemMenu, ListItemMenuItem} from '@lib/components/ListItemMenu';
+import {SrrMode} from '@api/index';
 
 export default function SRR({
   deviceId,
@@ -71,7 +73,7 @@ export default function SRR({
     {
       field: {
         value: isBlueChannelListenOnly,
-        onChange: SetIsBlueChannelListenOnly,
+        onChange: setIsBlueChannelListenOnly,
       },
     },
   ] = useConfigurationProperty(
@@ -79,6 +81,12 @@ export default function SRR({
     'srr/bluechannellistenonly',
     onDefaultValuesChange,
   );
+
+  const modeOptions = [
+    {value: 'RECEIVE', label: 'Mottagare', icon: 'login', disabled: false},
+    {value: 'SEND', label: 'Sändare', icon: 'logout', disabled: true},
+  ];
+  const selectedModeOption = modeOptions.find(m => m.value === SRRMode);
 
   return (
     <List.Accordion
@@ -98,7 +106,7 @@ export default function SRR({
       }}
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
-          <Text>{SRRMode === 'RECEIVE' ? 'Ta emot' : 'Skicka'}</Text>
+          <Text>{SRRMode === 'RECEIVE' ? 'Mottagare' : 'Sändare'}</Text>
           <OnOffChip on={isSRREnabled} />
           {isExpanded ? (
             <Icon source="chevron-up" size={25} />
@@ -110,90 +118,137 @@ export default function SRR({
       <Divider bold={true} />
       <View style={styles.container}>
         <View style={styles.containerColumn}>
-          <View style={styles.switchContainer}>
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: 'bold',
-                alignItems: 'center',
-              }}>
-              Aktivera:{' '}
-            </Text>
-            <Switch
-              value={isSRREnabled}
-              onValueChange={val => setIsSRREnabled(val)}
-            />
-          </View>
-
-          <SegmentedButtons
-            value={SRRMode}
-            onValueChange={setSRRMode}
-            buttons={[
-              {
-                icon: 'login',
-                value: 'RECEIVE',
-                label: 'Ta emot',
-                disabled: !isSRREnabled,
-              },
-              {
-                icon: 'pan-horizontal',
-                value: 'SEND',
-                label: 'Skicka',
-                disabled: true,
-              },
-            ]}
-          />
-        </View>
-        <View style={styles.containerRow}>
-          <Checkbox
-            disabled={!isSRREnabled}
-            status={isRedChannelEnabled ? 'checked' : 'unchecked'}
-            onPress={() => {
-              setIsRedChannelEnabled(!isRedChannelEnabled);
+          <List.Item
+            title="SRR"
+            description={isSRREnabled ? 'På' : 'Av'}
+            disabled={typeof isSRREnabled !== 'boolean'}
+            style={{
+              opacity: typeof isSRREnabled === 'boolean' ? undefined : 0.5,
             }}
+            left={props => <List.Icon {...props} icon="power" />}
+            right={props => (
+              <Switch
+                {...props}
+                value={isSRREnabled}
+                onValueChange={() => {
+                  setIsSRREnabled(!isSRREnabled);
+                }}
+              />
+            )}
           />
-          <Text>Röd kanal</Text>
-        </View>
-        <View style={styles.containerRow2}>
-          <Checkbox
+          <ListItemMenu
+            disabled={!isSRREnabled}
+            title="Radiofunktion"
+            description={selectedModeOption?.label}
+            icon={selectedModeOption?.icon}>
+            {modeOptions.map(item => (
+              <ListItemMenuItem
+                key={item.value}
+                title={item.label}
+                leadingIcon={item.icon}
+                disabled={item.disabled}
+                onPress={() => {
+                  setSRRMode(item.value as SrrMode);
+                }}
+              />
+            ))}
+          </ListItemMenu>
+          <List.Item
+            title="Röd kanal"
+            description={isRedChannelEnabled ? 'På' : 'Av'}
+            disabled={typeof isSRREnabled !== 'boolean'}
+            style={{
+              opacity: typeof isSRREnabled === 'boolean' ? undefined : 0.5,
+            }}
+            left={props => <List.Icon {...props} icon="sine-wave" />}
+            right={props => (
+              <Switch
+                {...props}
+                value={isRedChannelEnabled}
+                onValueChange={() => {
+                  setIsRedChannelEnabled(!isRedChannelEnabled);
+                }}
+              />
+            )}
+          />
+          <List.Item
+            title="Röd kanal: Lyssna endast"
+            description={
+              isRedChannelListenOnly
+                ? 'Inga bekräftelser skickas på mottagna SRR-stämplingar'
+                : 'Bekräftelse skickas'
+            }
             disabled={
               !isSRREnabled || !isRedChannelEnabled || SRRMode === 'SEND'
             }
-            status={isRedChannelListenOnly ? 'checked' : 'unchecked'}
-            onPress={() => {
-              setIsRedChannelListenOnly(!isRedChannelListenOnly);
+            style={{
+              opacity:
+                !isSRREnabled || !isRedChannelEnabled || SRRMode === 'SEND'
+                  ? 0.5
+                  : undefined,
             }}
+            left={props => <List.Icon {...props} icon="reply" />}
+            right={props => (
+              <Switch
+                {...props}
+                value={isRedChannelListenOnly}
+                disabled={
+                  !isSRREnabled || !isRedChannelEnabled || SRRMode === 'SEND'
+                }
+                onValueChange={() => {
+                  setIsRedChannelListenOnly(!isRedChannelListenOnly);
+                }}
+              />
+            )}
           />
-          <Text>Lyssna endast (röd kanal)</Text>
-        </View>
-        <View style={styles.containerRow3}>
-          <Text>(bekräfta inte stämplingar)</Text>
-        </View>
-
-        <View style={styles.containerRow}>
-          <Checkbox
-            disabled={!isSRREnabled}
-            status={isBlueChannelEnabled ? 'checked' : 'unchecked'}
-            onPress={() => {
-              setIsBlueChannelEnabled(!isBlueChannelEnabled);
+          <List.Item
+            title="Blå kanal"
+            description={isBlueChannelEnabled ? 'På' : 'Av'}
+            disabled={typeof isSRREnabled !== 'boolean'}
+            style={{
+              opacity: typeof isSRREnabled === 'boolean' ? undefined : 0.5,
             }}
+            left={props => <List.Icon {...props} icon="square-wave" />}
+            right={props => (
+              <Switch
+                {...props}
+                value={isBlueChannelEnabled}
+                onValueChange={() => {
+                  setIsBlueChannelEnabled(!isBlueChannelEnabled);
+                }}
+              />
+            )}
           />
-          <Text>Blå kanal</Text>
-        </View>
-        <View style={styles.containerRow2}>
-          <Checkbox
+          <List.Item
+            title="Blå kanal: Lyssna endast"
+            description={
+              isBlueChannelListenOnly
+                ? 'Inga bekräftelser skickas på mottagna SRR-stämplingar'
+                : 'Bekräftelse skickas'
+            }
             disabled={
               !isSRREnabled || !isBlueChannelEnabled || SRRMode === 'SEND'
             }
-            status={isBlueChannelListenOnly ? 'checked' : 'unchecked'}
-            onPress={() => {
-              SetIsBlueChannelListenOnly(!isBlueChannelListenOnly);
+            style={{
+              opacity:
+                !isSRREnabled || !isBlueChannelEnabled || SRRMode === 'SEND'
+                  ? 0.5
+                  : undefined,
             }}
+            left={props => <List.Icon {...props} icon="reply" />}
+            right={props => (
+              <Switch
+                {...props}
+                value={isBlueChannelListenOnly}
+                disabled={
+                  !isSRREnabled || !isBlueChannelEnabled || SRRMode === 'SEND'
+                }
+                onValueChange={() => {
+                  setIsBlueChannelListenOnly(!isBlueChannelListenOnly);
+                }}
+              />
+            )}
           />
-          <Text>Lyssna endast (blå kanal)</Text>
-        </View>
-        <View style={styles.containerRow3}>
-          <Text>(bekräfta inte stämplingar)</Text>
         </View>
       </View>
     </List.Accordion>
