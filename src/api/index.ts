@@ -58,6 +58,25 @@ export interface Setting {
   Value: string;
 }
 
+export interface MPaths {
+  mpaths: MPath[];
+}
+
+export interface MPath {
+  dest_addr: string;
+  next_hop: string;
+  iface: string;
+  sn: string;
+  metric: string;
+  qlen: string;
+  exptime: string;
+  dtim: string;
+  dret: string;
+  flags: string;
+  hop_count: string;
+  path_change: string;
+}
+
 export const getApi = (wiRocDevice: WiRocDevice): WiRocApiBackend => {
   switch (wiRocDevice.apiBackend) {
     case 'ble':

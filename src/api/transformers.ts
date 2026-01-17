@@ -13,6 +13,7 @@ import {
   SrrMode,
   Status,
   Wifi,
+  MPaths,
 } from '.';
 
 export type Setters = typeof setters;
@@ -96,6 +97,15 @@ export const getters = {
 
   'ham/enabled': booleanGetter(26),
   'ham/callsign': stringGetter(),
+
+  'wifimesh/enabled': booleanGetter(),
+  'wifimesh/gateway/enabled': booleanGetter(),
+  'wifimesh/nodenumber': numberGetter(),
+  'wifimesh/ipnetworknumber': numberGetter(),
+  'wifimesh/ipaddress': stringGetter(),
+  'wifimesh/interfacecreated': booleanGetter(),
+  'wifimesh/mac': stringGetter(),
+  'wifimesh/mpath': jsonGetter<MPaths>(),
 };
 
 export const setters = {
@@ -149,6 +159,10 @@ export const setters = {
 
   'ham/enabled': booleanSetter(),
   'ham/callsign': stringSetter(),
+
+  'wifimesh/enabled': booleanSetter(),
+  'wifimesh/gateway/enabled': booleanSetter(),
+  'wifimesh/nodenumber': numberSetter(),
 
   setting: settingSetter(),
 };
