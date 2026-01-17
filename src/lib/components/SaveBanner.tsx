@@ -37,14 +37,16 @@ export default function SaveBanner({
       visible={visible}
       actions={[
         {
-          label: 'Spara konfigurationen',
+          label: 'Spara konfiguration',
           disabled: isSaveDisabled,
+          style: {flexShrink: 1},
           onPress: () => {
             save();
           },
         },
         {
           label: 'Uppdatera från enheten',
+          style: {flexShrink: 1},
           onPress: () => reload(),
         },
       ]}
