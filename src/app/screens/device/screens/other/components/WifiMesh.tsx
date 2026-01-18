@@ -330,7 +330,9 @@ export default function WifiMesh() {
                         {mpath.dest_addr}
                       </DataTable.Cell>
                       <DataTable.Cell style={{flex: 5}}>
-                        {mpath.next_hop}
+                        {mpath.dest_addr === mpath.next_hop
+                          ? 'Direkt'
+                          : mpath.next_hop}
                       </DataTable.Cell>
                       <DataTable.Cell style={{flex: 1}}>
                         {mpath.hop_count}
