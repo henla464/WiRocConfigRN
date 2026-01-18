@@ -52,26 +52,6 @@ export const DeviceNetworkScreen = (props: Props) => {
   const {data: usbEthernetIp, refetch: refetchUsbEthernetIp} =
     useWiRocPropertyQuery(deviceId, 'usbethernetip');
 
-  const {mutate: renewIp, isPending: isRenewingIp} = useWiRocPropertyMutation(
-    deviceId,
-    'renewip',
-    {
-      onError: (error, networkType) => {
-        const msg = error instanceof Error ? error.message : 'Unknown error';
-        notify({
-          type: 'error',
-          message: `Förnya ${networkType} IP failed: ` + msg,
-        });
-      },
-      onSuccess: () => {
-        addToast({message: 'Förnya IP lyckades'});
-      },
-      onSettled: () => {
-        refresh();
-      },
-    },
-  );
-
   const {mutateAsync: wifiDisconnect, isPending: isDisconnecting} =
     useWiRocPropertyMutation(deviceId, 'disconnectwifi', {
       onError: error => {
@@ -112,9 +92,7 @@ export const DeviceNetworkScreen = (props: Props) => {
             />
           }>
           <ProgressBar
-            visible={
-              isLoadingWifiNetworks || isRefetchingWifiNetworks || isRenewingIp
-            }
+            visible={isLoadingWifiNetworks || isRefetchingWifiNetworks}
             indeterminate
           />
           <Notifications />
@@ -150,41 +128,6 @@ export const DeviceNetworkScreen = (props: Props) => {
                   <Text variant="bodyLarge">{usbEthernetIp}</Text>
                 </View>
               )}
-              <View
-                style={{
-                  flexDirection: 'row',
-                  flexWrap: 'wrap',
-                  marginTop: 16,
-                  gap: 16,
-                  alignItems: 'flex-start',
-                }}>
-                <Button
-                  mode="outlined"
-                  disabled={
-                    typeof wifiip !== 'string' ||
-                    wifiip.length === 0 ||
-                    isRenewingIp
-                  }
-                  onPress={() => {
-                    renewIp('wifi');
-                  }}>
-                  Förnya WiFi-IP
-                </Button>
-                {usbEthernetIp && (
-                  <Button
-                    mode="outlined"
-                    disabled={
-                      typeof usbEthernetIp !== 'string' ||
-                      usbEthernetIp.length === 0 ||
-                      isRenewingIp
-                    }
-                    onPress={() => {
-                      renewIp('ethernet');
-                    }}>
-                    Förnya USB ethernet-IP
-                  </Button>
-                )}
-              </View>
             </Surface>
             <Surface>
               <Text
