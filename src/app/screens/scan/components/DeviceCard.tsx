@@ -147,5 +147,5 @@ function getRssiWidth(rssi: number) {
       rssiWidth = 100;
     }
   }
-  return rssiWidth / 100;
+  return Math.round(rssiWidth / 100);
 }
