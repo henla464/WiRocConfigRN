@@ -282,11 +282,7 @@ export default function WifiMesh() {
                 ? 0
                 : undefined,
           }}>
-          {meshIPAddress
-            ?.replace('"', '')
-            .replace('[', '')
-            .replace(']', '')
-            .replace('"', '')}
+          {meshIPAddress}
         </Text>
         <Text
           style={{

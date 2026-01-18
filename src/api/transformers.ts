@@ -75,6 +75,8 @@ export const getters = {
   forcebtserial4800baudrate: booleanGetter(25),
   listwifi: wifiListGetter(),
   ip: stringGetter(),
+  wifiip: stringGetter(),
+  usbethernetip: stringGetter(),
   'lora/enabled': booleanGetter(),
   services: jsonGetter<Services>(),
   status: jsonGetter<Status>(),

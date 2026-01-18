@@ -38,7 +38,19 @@ export const DeviceNetworkScreen = (props: Props) => {
     isLoading: isLoadingWifiNetworks,
     isRefetching: isRefetchingWifiNetworks,
   } = useWiRocPropertyQuery(deviceId, 'listwifi');
-  const {data: ip, refetch: refetchIp} = useWiRocPropertyQuery(deviceId, 'ip');
+
+  const {data: wifiip, refetch: refetchWifiIp} = useWiRocPropertyQuery(
+    deviceId,
+    'wifiip',
+  );
+
+  const {data: wifiMeshIp, refetch: refetchWifiMeshIp} = useWiRocPropertyQuery(
+    deviceId,
+    'wifimesh/ipaddress',
+  );
+
+  const {data: usbEthernetIp, refetch: refetchUsbEthernetIp} =
+    useWiRocPropertyQuery(deviceId, 'usbethernetip');
 
   const {mutate: renewIp, isPending: isRenewingIp} = useWiRocPropertyMutation(
     deviceId,
@@ -76,7 +88,9 @@ export const DeviceNetworkScreen = (props: Props) => {
 
   const refresh = async () => {
     await refetchWifiNetworks();
-    await refetchIp();
+    await refetchWifiIp();
+    await refetchWifiMeshIp();
+    await refetchUsbEthernetIp();
   };
 
   const [isRefreshing, setRefreshing] = useState(false);
@@ -114,15 +128,28 @@ export const DeviceNetworkScreen = (props: Props) => {
             }}>
             <Surface style={{padding: 16}}>
               <View style={{gap: 8}}>
-                <Text variant="labelLarge">IP-adress</Text>
-                {ip ? (
-                  <Text variant="bodyLarge">{ip}</Text>
+                <Text variant="labelLarge">Wifi IP-adress</Text>
+                {wifiip ? (
+                  <Text variant="bodyLarge">{wifiip}</Text>
                 ) : (
                   <Text variant="bodyLarge" style={{opacity: 0.5}}>
                     Ingen IP-adress
                   </Text>
                 )}
               </View>
+              {wifiMeshIp && (
+                <View style={{gap: 8}}>
+                  <Text variant="labelLarge">Wifi-mesh IP-adress</Text>
+                  <Text variant="bodyLarge">{wifiMeshIp}</Text>
+                </View>
+              )}
+
+              {usbEthernetIp && (
+                <View style={{gap: 8}}>
+                  <Text variant="labelLarge">USB Ethernet IP-adress</Text>
+                  <Text variant="bodyLarge">{usbEthernetIp}</Text>
+                </View>
+              )}
               <View
                 style={{
                   flexDirection: 'row',
@@ -134,22 +161,29 @@ export const DeviceNetworkScreen = (props: Props) => {
                 <Button
                   mode="outlined"
                   disabled={
-                    typeof ip !== 'string' || ip.length === 0 || isRenewingIp
+                    typeof wifiip !== 'string' ||
+                    wifiip.length === 0 ||
+                    isRenewingIp
                   }
                   onPress={() => {
                     renewIp('wifi');
                   }}>
                   Förnya WiFi-IP
                 </Button>
-                <Button
-                  disabled={
-                    typeof ip !== 'string' || ip.length === 0 || isRenewingIp
-                  }
-                  onPress={() => {
-                    renewIp('ethernet');
-                  }}>
-                  Förnya ethernet-IP
-                </Button>
+                {usbEthernetIp && (
+                  <Button
+                    mode="outlined"
+                    disabled={
+                      typeof usbEthernetIp !== 'string' ||
+                      usbEthernetIp.length === 0 ||
+                      isRenewingIp
+                    }
+                    onPress={() => {
+                      renewIp('ethernet');
+                    }}>
+                    Förnya USB ethernet-IP
+                  </Button>
+                )}
               </View>
             </Surface>
             <Surface>
@@ -201,12 +235,12 @@ export const DeviceNetworkScreen = (props: Props) => {
                               wifiNetworkItem.signalStrength > 90
                                 ? 'wifi-strength-4'
                                 : wifiNetworkItem.signalStrength > 75
-                                ? 'wifi-strength-3'
-                                : wifiNetworkItem.signalStrength > 50
-                                ? 'wifi-strength-2'
-                                : wifiNetworkItem.signalStrength > 25
-                                ? 'wifi-strength-1'
-                                : 'wifi-strength-outline'
+                                  ? 'wifi-strength-3'
+                                  : wifiNetworkItem.signalStrength > 50
+                                    ? 'wifi-strength-2'
+                                    : wifiNetworkItem.signalStrength > 25
+                                      ? 'wifi-strength-1'
+                                      : 'wifi-strength-outline'
                             }
                           />
                         )}
