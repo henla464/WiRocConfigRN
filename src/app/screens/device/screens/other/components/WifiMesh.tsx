@@ -102,6 +102,31 @@ export default function WifiMesh() {
     c => c.value === meshNodeNumber?.toString(),
   );
 
+  const [
+    {
+      field: {
+        value: wifiMeshRouteToInterface,
+        onChange: setWifiMeshRouteToInterface,
+      },
+    },
+  ] = useConfigurationProperty(
+    deviceId,
+    'wifimesh/routetointerface',
+    onDefaultValuesChange,
+    {
+      control: form.control,
+      rules: {
+        required: {
+          value: isWifiMeshEnabled && isGatewayEnabled,
+          message: 'Mesh traffic should be routed to this interface',
+        },
+      },
+    },
+  );
+
+  const {data: networkInterfaces, refetch: fetchOrRefreshNetworkInterfaces} =
+    useWiRocPropertyQuery(deviceId, 'network/interfaces');
+
   const {
     data: meshInterfaceCreated,
     refetch: fetchOrRefreshMeshInterfaceCreated,
@@ -227,6 +252,39 @@ export default function WifiMesh() {
               disabled={item.disabled}
             />
           ))}
+        </ListItemMenu>
+        <ListItemMenu
+          disabled={!isWifiMeshEnabled || !isGatewayEnabled}
+          style={{
+            opacity:
+              typeof isWifiMeshEnabled !== 'boolean' || !isWifiMeshEnabled
+                ? 0.5
+                : undefined,
+          }}
+          icon="gamepad-circle-up"
+          title="Skicka till interface"
+          description={wifiMeshRouteToInterface || 'Välj interface'}>
+          {networkInterfaces?.map(
+            item =>
+              item !== 'mesh0' && (
+                <ListItemMenuItem
+                  key={item}
+                  title={item}
+                  onPress={() => {
+                    setWifiMeshRouteToInterface(item);
+                  }}
+                />
+              ),
+          )}
+          {!networkInterfaces?.includes(wifiMeshRouteToInterface) && (
+            <ListItemMenuItem
+              key={wifiMeshRouteToInterface}
+              title={wifiMeshRouteToInterface}
+              onPress={() => {
+                setWifiMeshRouteToInterface(wifiMeshRouteToInterface);
+              }}
+            />
+          )}
         </ListItemMenu>
         <Button
           mode="contained"

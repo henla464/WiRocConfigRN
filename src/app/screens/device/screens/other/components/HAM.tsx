@@ -95,10 +95,10 @@ export default function HAM() {
         save={handleSubmit(onSubmit)}
         reload={() => reset()}
         onHideAnimationFinished={() => {
-          setMTop(0);
+          setTimeout(() => setMTop(0), 0);
         }}
         onShowAnimationFinished={() => {
-          setMTop(133);
+          setTimeout(() => setMTop(133), 0);
         }}
       />
       <View style={(styles.containerRow, {width: '100%', marginTop: mTop})}>

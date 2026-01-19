@@ -77,6 +77,7 @@ export const getters = {
   ip: stringGetter(),
   wifiip: stringGetter(),
   usbethernetip: stringGetter(),
+  'network/interfaces': jsonGetter<string[]>(),
   'lora/enabled': booleanGetter(),
   services: jsonGetter<Services>(),
   status: jsonGetter<Status>(),
@@ -107,6 +108,7 @@ export const getters = {
   'wifimesh/ipaddress': stringGetter(),
   'wifimesh/interfacecreated': booleanGetter(),
   'wifimesh/mac': stringGetter(),
+  'wifimesh/routetointerface': stringGetter(),
   'wifimesh/mpath': jsonGetter<MPaths>(),
 };
 
@@ -165,6 +167,7 @@ export const setters = {
   'wifimesh/enabled': booleanSetter(),
   'wifimesh/gateway/enabled': booleanSetter(),
   'wifimesh/nodenumber': numberSetter(),
+  'wifimesh/routetointerface': stringSetter(),
 
   setting: settingSetter(),
 };
