@@ -261,7 +261,7 @@ export default function WifiMesh() {
                 ? 0.5
                 : undefined,
           }}
-          icon="gamepad-circle-up"
+          icon="upload-network-outline"
           title="Skicka till interface"
           description={wifiMeshRouteToInterface || 'Välj interface'}>
           {networkInterfaces?.map(
