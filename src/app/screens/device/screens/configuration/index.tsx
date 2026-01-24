@@ -24,6 +24,7 @@ import SIRAP from './components/SIRAP';
 import SRR from './components/SRR';
 import SerialBluetooth from './components/SerialBluetooth';
 import USB from './components/USB';
+import {useTranslation} from 'react-i18next';
 
 type ConfigurationScreenProps = MaterialBottomTabScreenProps<
   ConfigurationTabParamList,
@@ -38,6 +39,7 @@ export interface SectionComponentProps {
 }
 
 export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
+  const {t} = useTranslation();
   const deviceId = useActiveWiRocDevice();
   const [defaultValues, setDefaultValues] = useState<Partial<SettableValues>>(
     {},
@@ -134,7 +136,7 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
             style={{marginTop: mTop}}>
             <View style={{backgroundColor: 'orange'}}>
               <Divider bold={true} />
-              <Text style={styles.header}>Indata</Text>
+              <Text style={styles.header}>{t('Indata')}</Text>
               <Divider bold={true} />
               <USB {...commonSectionProps} />
               <Divider bold={true} />
