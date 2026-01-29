@@ -8,5 +8,8 @@ module.exports = defineConfig([
   eslintPluginPrettierRecommended,
   {
     ignores: ['dist/*'],
+    rules: {
+      'import/no-named-as-default-member': 'off',
+    }
   },
 ]);
