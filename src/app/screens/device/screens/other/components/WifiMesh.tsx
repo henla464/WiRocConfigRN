@@ -202,7 +202,7 @@ export default function WifiMesh() {
             )}
           />
           <List.Item
-            title="Gateway (endast en nod, kopplad till nätverket)"
+            title="Gateway (endast en)"
             description={isGatewayEnabled ? 'På' : 'Av'}
             disabled={
               typeof isWifiMeshEnabled !== 'boolean' || !isWifiMeshEnabled
@@ -327,7 +327,7 @@ export default function WifiMesh() {
                 ? 0.5
                 : undefined,
           }}>
-          Mesh ipaddress:
+          Mesh ipadress:
         </Text>
         <Text
           style={{
