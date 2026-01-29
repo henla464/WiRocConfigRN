@@ -1,26 +1,331 @@
 import i18n from 'i18next';
 import {initReactI18next} from 'react-i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
+import * as RNLocalize from 'react-native-localize';
+import type {LanguageDetectorModule} from 'i18next';
 
 export const defaultNS = 'translation';
 export const resources = {
   en: {
     translation: {
       Indata: 'Input data',
+      'In- och utdata': 'Input and output',
+      Utdata: 'Output',
+      'Utdata och transformering': 'Output and transformation',
+      'Laddar upp...': 'Uploading...',
+      'Ladda upp enhetens databas och loggar':
+        'Upload device database and logs',
+      'Kunde inte hämta "Services"': 'Could not fetch "Services"',
+      'Kunde inte hämta "Indata" och "Utdata och transformering"':
+        'Could not fetch "Input data" and "Output and transformation"',
+      'Hämtar statusinformation...': 'Fetching status information...',
+      'Hämta statusinformation': 'Fetch status information',
+      Services: 'Services',
+      Namn: 'Name',
+      Status: 'Status',
+      'Indata adapter': 'Input adapter',
+      Instans: 'Instance',
+      'Utdata adapter': 'Output adapter',
+      'Inmed. typ': 'Input message type',
+      'Inmed. undertyp': 'Input message subtype',
+      'Utmed. typ': 'Output message type',
+      'Utmed. undertyp': 'Output message subtype',
+      Aktiv: 'Active',
+      Ja: 'Yes',
+      Nej: 'No',
+      'Göm loggar': 'Hide logs',
+      'Visa loggar': 'Show logs',
+      'WiRoc Config loggar': 'WiRoc Config logs',
+      'Hämta/Uppdatera listan': 'Fetch/Refresh list',
+      'Lägg till nytt nyckelvärde': 'Add new key-value',
+      Nyckel: 'Key',
+      Värde: 'Value',
+      'Kunde inte uppdatera': 'Could not update',
+      'Tidigare sedd enhet': 'Previously seen device',
+      'Kunde inte ansluta till enheten: ': 'Could not connect to device: ',
+      'Okänt fel': 'Unknown error',
+      'Koppla från': 'Disconnect',
+      Anslut: 'Connect',
+      'Sök WiRoc enheter': 'Scan for WiRoc devices',
+      Om: 'About',
+      'Wifi IP-adress': 'WiFi IP address',
+      'Ingen IP-adress': 'No IP address',
+      'Wifi-mesh IP-adress': 'WiFi-mesh IP address',
+      'USB Ethernet IP-adress': 'USB Ethernet IP address',
+      'WiFi-nätverk': 'WiFi networks',
+      'Signalstyrka ': 'Signal strength ',
+      'Kopplar ifrån...': 'Disconnecting...',
+      Ansluten: 'Connected',
+      'Koppla från {{networkName}}': 'Disconnect {{networkName}}',
+      Avbryt: 'Cancel',
+      'Anslut till {{networkName}}': 'Connect to {{networkName}}',
+      'Okänt nätverk': 'Unknown network',
+      'Anslutningen till {{networkName}} misslyckades':
+        'Connection to {{networkName}} failed',
+      'Anslut till': 'Connect to',
+      misslyckades: 'failed',
+      'Anslutningen till': 'The connection to',
+      'Spara konfiguration': 'Save configuration',
+      'Uppdatera från enheten': 'Update from device',
+      'Konfigurationen innehåller fel som gör att den inte kan sparas just nu:':
+        'The configuration contains errors that prevent it from being saved right now:',
+      'Okänt fel i fält {{field}}': 'Unknown error in field {{field}}',
+      'Okänt fel i fält': 'Unknown error in field',
+      'Konfigurationen har ändrats i appen. Vill du spara ändringen eller uppdatera från enheten?':
+        'The configuration has changed in the app. Do you want to save the change or update from the device?',
+      'Databas och loggar laddas upp': 'Database and logs are being uploaded',
+      'Hämta/Uppdatera status nedan': 'Fetch/Refresh status below',
+      'Anropssignal krävs när amatörradiokanalerna är aktiverade':
+        'Call sign is required when amateur radio channels are enabled',
+      På: 'On',
+      Av: 'Off',
+      'Inga bekräftelser skickas på mottagna SRR-stämplingar':
+        'No confirmations are sent on received SRR time stamps',
+      Uppdatera: 'Update',
+      'Enheten kommer att uppdatera WiRoc BLE API-versionen':
+        'The device will update the WiRoc BLE API version',
+      'Kunde inte uppdatera WiRoc BLE API version':
+        'Could not update WiRoc BLE API version',
+      'Enheten kommer att uppdatera WiRoc-versionen':
+        'The device will update the WiRoc version',
+      'Kunde inte uppdatera WiRoc version': 'Could not update WiRoc version',
+      Nätverksanslutning: 'Network connection',
+      'Konfigurera enhet': 'Configure device',
+      'Särskilt tack till Björn Norrliden som utvecklat mycket av denna mobilapp.':
+        'Special thanks to Björn Norrliden who developed much of this mobile app.',
+      'WiRoc enheter': 'WiRoc devices',
+      'Seriell Bluetooth': 'Serial Bluetooth',
+      'Envägs, lyssna passivt': 'One-way, listen passively',
+      'Sök Bluetooth enheter': 'Search Bluetooth devices',
+      'Skannar enheter': 'Scanning devices',
+      'Koppla ifrån': 'Disconnect',
+      'Seriell RS232': 'Serial RS232',
+      'Ta emot': 'Receive',
+      Skicka: 'Send',
+      'Använd 4800 bps': 'Use 4800 bps',
+      'Bekräftelse skickas': 'Acknowledgement sent',
+      Mottagare: 'Receiver',
+      Sändare: 'Sender',
+      Repeterare: 'Repeater',
+      'SIRAP-tcp/ip': 'SIRAP-tcp/ip',
+      'Ogiltig IP-adress': 'Invalid IP address',
+      'IP-adress krävs när SIRAP är aktiverat':
+        'IP address is required when SIRAP is enabled',
+      'Ogiltigt portnummer': 'Invalid port number',
+      'IP-port krävs när SIRAP är aktiverat':
+        'IP port is required when SIRAP is enabled',
+      'SportIdent SRR': 'SportIdent SRR',
+      'Begär bekräftelse': 'Request acknowledgement',
+      'Mottagaren ska bekräfta mottagen stämpling':
+        'The receiver should confirm the received stamp',
+      'Mottagaren bekräftar inte mottagen stämpling':
+        'The receiver does not confirm the received stamp',
+      Aktivera: 'Enable',
+      SRR: 'SRR',
+      Radiofunktion: 'Radio function',
+      'Röd kanal': 'Red channel',
+      'Röd kanal: Lyssna endast': 'Red channel: Listen only',
+      'Blå kanal': 'Blue channel',
+      'Blå kanal: Lyssna endast': 'Blue channel: Listen only',
+      Kanal: 'Channel',
+      'Räckvidd / Datahastighet': 'Range / Data rate',
+      Uteffekt: 'Output power',
+      'Code Rate': 'Code Rate',
+      Nästa: 'Next',
+      Stäng: 'Close',
+      'Stäng {{count}} meddelanden': 'Close {{count}} messages',
+      'Stämplingar har tagits bort från databasen':
+        'Punches have been deleted from the database',
+      'Databasen har tömts och skapats om':
+        'Database has been cleared and recreated',
+      'Ta bort stämplingar från databasen': 'Delete punches from database',
+      'Ta bort och skapa om alla databastabeller':
+        'Delete and recreate all database tables',
+      'Uppdatera WiRoc': 'Update WiRoc',
+      'Uppdatera WiRoc BLE API': 'Update WiRoc BLE API',
+      'Är du säker på att du vill uppdatera WiRoc från version':
+        'Are you sure you want to update WiRoc from version',
+      'Är du säker på att du vill uppdatera WiRoc BLE API från version':
+        'Are you sure you want to update WiRoc BLE API from version',
+      till: 'to',
+      Väckningstid: 'Wake-up time',
+      'Aktivera väckning efter att enheten har stängts av:':
+        'Enable wake-up after the device is shut down:',
+      'Sätt WiRoc-enhetens datum & tid': 'Set WiRoc device date & time',
+      'När WiRoc-enheten stängs av med knappen så aktiveras väckningen och det står då på displayen. Om enheten startas manuellt så avaktiveras väckningen och måste manuellt aktiveras här igen.':
+        'When the WiRoc device is turned off with the button, the wake-up is activated and it is displayed on the screen. If the device is started manually, the wake-up is deactivated and must be manually activated again here.',
+      'Nodnummer är obligatoriskt (ska vara unikt)':
+        'Node number is mandatory (should be unique)',
+      'Gateway (endast en)': 'Gateway (only one)',
+      Nodnummer: 'Node number',
+      'Ändra inställning': 'Change setting',
+      Spara: 'Save',
     },
   },
   sv: {
     translation: {
+      'WiRoc enheter': 'WiRoc enheter',
+      'Seriell Bluetooth': 'Seriell Bluetooth',
+      'Envägs, lyssna passivt': 'Envägs, lyssna passivt',
+      'Sök Bluetooth enheter': 'Sök Bluetooth enheter',
+      'Skannar enheter': 'Skannar enheter',
+      'Koppla ifrån': 'Koppla ifrån',
+      'Seriell RS232': 'Seriell RS232',
+      'Ta emot': 'Ta emot',
+      Skicka: 'Skicka',
+      'Använd 4800 bps': 'Använd 4800 bps',
+      'Bekräftelse skickas': 'Bekräftelse skickas',
+      Mottagare: 'Mottagare',
+      Sändare: 'Sändare',
+      Repeterare: 'Repeterare',
+      'SIRAP-tcp/ip': 'SIRAP-tcp/ip',
+      'Ogiltig IP-adress': 'Ogiltig IP-adress',
+      'IP-adress krävs när SIRAP är aktiverat':
+        'IP-adress krävs när SIRAP är aktiverat',
+      'Ogiltigt portnummer': 'Ogiltigt portnummer',
+      'IP-port krävs när SIRAP är aktiverat':
+        'IP-port krävs när SIRAP är aktiverat',
+      'SportIdent SRR': 'SportIdent SRR',
+      'Inga bekräftelser skickas på mottagna SRR-stämplingar':
+        'Inga bekräftelser skickas på mottagna SRR-stämplingar',
+      'Begär bekräftelse': 'Begär bekräftelse',
+      'Mottagaren ska bekräfta mottagen stämpling':
+        'Mottagaren ska bekräfta mottagen stämpling',
+      'Mottagaren bekräftar inte mottagen stämpling':
+        'Mottagaren bekräftar inte mottagen stämpling',
+      Aktivera: 'Aktivera',
+      SRR: 'SRR',
+      Radiofunktion: 'Radiofunktion',
+      'Röd kanal': 'Röd kanal',
+      'Röd kanal: Lyssna endast': 'Röd kanal: Lyssna endast',
+      'Blå kanal': 'Blå kanal',
+      'Blå kanal: Lyssna endast': 'Blå kanal: Lyssna endast',
+      Kanal: 'Kanal',
+      'Räckvidd / Datahastighet': 'Räckvidd / Datahastighet',
+      Uteffekt: 'Uteffekt',
+      'Code Rate': 'Code Rate',
+      Nästa: 'Nästa',
+      Stäng: 'Stäng',
+      'Stäng {{count}} meddelanden': 'Stäng {{count}} meddelanden',
+      'Stämplingar har tagits bort från databasen':
+        'Stämplingar har tagits bort från databasen',
+      'Databasen har tömts och skapats om':
+        'Databasen har tömts och skapats om',
+      'Ta bort stämplingar från databasen':
+        'Ta bort stämplingar från databasen',
+      'Ta bort och skapa om alla databastabeller':
+        'Ta bort och skapa om alla databastabeller',
+      'Uppdatera WiRoc': 'Uppdatera WiRoc',
+      'Uppdatera WiRoc BLE API': 'Uppdatera WiRoc BLE API',
+      'Är du säker på att du vill uppdatera WiRoc från version':
+        'Är du säker på att du vill uppdatera WiRoc från version',
+      'Är du säker på att du vill uppdatera WiRoc BLE API från version':
+        'Är du säker på att du vill uppdatera WiRoc BLE API från version',
+      till: 'till',
+      Väckningstid: 'Väckningstid',
+      'Aktivera väckning efter att enheten har stängts av:':
+        'Aktivera väckning efter att enheten har stängts av:',
+      'Sätt WiRoc-enhetens datum & tid': 'Sätt WiRoc-enhetens datum & tid',
+      'När WiRoc-enheten stängs av med knappen så aktiveras väckningen och det står då på displayen. Om enheten startas manuellt så avaktiveras väckningen och måste manuellt aktiveras här igen.':
+        'När WiRoc-enheten stängs av med knappen så aktiveras väckningen och det står då på displayen. Om enheten startas manuellt så avaktiveras väckningen och måste manuellt aktiveras här igen.',
+      'Nodnummer är obligatoriskt (ska vara unikt)':
+        'Nodnummer är obligatoriskt (ska vara unikt)',
+      'Gateway (endast en)': 'Gateway (endast en)',
+      Nodnummer: 'Nodnummer',
+      'Lägg till nytt nyckelvärde': 'Lägg till nytt nyckelvärde',
+      'Ändra inställning': 'Ändra inställning',
+      Spara: 'Spara',
+      Avbryt: 'Avbryt',
       Indata: 'Indata',
+      'In- och utdata': 'In- och utdata',
+      Utdata: 'Utdata',
+      'Utdata och transformering': 'Utdata och transformering',
+      'Laddar upp...': 'Laddar upp...',
+      'Ladda upp enhetens databas och loggar':
+        'Ladda upp enhetens databas och loggar',
+      'Kunde inte hämta "Services"': 'Kunde inte hämta "Services"',
+      'Kunde inte hämta "Indata" och "Utdata och transformering"':
+        'Kunde inte hämta "Indata" och "Utdata och transformering"',
+      'Hämtar statusinformation...': 'Hämtar statusinformation...',
+      'Hämta statusinformation': 'Hämta statusinformation',
+      Services: 'Services',
+      Namn: 'Namn',
+      Status: 'Status',
+      'Indata adapter': 'Indata adapter',
+      Instans: 'Instans',
+      'Utdata adapter': 'Utdata adapter',
+      'Inmed. typ': 'Inmed. typ',
+      'Inmed. undertyp': 'Inmed. undertyp',
+      'Utmed. typ': 'Utmed. typ',
+      'Utmed. undertyp': 'Utmed. undertyp',
+      Aktiv: 'Aktiv',
+      Ja: 'Ja',
+      Nej: 'Nej',
+      'Göm loggar': 'Göm loggar',
+      'Visa loggar': 'Visa loggar',
+      'WiRoc Config loggar': 'WiRoc Config loggar',
+      'Hämta/Uppdatera listan': 'Hämta/Uppdatera listan',
+      Nyckel: 'Nyckel',
+      Värde: 'Värde',
+      'Kunde inte uppdatera': 'Kunde inte uppdatera',
+      'Tidigare sedd enhet': 'Tidigare sedd enhet',
+      'Kunde inte ansluta till enheten: ': 'Kunde inte ansluta till enheten: ',
+      'Okänt fel': 'Okänt fel',
+      'Anslut till {{networkName}}': 'Anslut till {{networkName}}',
+      'Okänt nätverk': 'Okänt nätverk',
+      'Anslutningen till {{networkName}} misslyckades':
+        'Anslutningen till {{networkName}} misslyckades',
+      'Anslut till': 'Anslut till',
+      misslyckades: 'misslyckades',
+      'Anslutningen till': 'Anslutningen till',
+      'Spara konfiguration': 'Spara konfiguration',
+      'Uppdatera från enheten': 'Uppdatera från enheten',
+      'Konfigurationen innehåller fel som gör att den inte kan sparas just nu:':
+        'Konfigurationen innehåller fel som gör att den inte kan sparas just nu:',
+      'Okänt fel i fält {{field}}': 'Okänt fel i fält {{field}}',
+      'Okänt fel i fält': 'Okänt fel i fält',
+      'Konfigurationen har ändrats i appen. Vill du spara ändringen eller uppdatera från enheten?':
+        'Konfigurationen har ändrats i appen. Vill du spara ändringen eller uppdatera från enheten?',
+      'Databas och loggar laddas upp': 'Databas och loggar laddas upp',
+      'Hämta/Uppdatera status nedan': 'Hämta/Uppdatera status nedan',
+      'Anropssignal krävs när amatörradiokanalerna är aktiverade':
+        'Anropssignal krävs när amatörradiokanalerna är aktiverade',
+      Uppdatera: 'Uppdatera',
+      'Enheten kommer att uppdatera WiRoc BLE API-versionen':
+        'Enheten kommer att uppdatera WiRoc BLE API-versionen',
+      'Kunde inte uppdatera WiRoc BLE API version':
+        'Kunde inte uppdatera WiRoc BLE API version',
+      'Enheten kommer att uppdatera WiRoc-versionen':
+        'Enheten kommer att uppdatera WiRoc-versionen',
+      'Kunde inte uppdatera WiRoc version':
+        'Kunde inte uppdatera WiRoc version',
+      Nätverksanslutning: 'Nätverksanslutning',
+      'Konfigurera enhet': 'Konfigurera enhet',
+      'Särskilt tack till Björn Norrliden som utvecklat mycket av denna mobilapp.':
+        'Särskilt tack till Björn Norrliden som utvecklat mycket av denna mobilapp.',
+      Anslut: 'Anslut',
+      Om: 'Om',
+      På: 'På',
+      Av: 'Av',
+      'Sök WiRoc enheter': 'Sök WiRoc enheter',
     },
   },
 } as const;
 
+// detect device language
+const languageDetector: LanguageDetectorModule = {
+  type: 'languageDetector',
+  detect: () => {
+    const locales = RNLocalize.getLocales();
+    return locales[0]?.languageCode || 'sv';
+  },
+  init: () => {},
+  cacheUserLanguage: () => {},
+};
+
 i18n
-  .use(LanguageDetector)
+  .use(languageDetector)
   .use(initReactI18next)
   .init({
-    lng: 'sv',
     resources,
     fallbackLng: 'sv',
     debug: true,

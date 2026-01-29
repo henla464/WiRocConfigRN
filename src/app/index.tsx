@@ -3,6 +3,7 @@ import {NavigationContainer} from '@react-navigation/native';
 import {createNativeStackNavigator} from '@react-navigation/native-stack';
 import React from 'react';
 import 'react-native-gesture-handler';
+import {useTranslation} from 'react-i18next';
 
 import {DeviceAppBar} from '@lib/components/DeviceAppBar';
 import {WiRocDeviceSubscriber} from '@lib/utils/reactQuery';
@@ -21,6 +22,7 @@ const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator<RootDrawerParamList>();
 
 function Root() {
+  const {t} = useTranslation();
   const activeDeviceId = useStore(state => state.activeDeviceId);
   return (
     <Drawer.Navigator
@@ -30,21 +32,21 @@ function Root() {
         name="ScanForDevices"
         component={ScanForDevicesScreen}
         options={{
-          title: 'Sök WiRoc enheter',
+          title: t('Sök WiRoc enheter'),
         }}
       />
       <Drawer.Screen
         name="About"
         component={AboutScreen}
         options={{
-          title: 'Om',
+          title: t('Om'),
         }}
       />
       <Drawer.Screen
         name="Device"
         component={DeviceScreen}
         options={{
-          title: 'Konfigurera enhet',
+          title: t('Konfigurera enhet'),
           headerRight: activeDeviceId
             ? () => <NavigationHeader deviceId={activeDeviceId} />
             : () => null,
@@ -55,6 +57,7 @@ function Root() {
 }
 
 export function App() {
+  const {t} = useTranslation();
   const wiRocDevices = useStore(state => state.wiRocDevices);
   return (
     <>
@@ -74,7 +77,7 @@ export function App() {
             component={DeviceNetworkScreen}
             options={{
               header: DeviceAppBar,
-              title: 'Nätverksanslutning',
+              title: t('Nätverksanslutning'),
             }}
           />
           <Stack.Screen

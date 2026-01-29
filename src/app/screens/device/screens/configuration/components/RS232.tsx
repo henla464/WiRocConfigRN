@@ -8,6 +8,7 @@ import {
   RadioButton,
   Text,
 } from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 
@@ -18,6 +19,7 @@ export default function RS232({
   deviceId,
   onDefaultValuesChange,
 }: SectionComponentProps) {
+  const {t} = useTranslation();
   const [expanded, setExpanded] = React.useState(false);
   const handlePress = () => setExpanded(!expanded);
 
@@ -48,7 +50,7 @@ export default function RS232({
 
   return (
     <List.Accordion
-      title="Seriell RS232"
+      title={t('Seriell RS232')}
       id="rs232"
       expanded={expanded}
       onPress={handlePress}
@@ -64,7 +66,7 @@ export default function RS232({
       }}
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
-          <Text>{sendReceive === 'RECEIVE' ? 'Ta emot' : 'Skicka'}</Text>
+          <Text>{sendReceive === 'RECEIVE' ? t('Ta emot') : t('Skicka')}</Text>
           <OnOffChip on={true} />
           {isExpanded ? (
             <Icon source="chevron-up" size={25} />
@@ -86,16 +88,20 @@ export default function RS232({
           value={sendReceive}>
           <View style={styles.containerRow}>
             <RadioButton.Item
-              label="Ta emot"
+              label={t('Ta emot')}
               position="leading"
               value="RECEIVE"
             />
-            <RadioButton.Item label="Skicka" position="leading" value="SEND" />
+            <RadioButton.Item
+              label={t('Skicka')}
+              position="leading"
+              value="SEND"
+            />
           </View>
           <View style={styles.containerColumn}>
             <View style={styles.mainCheckBoxContainer}>
               <Checkbox.Item
-                label="Envägs, lyssna passivt"
+                label={t('Envägs, lyssna passivt')}
                 position="leading"
                 status={isOneWay ? 'checked' : 'unchecked'}
                 onPress={() => {
@@ -110,7 +116,7 @@ export default function RS232({
             </View>
             <View style={styles.secondaryCheckBoxContainer}>
               <Checkbox.Item
-                label="Använd 4800 bps"
+                label={t('Använd 4800 bps')}
                 position="leading"
                 status={is4800bps ? 'checked' : 'unchecked'}
                 onPress={() => setIs4800bps(!is4800bps)}

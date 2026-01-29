@@ -1,6 +1,7 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Checkbox, Divider, Icon, List} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 
@@ -11,6 +12,7 @@ export default function USB({
   deviceId,
   onDefaultValuesChange,
 }: SectionComponentProps) {
+  const {t} = useTranslation();
   const [expanded, setExpanded] = React.useState(false);
   const handlePress = () => setExpanded(!expanded);
 
@@ -63,7 +65,7 @@ export default function USB({
       <View style={styles.container}>
         <View style={styles.mainCheckBoxContainer}>
           <Checkbox.Item
-            label="Envägs, lyssna passivt"
+            label={t('Envägs, lyssna passivt')}
             position="leading"
             status={isOneWay ? 'checked' : 'unchecked'}
             onPress={() => {
@@ -77,7 +79,7 @@ export default function USB({
         </View>
         <View style={styles.secondaryCheckBoxContainer}>
           <Checkbox.Item
-            label="Använd 4800 bps"
+            label={t('Använd 4800 bps')}
             position="leading"
             status={is4800bps ? 'checked' : 'unchecked'}
             onPress={() => setIs4800bps(!is4800bps)}

@@ -1,9 +1,11 @@
 import React from 'react';
 import {Banner, useTheme} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {useStore} from '@store';
 
 export const Notifications = () => {
+  const {t} = useTranslation();
   const notifications = useStore(state => state.notifications);
   const removeNotification = useStore(state => state.removeNotification);
   const removeAllNotifications = useStore(
@@ -15,7 +17,7 @@ export const Notifications = () => {
 
   const actions = [
     {
-      label: notifications.length > 1 ? 'Nästa' : 'Stäng',
+      label: notifications.length > 1 ? t('Nästa') : t('Stäng'),
       onPress: () => {
         if (notifications.length > 0) {
           removeNotification(currentNotification.id);
@@ -26,7 +28,7 @@ export const Notifications = () => {
 
   if (notifications.length > 1) {
     actions.unshift({
-      label: `Stäng ${notifications.length} meddelanden`,
+      label: t('Stäng {{count}} meddelanden', {count: notifications.length}),
       onPress: () => {
         removeAllNotifications();
       },

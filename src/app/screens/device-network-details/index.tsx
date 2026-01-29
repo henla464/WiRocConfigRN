@@ -2,6 +2,7 @@ import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useEffect, useState} from 'react';
 import {SafeAreaView, ScrollView, View} from 'react-native';
 import {Button, ProgressBar, Text, TextInput} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 import {RootStackParamList} from 'src/app/types';
 
 import {useNotify} from '@lib/hooks/useNotify';
@@ -14,6 +15,7 @@ import {
 type Props = NativeStackScreenProps<RootStackParamList, 'DeviceNetworkDetails'>;
 
 export const DeviceNetworkDetailsScreen = (props: Props) => {
+  const {t} = useTranslation();
   const {deviceId, networkName} = props.route.params;
   const notify = useNotify();
   const {addToast} = useToasts();
@@ -35,7 +37,10 @@ export const DeviceNetworkDetailsScreen = (props: Props) => {
       onError: () => {
         notify({
           type: 'error',
-          message: `Anslutningen till ${wifiNetwork?.networkName} misslyckades`,
+          message:
+            t('Anslutningen till') +
+            ` ${wifiNetwork?.networkName} ` +
+            t('misslyckades'),
         });
       },
       onSuccess: () => {
@@ -53,8 +58,8 @@ export const DeviceNetworkDetailsScreen = (props: Props) => {
   useEffect(() => {
     props.navigation.setOptions({
       title: wifiNetwork
-        ? `Anslut till ${wifiNetwork.networkName}`
-        : 'Okänt nätverk',
+        ? t('Anslut till') + ` ${wifiNetwork.networkName}`
+        : t('Okänt nätverk'),
     });
   }, [props.navigation, wifiNetwork]);
 

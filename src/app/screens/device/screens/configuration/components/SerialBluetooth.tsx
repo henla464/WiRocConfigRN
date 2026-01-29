@@ -9,6 +9,7 @@ import {
   List,
   Text,
 } from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 import useInterval from '@lib/hooks/useInterval';
@@ -25,6 +26,7 @@ export default function SerialBluetooth({
   deviceId,
   onDefaultValuesChange,
 }: SectionComponentProps) {
+  const {t} = useTranslation();
   const [isScanning, setIsScanning] = useState<boolean>(false);
   const [interval, setInterval] = useState<number | null>(null);
   const [expanded, setExpanded] = React.useState(false);
@@ -86,7 +88,7 @@ export default function SerialBluetooth({
 
   return (
     <List.Accordion
-      title="Seriell Bluetooth"
+      title={t('Seriell Bluetooth')}
       id="serialBluetooth"
       expanded={expanded}
       onPress={handlePress}
@@ -114,7 +116,7 @@ export default function SerialBluetooth({
       <View style={styles.container}>
         <View style={styles.containerCheckBox}>
           <Checkbox.Item
-            label="Envägs, lyssna passivt"
+            label={t('Envägs, lyssna passivt')}
             position="leading"
             status={isOneWay ? 'checked' : 'unchecked'}
             onPress={() => {
@@ -130,7 +132,7 @@ export default function SerialBluetooth({
             mode="contained"
             onPress={() => startStopScan()}
             style={styles.scanButton}>
-            Sök Bluetooth enheter
+            {t('Sök Bluetooth enheter')}
           </Button>
         </View>
         <View style={styles.tableContainer}>
@@ -171,9 +173,9 @@ export default function SerialBluetooth({
                     }}
                     style={styles.button}>
                     {item.Status === 'Connected'
-                      ? 'Koppla ifrån'
+                      ? t('Koppla ifrån')
                       : item.Status === 'NotConnected'
-                        ? 'Anslut'
+                        ? t('Anslut')
                         : 'ReadError'}
                   </Button>
                 </DataTable.Cell>

@@ -1,6 +1,7 @@
 import {CommonActions, useNavigation} from '@react-navigation/native';
 import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {
   Button,
   Card,
@@ -22,6 +23,7 @@ interface DeviceCardProps {
 const RECENTLY_SEEN_TIMEOUT = 10e3;
 
 export default function DeviceCard({deviceId}: DeviceCardProps) {
+  const {t} = useTranslation();
   const notify = useNotify();
 
   const device = useStore(state => state.wiRocDevices[deviceId]);
@@ -70,7 +72,7 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
               height: 27,
             }}>
             {rssiValue === 0 ? (
-              <Paragraph>Tidigare sedd enhet</Paragraph>
+              <Paragraph>{t('Tidigare sedd enhet')}</Paragraph>
             ) : (
               <ProgressBar
                 progress={getRssiWidth(rssiValue)}
@@ -99,14 +101,16 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
                 } catch (err) {
                   notify({
                     type: 'error',
-                    message: `Kunde inte ansluta till enheten: ${
-                      err instanceof Error ? err.message : 'Okänt fel'
-                    }`,
+                    message:
+                      t('Kunde inte ansluta till enheten: ') +
+                      (err instanceof Error ? err.message : t('Okänt fel')),
                   });
                 }
               }
             }}>
-            {bleConnection.status === 'connected' ? 'Koppla från' : 'Anslut'}
+            {bleConnection.status === 'connected'
+              ? t('Koppla från')
+              : t('Anslut')}
           </Button>
         </View>
       </Card.Content>

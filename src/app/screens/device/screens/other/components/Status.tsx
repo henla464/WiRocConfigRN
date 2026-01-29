@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {Button, DataTable, Divider, Switch, Text} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useNotify} from '@lib/hooks/useNotify';
@@ -13,6 +14,7 @@ import {
 import {useStore} from '@store';
 
 export default function Status() {
+  const {t} = useTranslation();
   const logs = useStore(state => state.logs);
   const notify = useNotify();
   const {addToast} = useToasts();
@@ -44,7 +46,7 @@ export default function Status() {
     useWiRocPropertyMutation(deviceId, 'uploadlogarchive', {
       onSuccess: () => {
         addToast({
-          message: 'Databas och loggar laddas upp',
+          message: t('Databas och loggar laddas upp'),
         });
       },
     });
@@ -61,8 +63,8 @@ export default function Status() {
         }}
         style={[styles.button]}>
         {isUploadingDatabaseAndLogs
-          ? 'Laddar upp...'
-          : 'Ladda upp enhetens databas och loggar'}
+          ? t('Laddar upp...')
+          : t('Ladda upp enhetens databas och loggar')}
       </Button>
       <Button
         icon=""
@@ -75,7 +77,7 @@ export default function Status() {
           } catch (err) {
             notify({
               type: 'error',
-              message: 'Kunde inte hämta "Services"',
+              message: t('Kunde inte hämta "Services"'),
             });
           }
           try {
@@ -83,23 +85,24 @@ export default function Status() {
           } catch (err) {
             notify({
               type: 'error',
-              message:
+              message: t(
                 'Kunde inte hämta "Indata" och "Utdata och transformering"',
+              ),
             });
           }
         }}
         style={[styles.button]}>
         {isLoadingStatus || isRefetchingStatus
-          ? 'Hämtar statusinformation...'
-          : 'Hämta statusinformation'}
+          ? t('Hämtar statusinformation...')
+          : t('Hämta statusinformation')}
       </Button>
       <ScrollView>
-        <Text style={styles.header}>Services</Text>
+        <Text style={styles.header}>{t('Services')}</Text>
         <View style={styles.tableContainer}>
           <DataTable style={styles.table}>
             <DataTable.Header style={styles.row}>
-              <DataTable.Title>Namn</DataTable.Title>
-              <DataTable.Title>Status</DataTable.Title>
+              <DataTable.Title>{t('Namn')}</DataTable.Title>
+              <DataTable.Title>{t('Status')}</DataTable.Title>
             </DataTable.Header>
             {services?.map(service => (
               <DataTable.Row key={service.Name} style={styles.row}>
@@ -114,12 +117,12 @@ export default function Status() {
           bold={true}
           style={{borderWidth: 0.5, borderColor: 'gray', marginBottom: 5}}
         />
-        <Text style={styles.header}>Indata</Text>
+        <Text style={styles.header}>{t('Indata')}</Text>
         <View style={styles.tableContainer}>
           <DataTable style={styles.table}>
             <DataTable.Header style={styles.row}>
-              <DataTable.Title>Indata adapter</DataTable.Title>
-              <DataTable.Title>Instans</DataTable.Title>
+              <DataTable.Title>{t('Indata adapter')}</DataTable.Title>
+              <DataTable.Title>{t('Instans')}</DataTable.Title>
             </DataTable.Header>
             {inData?.map(inD => (
               <DataTable.Row key={inD.TypeName} style={styles.row}>
@@ -134,18 +137,18 @@ export default function Status() {
           bold={true}
           style={{borderWidth: 0.5, borderColor: 'gray', marginBottom: 5}}
         />
-        <Text style={styles.header}>Utdata och transformering</Text>
+        <Text style={styles.header}>{t('Utdata och transformering')}</Text>
         <View style={styles.tableContainer}>
           <ScrollView horizontal>
             <DataTable style={(styles.table, {width: 700})}>
               <DataTable.Header style={styles.row}>
-                <DataTable.Title>Utdata adapter</DataTable.Title>
-                <DataTable.Title>Instans</DataTable.Title>
-                <DataTable.Title>Inmed. typ</DataTable.Title>
-                <DataTable.Title>Inmed. undertyp</DataTable.Title>
-                <DataTable.Title>Utmed. typ</DataTable.Title>
-                <DataTable.Title>Utmed. undertyp</DataTable.Title>
-                <DataTable.Title>Aktiv</DataTable.Title>
+                <DataTable.Title>{t('Utdata adapter')}</DataTable.Title>
+                <DataTable.Title>{t('Instans')}</DataTable.Title>
+                <DataTable.Title>{t('Inmed. typ')}</DataTable.Title>
+                <DataTable.Title>{t('Inmed. undertyp')}</DataTable.Title>
+                <DataTable.Title>{t('Utmed. typ')}</DataTable.Title>
+                <DataTable.Title>{t('Utmed. undertyp')}</DataTable.Title>
+                <DataTable.Title>{t('Aktiv')}</DataTable.Title>
               </DataTable.Header>
               {outData?.map((outD, idx) => (
                 <DataTable.Row key={idx} style={styles.row}>
@@ -155,7 +158,9 @@ export default function Status() {
                   <DataTable.Cell>{outD.MessageInSubTypeName}</DataTable.Cell>
                   <DataTable.Cell>{outD.MessageOutName}</DataTable.Cell>
                   <DataTable.Cell>{outD.MessageOutSubTypeName}</DataTable.Cell>
-                  <DataTable.Cell>{outD.Enabled ? 'Ja' : 'Nej'}</DataTable.Cell>
+                  <DataTable.Cell>
+                    {outD.Enabled ? t('Ja') : t('Nej')}
+                  </DataTable.Cell>
                 </DataTable.Row>
               ))}
             </DataTable>
@@ -165,14 +170,14 @@ export default function Status() {
           bold={true}
           style={{borderWidth: 0.5, borderColor: 'gray', marginBottom: 5}}
         />
-        <Text style={styles.header}>WiRoc Config loggar</Text>
+        <Text style={styles.header}>{t('WiRoc Config loggar')}</Text>
         <Button
           mode="contained"
           style={styles.button}
           onPress={() => {
             setLogsVisible(state => !state);
           }}>
-          {isLogsVisible ? 'Göm loggar' : 'Visa loggar'}
+          {isLogsVisible ? t('Göm loggar') : t('Visa loggar')}
         </Button>
         {isLogsVisible && (
           <ScrollView horizontal>
@@ -240,10 +245,10 @@ export default function Status() {
                             log.type === 'error'
                               ? 'red'
                               : log.type === 'warn'
-                              ? 'orange'
-                              : log.type === 'debug'
-                              ? 'gray'
-                              : 'black',
+                                ? 'orange'
+                                : log.type === 'debug'
+                                  ? 'gray'
+                                  : 'black',
                         }}>
                         {log.type.padEnd(5).toUpperCase()}
                       </Text>

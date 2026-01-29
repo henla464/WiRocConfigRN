@@ -2,6 +2,7 @@ import * as React from 'react';
 import {FieldErrors} from 'react-hook-form';
 import {Animated} from 'react-native';
 import {Banner, Icon} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 interface ISaveBannerProps {
   visible: boolean;
@@ -22,6 +23,7 @@ export default function SaveBanner({
   isSaveDisabled,
   errors,
 }: ISaveBannerProps) {
+  const {t} = useTranslation();
   return (
     <Banner
       style={{
@@ -37,7 +39,7 @@ export default function SaveBanner({
       visible={visible}
       actions={[
         {
-          label: 'Spara konfiguration',
+          label: t('Spara konfiguration'),
           disabled: isSaveDisabled,
           style: {flexShrink: 1},
           onPress: () => {
@@ -45,23 +47,25 @@ export default function SaveBanner({
           },
         },
         {
-          label: 'Uppdatera från enheten',
+          label: t('Uppdatera från enheten'),
           style: {flexShrink: 1},
           onPress: () => reload(),
         },
       ]}
       icon={({size}) => <Icon source="content-save" size={size} />}>
       {errors && Object.entries(errors).length > 0
-        ? `Konfigurationen innehåller fel som gör att den inte kan sparas just nu:\n${Object.entries(
+        ? `${t('Konfigurationen innehåller fel som gör att den inte kan sparas just nu:')}\n${Object.entries(
             errors,
           )
             .map(([path, error]) =>
               typeof error?.message === 'string'
                 ? `• ${error.message}`
-                : `• Okänt fel i fält ${path}`,
+                : `• ${t('Okänt fel i fält')} ${path}`,
             )
             .join('\n')}`
-        : 'Konfigurationen har ändrats i appen. Vill du spara ändringen eller uppdatera från enheten?'}
+        : t(
+            'Konfigurationen har ändrats i appen. Vill du spara ändringen eller uppdatera från enheten?',
+          )}
     </Banner>
   );
 }

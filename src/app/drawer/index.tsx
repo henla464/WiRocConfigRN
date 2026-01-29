@@ -4,6 +4,7 @@ import {CommonActions} from '@react-navigation/native';
 import sortBy from 'lodash/sortBy';
 import React from 'react';
 import {Image, StyleSheet, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {
   Button,
   Caption,
@@ -19,6 +20,7 @@ import {useStore} from '@store';
 import ConnectionIcon from './components/ConnectionIcon';
 
 export function DrawerContent(props: DrawerContentComponentProps) {
+  const {t} = useTranslation();
   const devices = useStore(state =>
     sortBy(Object.entries(state.wiRocDevices), ([, device]) => device.name),
   );
@@ -37,7 +39,7 @@ export function DrawerContent(props: DrawerContentComponentProps) {
         </View>
         <Drawer.Section style={styles.drawerSection}>
           <DrawerItem
-            label="Sök WiRoc enheter"
+            label={t('Sök WiRoc enheter')}
             icon={({focused, size, color}) => {
               return (
                 <Icon source="card-search-outline" size={size} color={color} />
@@ -48,7 +50,7 @@ export function DrawerContent(props: DrawerContentComponentProps) {
             }}
           />
           <DrawerItem
-            label="Om"
+            label={t('Om')}
             icon={({focused, size, color}) => {
               return (
                 <Icon source="information-outline" size={size} color={color} />
@@ -62,7 +64,7 @@ export function DrawerContent(props: DrawerContentComponentProps) {
         <Drawer.Section
           title={
             <Text style={{fontSize: 20, fontWeight: 'bold'}}>
-              WiRoc enheter
+              {t('WiRoc enheter')}
             </Text>
           }>
           {devices.map(([deviceId, device]) => (
@@ -116,9 +118,11 @@ export function DrawerContent(props: DrawerContentComponentProps) {
                         } catch (err) {
                           notify({
                             type: 'error',
-                            message: `Kunde inte ansluta till enheten: ${
-                              err instanceof Error ? err.message : 'Okänt fel'
-                            }`,
+                            message:
+                              t('Kunde inte ansluta till enheten: ') +
+                              (err instanceof Error
+                                ? err.message
+                                : t('Okänt fel')),
                           });
                         }
                       }

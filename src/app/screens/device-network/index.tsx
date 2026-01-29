@@ -1,6 +1,7 @@
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useState} from 'react';
 import {RefreshControl, SafeAreaView, ScrollView, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {
   Button,
   Dialog,
@@ -25,6 +26,7 @@ import {
 type Props = NativeStackScreenProps<RootStackParamList, 'DeviceNetwork'>;
 
 export const DeviceNetworkScreen = (props: Props) => {
+  const {t} = useTranslation();
   const navigate = props.navigation.navigate;
   const deviceId = props.route.params.deviceId;
   const notify = useNotify();
@@ -106,25 +108,27 @@ export const DeviceNetworkScreen = (props: Props) => {
             }}>
             <Surface style={{padding: 16}}>
               <View style={{gap: 8}}>
-                <Text variant="labelLarge">Wifi IP-adress</Text>
+                <Text variant="labelLarge">{t('Wifi IP-adress')}</Text>
                 {wifiip ? (
                   <Text variant="bodyLarge">{wifiip}</Text>
                 ) : (
                   <Text variant="bodyLarge" style={{opacity: 0.5}}>
-                    Ingen IP-adress
+                    {t('Ingen IP-adress')}
                   </Text>
                 )}
               </View>
               {wifiMeshIp && (
                 <View style={{gap: 8}}>
-                  <Text variant="labelLarge">Wifi-mesh IP-adress</Text>
+                  <Text variant="labelLarge">{t('Wifi-mesh IP-adress')}</Text>
                   <Text variant="bodyLarge">{wifiMeshIp}</Text>
                 </View>
               )}
 
               {usbEthernetIp && (
                 <View style={{gap: 8}}>
-                  <Text variant="labelLarge">USB Ethernet IP-adress</Text>
+                  <Text variant="labelLarge">
+                    {t('USB Ethernet IP-adress')}
+                  </Text>
                   <Text variant="bodyLarge">{usbEthernetIp}</Text>
                 </View>
               )}
@@ -137,7 +141,7 @@ export const DeviceNetworkScreen = (props: Props) => {
                   marginRight: 10,
                 }}
                 variant="titleSmall">
-                WiFi-nätverk
+                {t('WiFi-nätverk')}
               </Text>
               <List.Section>
                 {wifiNetworks.map(wifiNetworkItem => {
@@ -157,8 +161,8 @@ export const DeviceNetworkScreen = (props: Props) => {
                         description={
                           wifiNetworkItem.isConnected
                             ? isDisconnecting
-                              ? 'Kopplar ifrån...'
-                              : 'Ansluten'
+                              ? t('Kopplar ifrån...')
+                              : t('Ansluten')
                             : ''
                         }
                         onPress={() => {
@@ -202,7 +206,9 @@ export const DeviceNetworkScreen = (props: Props) => {
           onDismiss={() => {
             setDisconnectName(null);
           }}>
-          <Dialog.Title>Koppla från {disconnectName}</Dialog.Title>
+          <Dialog.Title>
+            {t('Koppla från')} {disconnectName}
+          </Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium">
               Vill du koppla ifrån {disconnectName} (signalstyrka{' '}
@@ -218,7 +224,7 @@ export const DeviceNetworkScreen = (props: Props) => {
               onPress={() => {
                 setDisconnectName(null);
               }}>
-              Avbryt
+              {t('Avbryt')}
             </Button>
             <Button
               onPress={() => {
@@ -232,7 +238,7 @@ export const DeviceNetworkScreen = (props: Props) => {
                   setDisconnectName(null);
                 });
               }}>
-              Koppla från
+              {t('Koppla från')}
             </Button>
           </Dialog.Actions>
         </Dialog>

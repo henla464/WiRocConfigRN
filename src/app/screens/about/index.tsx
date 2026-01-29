@@ -1,8 +1,10 @@
 import React from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {Text} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 export default function AboutScreen() {
+  const {t} = useTranslation();
   return (
     <View style={styles.container}>
       <ScrollView>
@@ -16,8 +18,9 @@ export default function AboutScreen() {
         </View>
         <View style={styles.containerColumn}>
           <Text style={{fontSize: 20, fontWeight: 'bold', paddingTop: 14}}>
-            Särskilt tack till Björn Norrliden som utvecklat mycket av denna
-            mobilapp.
+            {t(
+              'Särskilt tack till Björn Norrliden som utvecklat mycket av denna mobilapp.',
+            )}
           </Text>
         </View>
       </ScrollView>

@@ -1,6 +1,7 @@
 import React from 'react';
 import {useFormContext} from 'react-hook-form';
 import {StyleSheet, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {
   Divider,
   HelperText,
@@ -23,6 +24,7 @@ export default function SIRAP({
   deviceId,
   onDefaultValuesChange,
 }: SectionComponentProps) {
+  const {t} = useTranslation();
   const [expanded, setExpanded] = React.useState(false);
   const handlePress = () => setExpanded(!expanded);
 
@@ -50,11 +52,11 @@ export default function SIRAP({
       rules: {
         pattern: {
           value: ipAddressRegex,
-          message: 'Ogiltig IP-adress',
+          message: t('Ogiltig IP-adress'),
         },
         required: {
           value: isSIRAPSwitchedOn,
-          message: 'IP-adress krävs när SIRAP är aktiverat',
+          message: t('IP-adress krävs när SIRAP är aktiverat'),
         },
       },
     },
@@ -73,17 +75,17 @@ export default function SIRAP({
       rules: {
         required: {
           value: isSIRAPSwitchedOn,
-          message: 'IP-port krävs när SIRAP är aktiverat',
+          message: t('IP-port krävs när SIRAP är aktiverat'),
         },
         pattern: {
           value: /^[^0]\d*$/,
-          message: 'Ogiltigt portnummer',
+          message: t('Ogiltigt portnummer'),
         },
         validate: {
           value: value => {
             const number = parseInt(value, 10);
             if (number < 1 || number > 65535) {
-              return 'Ogiltigt portnummer';
+              return t('Ogiltigt portnummer');
             }
           },
         },
@@ -93,7 +95,7 @@ export default function SIRAP({
 
   return (
     <List.Accordion
-      title="SIRAP-tcp/ip"
+      title={t('SIRAP-tcp/ip')}
       id="sirap"
       expanded={expanded}
       onPress={handlePress}
@@ -127,7 +129,7 @@ export default function SIRAP({
               alignItems: 'center',
               paddingBottom: 8,
             }}>
-            Aktivera:{' '}
+            {t('Aktivera')}:{' '}
           </Text>
           <Switch
             value={isSIRAPSwitchedOn}

@@ -1,5 +1,6 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
+import {useTranslation} from 'react-i18next';
 import {
   Checkbox,
   Divider,
@@ -21,6 +22,7 @@ export default function SRR({
   deviceId,
   onDefaultValuesChange,
 }: SectionComponentProps) {
+  const {t} = useTranslation();
   const [expanded, setExpanded] = React.useState(false);
   const handlePress = () => setExpanded(!expanded);
 
@@ -83,14 +85,14 @@ export default function SRR({
   );
 
   const modeOptions = [
-    {value: 'RECEIVE', label: 'Mottagare', icon: 'login', disabled: false},
-    {value: 'SEND', label: 'Sändare', icon: 'logout', disabled: true},
+    {value: 'RECEIVE', label: t('Mottagare'), icon: 'login', disabled: false},
+    {value: 'SEND', label: t('Sändare'), icon: 'logout', disabled: true},
   ];
   const selectedModeOption = modeOptions.find(m => m.value === SRRMode);
 
   return (
     <List.Accordion
-      title="SportIdent SRR"
+      title={t('SportIdent SRR')}
       id="srr"
       expanded={expanded}
       onPress={handlePress}
@@ -106,7 +108,7 @@ export default function SRR({
       }}
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
-          <Text>{SRRMode === 'RECEIVE' ? 'Mottagare' : 'Sändare'}</Text>
+          <Text>{SRRMode === 'RECEIVE' ? t('Mottagare') : t('Sändare')}</Text>
           <OnOffChip on={isSRREnabled} />
           {isExpanded ? (
             <Icon source="chevron-up" size={25} />
@@ -119,8 +121,8 @@ export default function SRR({
       <View style={styles.container}>
         <View style={styles.containerColumn}>
           <List.Item
-            title="SRR"
-            description={isSRREnabled ? 'På' : 'Av'}
+            title={t('SRR')}
+            description={isSRREnabled ? t('På') : t('Av')}
             disabled={typeof isSRREnabled !== 'boolean'}
             style={{
               opacity: typeof isSRREnabled === 'boolean' ? undefined : 0.5,
@@ -138,7 +140,7 @@ export default function SRR({
           />
           <ListItemMenu
             disabled={!isSRREnabled}
-            title="Radiofunktion"
+            title={t('Radiofunktion')}
             description={selectedModeOption?.label}
             icon={selectedModeOption?.icon}>
             {modeOptions.map(item => (
@@ -154,8 +156,8 @@ export default function SRR({
             ))}
           </ListItemMenu>
           <List.Item
-            title="Röd kanal"
-            description={isRedChannelEnabled ? 'På' : 'Av'}
+            title={t('Röd kanal')}
+            description={isRedChannelEnabled ? t('På') : t('Av')}
             disabled={typeof isSRREnabled !== 'boolean'}
             style={{
               opacity: typeof isSRREnabled === 'boolean' ? undefined : 0.5,
@@ -172,11 +174,11 @@ export default function SRR({
             )}
           />
           <List.Item
-            title="Röd kanal: Lyssna endast"
+            title={t('Röd kanal: Lyssna endast')}
             description={
               isRedChannelListenOnly
-                ? 'Inga bekräftelser skickas på mottagna SRR-stämplingar'
-                : 'Bekräftelse skickas'
+                ? t('Inga bekräftelser skickas på mottagna SRR-stämplingar')
+                : t('Bekräftelse skickas')
             }
             disabled={
               !isSRREnabled || !isRedChannelEnabled || SRRMode === 'SEND'
@@ -202,8 +204,8 @@ export default function SRR({
             )}
           />
           <List.Item
-            title="Blå kanal"
-            description={isBlueChannelEnabled ? 'På' : 'Av'}
+            title={t('Blå kanal')}
+            description={isBlueChannelEnabled ? t('På') : t('Av')}
             disabled={typeof isSRREnabled !== 'boolean'}
             style={{
               opacity: typeof isSRREnabled === 'boolean' ? undefined : 0.5,
@@ -220,11 +222,11 @@ export default function SRR({
             )}
           />
           <List.Item
-            title="Blå kanal: Lyssna endast"
+            title={t('Blå kanal: Lyssna endast')}
             description={
               isBlueChannelListenOnly
-                ? 'Inga bekräftelser skickas på mottagna SRR-stämplingar'
-                : 'Bekräftelse skickas'
+                ? t('Inga bekräftelser skickas på mottagna SRR-stämplingar')
+                : t('Bekräftelse skickas')
             }
             disabled={
               !isSRREnabled || !isBlueChannelEnabled || SRRMode === 'SEND'

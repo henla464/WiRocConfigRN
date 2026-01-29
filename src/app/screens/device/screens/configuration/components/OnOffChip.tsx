@@ -1,6 +1,7 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Text, useTheme} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 interface OnOffChipProps {
   on: boolean;
@@ -8,6 +9,7 @@ interface OnOffChipProps {
 
 export default function OnOffChip(props: OnOffChipProps) {
   const {colors} = useTheme();
+  const {t} = useTranslation();
   return (
     <View
       style={[
@@ -23,7 +25,7 @@ export default function OnOffChip(props: OnOffChipProps) {
             color: props.on ? 'white' : colors.onSurfaceDisabled,
           },
         ]}>
-        {props.on ? 'På' : 'Av'}
+        {props.on ? t('På') : t('Av')}
       </Text>
     </View>
   );

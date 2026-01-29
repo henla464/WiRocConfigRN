@@ -147,7 +147,7 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
             </View>
             <View style={{backgroundColor: 'orange'}}>
               <Divider bold={true} />
-              <Text style={styles.header}>In- och utdata</Text>
+              <Text style={styles.header}>{t('In- och utdata')}</Text>
               <Divider bold={true} />
               <LoraRadio {...commonSectionProps} />
               <Divider bold={true} />
@@ -155,7 +155,7 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
             </View>
             <View style={{backgroundColor: 'orange'}}>
               <Divider bold={true} />
-              <Text style={styles.header}>Utdata</Text>
+              <Text style={styles.header}>{t('Utdata')}</Text>
               <Divider bold={true} />
               <SIRAP {...commonSectionProps} />
               <Divider bold={true} />

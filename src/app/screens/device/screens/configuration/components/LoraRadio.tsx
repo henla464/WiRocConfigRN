@@ -1,6 +1,7 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Divider, Icon, List, Switch, Text} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {LoraMode, LoraRange} from '@api/index';
 import {ListItemMenu, ListItemMenuItem} from '@lib/components/ListItemMenu';
@@ -13,6 +14,7 @@ export default function LoraRadio({
   deviceId,
   onDefaultValuesChange,
 }: SectionComponentProps) {
+  const {t} = useTranslation();
   const [expanded, setExpanded] = React.useState(false);
   const handlePress = () => setExpanded(!expanded);
 
@@ -72,9 +74,9 @@ export default function LoraRadio({
   ] = useConfigurationProperty(deviceId, 'ham/enabled', onDefaultValuesChange);
 
   const modeOptions = [
-    {value: 'RECEIVER', label: 'Mottagare', icon: 'login'},
-    {value: 'SENDER', label: 'Sändare', icon: 'logout'},
-    {value: 'REPEATER', label: 'Repeterare', icon: 'pan-horizontal'},
+    {value: 'RECEIVER', label: t('Mottagare'), icon: 'login'},
+    {value: 'SENDER', label: t('Sändare'), icon: 'logout'},
+    {value: 'REPEATER', label: t('Repeterare'), icon: 'pan-horizontal'},
   ];
   const selectedModeOption = modeOptions.find(m => m.value === loraMode);
 
@@ -182,7 +184,7 @@ export default function LoraRadio({
         <View style={styles.containerColumn}>
           <List.Item
             title="Lora-radio"
-            description={isLoraRadioEnabled ? 'På' : 'Av'}
+            description={isLoraRadioEnabled ? t('På') : t('Av')}
             disabled={typeof isLoraRadioEnabled !== 'boolean'}
             style={{
               opacity:
@@ -199,7 +201,7 @@ export default function LoraRadio({
           />
           <ListItemMenu
             disabled={!isLoraRadioEnabled}
-            title="Radiofunktion"
+            title={t('Radiofunktion')}
             description={selectedModeOption?.label}
             icon={selectedModeOption?.icon}>
             {modeOptions.map(item => (
@@ -216,7 +218,7 @@ export default function LoraRadio({
           <ListItemMenu
             disabled={!isLoraRadioEnabled}
             icon="sine-wave"
-            title="Kanal"
+            title={t('Kanal')}
             description={selectedChannelOption?.label}>
             {channelOptions.map(item => (
               <ListItemMenuItem
@@ -232,7 +234,7 @@ export default function LoraRadio({
           <ListItemMenu
             disabled={!isLoraRadioEnabled}
             icon="signal-distance-variant"
-            title="Räckvidd / Datahastighet"
+            title={t('Räckvidd / Datahastighet')}
             description={
               rangeOptions.find(r => r.value === loraRange)?.label ?? '?'
             }>
@@ -252,11 +254,11 @@ export default function LoraRadio({
             style={{
               opacity: isLoraRadioEnabled ? undefined : 0.5,
             }}
-            title="Begär bekräftelse"
+            title={t('Begär bekräftelse')}
             description={
               acknowledgementRequested
-                ? 'Mottagaren ska bekräfta mottagen stämpling'
-                : 'Mottagaren bekräftar inte mottagen stämpling'
+                ? t('Mottagaren ska bekräfta mottagen stämpling')
+                : t('Mottagaren bekräftar inte mottagen stämpling')
             }
             right={props => (
               <Switch
@@ -287,7 +289,7 @@ export default function LoraRadio({
           <ListItemMenu
             disabled={!isLoraRadioEnabled}
             icon="transmission-tower-export"
-            title="Uteffekt"
+            title={t('Uteffekt')}
             description={selectedPowerOption?.label}>
             {powerOptions.map(item => (
               <ListItemMenuItem

@@ -2,6 +2,7 @@ import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import {Button, DataTable} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useNotify} from '@lib/hooks/useNotify';
@@ -13,6 +14,7 @@ import {
 import AddEditSettingsModal from './AddEditSettingsModal';
 
 export default function Settings() {
+  const {t} = useTranslation();
   const deviceId = useActiveWiRocDevice();
 
   const notify = useNotify();
@@ -26,7 +28,7 @@ export default function Settings() {
     'setting',
     {
       onError: () => {
-        notify({type: 'error', message: 'Kunde inte uppdatera'});
+        notify({type: 'error', message: t('Kunde inte uppdatera')});
       },
     },
   );
@@ -79,10 +81,10 @@ export default function Settings() {
           onPress={() => {
             fetchOrRefresh();
           }}>
-          Hämta/Uppdatera listan
+          {t('Hämta/Uppdatera listan')}
         </Button>
         <Button mode="contained" style={styles.button} onPress={addSetting}>
-          Lägg till nytt nyckelvärde
+          {t('Lägg till nytt nyckelvärde')}
         </Button>
         <ScrollView
           horizontal={true}
@@ -90,8 +92,12 @@ export default function Settings() {
           <View style={styles.tableContainer}>
             <DataTable style={(styles.table, {width: 600})}>
               <DataTable.Header style={styles.row}>
-                <DataTable.Title style={{flex: 5}}>Nyckel</DataTable.Title>
-                <DataTable.Title style={{flex: 5}}>Värde</DataTable.Title>
+                <DataTable.Title style={{flex: 5}}>
+                  {t('Nyckel')}
+                </DataTable.Title>
+                <DataTable.Title style={{flex: 5}}>
+                  {t('Värde')}
+                </DataTable.Title>
                 <DataTable.Title style={{flex: 3}}> </DataTable.Title>
               </DataTable.Header>
               <ScrollView>
