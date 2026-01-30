@@ -2,12 +2,14 @@ import {useQuery, useQueryClient} from '@tanstack/react-query';
 import React, {useState} from 'react';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {Button, DataTable} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {Punch} from '@api/types';
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useWiRocDeviceApi} from '@lib/hooks/useWiRocDeviceApi';
 
 export default function ViewPunches() {
+  const {t} = useTranslation();
   const deviceId = useActiveWiRocDevice();
   const wiRocDeviceApi = useWiRocDeviceApi(deviceId);
   const [isListening, setIsListening] = useState<boolean>(false);
@@ -42,7 +44,7 @@ export default function ViewPunches() {
           mode="contained"
           onPress={startStopViewPunches}
           style={[styles.button, {flex: 1, marginRight: 0}]}>
-          {isListening ? 'Sluta visa stämplingar' : 'Visa stämplingar'}
+          {isListening ? t('Sluta visa stämplingar') : t('Visa stämplingar')}
         </Button>
       </View>
       <View style={styles.containerRow}>
@@ -53,16 +55,16 @@ export default function ViewPunches() {
             queryClient.setQueryData([deviceId, 'punches'], []);
           }}
           style={[styles.button, {flex: 1, marginRight: 0}]}>
-          Rensa
+          {t('Rensa')}
         </Button>
       </View>
       <ScrollView>
         <View style={styles.tableContainer}>
           <DataTable style={styles.table}>
             <DataTable.Header style={styles.row}>
-              <DataTable.Title>Kontrollnummer</DataTable.Title>
-              <DataTable.Title>SI-nummer</DataTable.Title>
-              <DataTable.Title>Tid</DataTable.Title>
+              <DataTable.Title>{t('Kontrollnummer')}</DataTable.Title>
+              <DataTable.Title>{t('SI-nummer')}</DataTable.Title>
+              <DataTable.Title>{t('Tid')}</DataTable.Title>
             </DataTable.Header>
             <ScrollView>
               {punches.map((punch, idx) => (

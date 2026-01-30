@@ -149,7 +149,7 @@ export const DeviceNetworkScreen = (props: Props) => {
                     <Tooltip
                       {...props}
                       key={wifiNetworkItem.networkName}
-                      title={`Signalstyrka ${wifiNetworkItem.signalStrength}`}>
+                      title={`${t('Signalstyrka')} ${wifiNetworkItem.signalStrength}`}>
                       <List.Item
                         disabled={isDisconnecting}
                         title={wifiNetworkItem.networkName}
@@ -211,7 +211,7 @@ export const DeviceNetworkScreen = (props: Props) => {
           </Dialog.Title>
           <Dialog.Content>
             <Text variant="bodyMedium">
-              Vill du koppla ifrån {disconnectName} (signalstyrka{' '}
+              {t('Vill du koppla ifrån')} {disconnectName} ({t('signalstyrka')}{' '}
               {
                 wifiNetworks.find(n => n.networkName === disconnectName)
                   ?.signalStrength
@@ -233,7 +233,10 @@ export const DeviceNetworkScreen = (props: Props) => {
 
                 wifiDisconnect().then(() => {
                   addToast({
-                    message: `${dName} kopplade ifrån ${name}`,
+                    message: t('{{device}} disconnected from {{network}}', {
+                      device: dName,
+                      network: name,
+                    }),
                   });
                   setDisconnectName(null);
                 });

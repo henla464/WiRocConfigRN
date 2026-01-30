@@ -37,7 +37,7 @@ export default function USB({
 
   return (
     <List.Accordion
-      title="USB"
+      title={t('USB')}
       id="usb"
       expanded={expanded}
       onPress={handlePress}

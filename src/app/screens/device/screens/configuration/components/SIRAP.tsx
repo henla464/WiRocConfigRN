@@ -143,7 +143,7 @@ export default function SIRAP({
           <TextInput
             value={ipAddress}
             onChangeText={setIpAddress}
-            label="IP-adress"
+            label={t('IP-adress')}
             keyboardType="numeric"
             error={ipAddressFieldState.invalid}
             style={{backgroundColor: 'rgb(255, 251, 255)'}}
@@ -156,7 +156,7 @@ export default function SIRAP({
           <TextInput
             value={ipPort?.toString()}
             onChangeText={setIpPort}
-            label="IP-port"
+            label={t('IP-port')}
             keyboardType="numeric"
             error={ipPortFieldState.invalid}
             style={{backgroundColor: 'rgb(255, 251, 255)'}}

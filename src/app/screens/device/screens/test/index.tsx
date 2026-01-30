@@ -1,5 +1,6 @@
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import React from 'react';
+import {useTranslation} from 'react-i18next';
 
 import {Notifications} from '@lib/components/Notifications';
 
@@ -9,6 +10,7 @@ import ViewPunches from './components/ViewPunches';
 const Tab = createMaterialTopTabNavigator();
 
 export default function TestScreen() {
+  const {t} = useTranslation();
   return (
     <>
       <Notifications />
@@ -20,13 +22,13 @@ export default function TestScreen() {
         }}>
         <Tab.Screen
           name="SENDPUNCHES"
-          options={{tabBarLabel: 'Skicka stämplingar'}}
+          options={{tabBarLabel: t('Skicka stämplingar')}}
           component={SendPunches}
         />
         <Tab.Screen
           name="ViewPunches"
           component={ViewPunches}
-          options={{tabBarLabel: 'Visa stämplingar'}}
+          options={{tabBarLabel: t('Visa stämplingar')}}
         />
       </Tab.Navigator>
     </>

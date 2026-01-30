@@ -1,12 +1,14 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Button} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useNotify} from '@lib/hooks/useNotify';
 import {useWiRocPropertyMutation} from '@lib/hooks/useWiRocPropertyQuery';
 
 export default function Database() {
+  const {t} = useTranslation();
   const deviceId = useActiveWiRocDevice();
   const notify = useNotify();
 
@@ -16,7 +18,7 @@ export default function Database() {
     {
       onSuccess: () => {
         notify({
-          message: 'Stämplingar har tagits bort från databasen',
+          message: t('Stämplingar har tagits bort från databasen'),
           type: 'info',
         });
       },
@@ -29,7 +31,7 @@ export default function Database() {
     {
       onSuccess: () => {
         notify({
-          message: 'Databasen har tömts och skapats om',
+          message: t('Databasen har tömts och skapats om'),
           type: 'info',
         });
       },
@@ -46,7 +48,7 @@ export default function Database() {
             deletePunches();
           }}
           style={[styles.button, {flex: 1, marginRight: 0, marginTop: 30}]}>
-          Ta bort stämplingar från databasen
+          {t('Ta bort stämplingar från databasen')}
         </Button>
       </View>
       <View style={styles.containerRow}>
@@ -57,7 +59,7 @@ export default function Database() {
             dropDatabaseTables();
           }}
           style={[styles.button, {flex: 1, marginRight: 0, marginTop: 30}]}>
-          Ta bort och skapa om alla databastabeller
+          {t('Ta bort och skapa om alla databastabeller')}
         </Button>
       </View>
     </View>

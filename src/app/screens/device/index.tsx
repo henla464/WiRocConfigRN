@@ -1,6 +1,7 @@
 import {DrawerScreenProps} from '@react-navigation/drawer';
 import React, {useEffect} from 'react';
 import {Icon} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
 import {useStore} from '@store';
@@ -55,6 +56,7 @@ export default function DeviceScreen(props: Props) {
 }
 
 function Content() {
+  const {t} = useTranslation();
   return (
     <>
       <Tab.Navigator
@@ -64,7 +66,7 @@ function Content() {
           name="configuration"
           component={ConfigurationScreen}
           options={{
-            tabBarLabel: 'Konfiguration',
+            tabBarLabel: t('Konfiguration'),
             tabBarIcon: ({color}) => (
               <Icon source="router-wireless-settings" color={color} size={26} />
             ),
@@ -74,7 +76,7 @@ function Content() {
           name="test"
           component={TestScreen}
           options={{
-            tabBarLabel: 'Test',
+            tabBarLabel: t('Test'),
             tabBarIcon: ({color}) => (
               <Icon source="list-status" color={color} size={26} />
             ),
@@ -85,7 +87,7 @@ function Content() {
           name="other"
           component={OtherScreen}
           options={{
-            tabBarLabel: 'Övrigt',
+            tabBarLabel: t('Övrigt'),
             tabBarIcon: ({color}) => (
               <Icon source="ampersand" color={color} size={26} />
             ),

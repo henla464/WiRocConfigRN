@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Alert, Modal, StyleSheet, View} from 'react-native';
 import {Button, TextInput, Text} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 interface ISettingsModalProps {
   modalVisible: boolean;
@@ -19,6 +20,7 @@ export default function AddEditSettingsModal({
   value,
   newSetting,
 }: ISettingsModalProps) {
+  const {t} = useTranslation();
   const [currentKey, setCurrentKey] = useState<string>(keyName);
   const [currentValue, setCurrentValue] = useState<string>(value);
   useEffect(() => {
@@ -42,12 +44,12 @@ export default function AddEditSettingsModal({
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           <Text style={styles.modalText}>
-            {newSetting ? 'Lägg till nytt nyckelvärde' : 'Ändra inställning'}
+            {t(newSetting ? 'Lägg till nytt nyckelvärde' : 'Ändra inställning')}
           </Text>
           <TextInput
             value={currentKey}
             style={styles.textInput}
-            label="Nyckel"
+            label={t('Nyckel')}
             onChangeText={(text: string) => {
               setCurrentKey(text);
             }}
@@ -55,7 +57,7 @@ export default function AddEditSettingsModal({
           <TextInput
             value={currentValue}
             style={styles.textInput}
-            label="Värde"
+            label={t('Värde')}
             onChangeText={(text: string) => {
               setCurrentValue(text);
             }}
@@ -65,13 +67,13 @@ export default function AddEditSettingsModal({
               mode="contained"
               style={styles.button}
               onPress={() => saveSetting(currentKey, currentValue)}>
-              Spara
+              {t('Spara')}
             </Button>
             <Button
               mode="contained"
               style={styles.button}
               onPress={() => closeModal()}>
-              Avbryt
+              {t('Avbryt')}
             </Button>
           </View>
         </View>

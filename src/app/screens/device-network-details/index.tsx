@@ -46,7 +46,12 @@ export const DeviceNetworkDetailsScreen = (props: Props) => {
       onSuccess: () => {
         const name = wifiNetwork?.networkName ?? 'nätverket';
         const dName = deviceName ?? 'Enheten';
-        addToast({message: `${dName} är nu ansluten till ${name}`});
+        addToast({
+          message: t('{{device}} is now connected to {{network}}', {
+            device: dName,
+            network: name,
+          }),
+        });
       },
       onSettled: () => {
         refetchWifiNetworks();
@@ -80,14 +85,14 @@ export const DeviceNetworkDetailsScreen = (props: Props) => {
             {!wifiNetwork?.isConnected ? (
               <>
                 <Text variant="bodyLarge">
-                  Signalstyrka: {wifiNetwork?.signalStrength}
+                  {t('Signalstyrka')}: {wifiNetwork?.signalStrength}
                 </Text>
                 <TextInput
                   value={password}
                   disabled={isConnecting}
                   autoFocus
                   onSubmitEditing={connect}
-                  label="Password"
+                  label={t('Password')}
                   secureTextEntry={isPasswordHidden}
                   onChangeText={(text: string) => {
                     setPassword(text);
@@ -107,7 +112,7 @@ export const DeviceNetworkDetailsScreen = (props: Props) => {
                   style={{
                     alignSelf: 'center',
                   }}>
-                  {isConnecting ? 'Ansluter' : 'Anslut'}
+                  {isConnecting ? t('Ansluter') : t('Anslut')}
                 </Button>
               </>
             ) : undefined}

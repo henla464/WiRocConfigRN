@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Alert, Modal, StyleSheet, View} from 'react-native';
 import {Button, TextInput, Text} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 interface IDeviceNameModalProps {
   modalVisible: boolean;
@@ -15,6 +16,7 @@ export default function EditDeviceNameModal({
   saveSetting,
   deviceName,
 }: IDeviceNameModalProps) {
+  const {t} = useTranslation();
   const [currentDeviceName, setCurrentDeviceName] =
     useState<string>(deviceName);
 
@@ -36,11 +38,11 @@ export default function EditDeviceNameModal({
       }}>
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
-          <Text style={styles.modalText}>{'Ändra enhetsnamn'}</Text>
+          <Text style={styles.modalText}>{t('Ändra enhetsnamn')}</Text>
           <TextInput
             value={currentDeviceName}
             style={styles.textInput}
-            label="Enhetsnamn"
+            label={t('Enhetsnamn')}
             onChangeText={(text: string) => {
               setCurrentDeviceName(text);
             }}
@@ -50,13 +52,13 @@ export default function EditDeviceNameModal({
               mode="contained"
               style={styles.button}
               onPress={() => saveSetting(currentDeviceName)}>
-              Spara
+              {t('Spara')}
             </Button>
             <Button
               mode="contained"
               style={styles.button}
               onPress={() => closeModal()}>
-              Avbryt
+              {t('Avbryt')}
             </Button>
           </View>
         </View>

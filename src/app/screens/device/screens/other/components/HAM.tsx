@@ -2,6 +2,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {StyleSheet, View} from 'react-native';
 import {Checkbox, TextInput} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {SettablePropName, SettableValues} from '@api/transformers';
 import SaveBanner from '@lib/components/SaveBanner';
@@ -10,6 +11,7 @@ import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 import {useWiRocPropertiesMutation} from '@lib/hooks/useWiRocPropertyQuery';
 
 export default function HAM() {
+  const {t} = useTranslation();
   const deviceId = useActiveWiRocDevice();
   const [defaultValues, setDefaultValues] = useState<Partial<SettableValues>>(
     {},
@@ -60,7 +62,9 @@ export default function HAM() {
       rules: {
         required: {
           value: isHamEnabled,
-          message: 'Anropssignal krävs när amatörradiokanalerna är aktiverade',
+          message: t(
+            'Anropssignal krävs när amatörradiokanalerna är aktiverade',
+          ),
         },
       },
     },
@@ -105,7 +109,7 @@ export default function HAM() {
         <View style={[styles.mainCheckBoxContainer]}>
           <Checkbox.Item
             status={isHamEnabled ? 'checked' : 'unchecked'}
-            label="Amatörradio"
+            label={t('Amatörradio')}
             position="leading"
             onPress={() => {
               if (isHamEnabled && channel.startsWith('HAM')) {
@@ -122,7 +126,7 @@ export default function HAM() {
           disabled={!isHamEnabled}
           value={hamCallSign}
           onChangeText={setHamCallSign}
-          label="Anropssignal"
+          label={t('Anropssignal')}
           maxLength={10}
           style={{backgroundColor: 'rgb(255, 251, 255)'}}
         />

@@ -144,7 +144,7 @@ export default function LoraRadio({
   return (
     <List.Accordion
       id="lora"
-      title="Lora-radio"
+      title={t('Lora-radio')}
       expanded={expanded}
       onPress={handlePress}
       theme={{
@@ -183,7 +183,7 @@ export default function LoraRadio({
       <View style={styles.container}>
         <View style={styles.containerColumn}>
           <List.Item
-            title="Lora-radio"
+            title={t('Lora-radio')}
             description={isLoraRadioEnabled ? t('På') : t('Av')}
             disabled={typeof isLoraRadioEnabled !== 'boolean'}
             style={{

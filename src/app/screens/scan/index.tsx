@@ -1,6 +1,7 @@
 import React from 'react';
 import {SafeAreaView, ScrollView, StatusBar, StyleSheet} from 'react-native';
 import {Button} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 import {useShallow} from 'zustand/react/shallow';
 
 import {Notifications} from '@lib/components/Notifications';
@@ -28,6 +29,7 @@ export default function ScanForDevicesScreen() {
 }
 
 const ScanButton = () => {
+  const {t} = useTranslation();
   const startScan = useStore(state => state.startBleScan);
   const stopScan = useStore(state => state.stopBleScan);
   const isScanning = useStore(state => state.isScanning);
@@ -38,7 +40,7 @@ const ScanButton = () => {
       mode="contained"
       onPress={isScanning ? stopScan : startScan}
       style={styles.button}>
-      {isScanning ? 'Stoppa sökning' : 'Sök WiRoc enheter'}
+      {isScanning ? t('Stoppa sökning') : t('Sök WiRoc enheter')}
     </Button>
   );
 };

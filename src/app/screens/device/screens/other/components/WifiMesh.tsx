@@ -2,6 +2,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {ScrollView, StyleSheet, View} from 'react-native';
 import {Switch, List, Text, Button, DataTable} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {SettablePropName, SettableValues} from '@api/transformers';
 import SaveBanner from '@lib/components/SaveBanner';
@@ -14,6 +15,7 @@ import {
 import {ListItemMenu, ListItemMenuItem} from '@lib/components/ListItemMenu';
 
 export default function WifiMesh() {
+  const {t} = useTranslation();
   const deviceId = useActiveWiRocDevice();
   const [defaultValues, setDefaultValues] = useState<Partial<SettableValues>>(
     {},
@@ -74,7 +76,7 @@ export default function WifiMesh() {
       rules: {
         required: {
           value: isWifiMeshEnabled && !isGatewayEnabled,
-          message: 'Nodnummer är obligatoriskt (ska vara unikt)',
+          message: t('Nodnummer är obligatoriskt (ska vara unikt)'),
         },
       },
     },
@@ -181,8 +183,8 @@ export default function WifiMesh() {
         />
         <View style={(styles.containerColumn, {marginTop: mTop})}>
           <List.Item
-            title="Wifi-Mesh"
-            description={isWifiMeshEnabled ? 'På' : 'Av'}
+            title={t('Wifi-mesh')}
+            description={isWifiMeshEnabled ? t('På') : t('Av')}
             disabled={typeof isWifiMeshEnabled !== 'boolean'}
             style={{
               opacity: typeof isWifiMeshEnabled === 'boolean' ? undefined : 0.5,
@@ -202,8 +204,8 @@ export default function WifiMesh() {
             )}
           />
           <List.Item
-            title="Gateway (endast en)"
-            description={isGatewayEnabled ? 'På' : 'Av'}
+            title={t('Gateway (endast en)')}
+            description={isGatewayEnabled ? t('På') : t('Av')}
             disabled={
               typeof isWifiMeshEnabled !== 'boolean' || !isWifiMeshEnabled
             }
@@ -240,7 +242,7 @@ export default function WifiMesh() {
                 : undefined,
           }}
           icon="gamepad-circle-up"
-          title="Nodnummer"
+          title={t('Nodnummer')}
           description={selectedMeshNodeNumberOptions?.label}>
           {meshNodeNumberOptions.map(item => (
             <ListItemMenuItem
@@ -262,8 +264,8 @@ export default function WifiMesh() {
                 : undefined,
           }}
           icon="upload-network-outline"
-          title="Skicka till interface"
-          description={wifiMeshRouteToInterface || 'Välj interface'}>
+          title={t('Skicka till interface')}
+          description={wifiMeshRouteToInterface || t('Välj interface')}>
           {networkInterfaces?.map(
             item =>
               item !== 'mesh0' && (
@@ -295,7 +297,7 @@ export default function WifiMesh() {
             fetchOrRefreshMAC();
             fetchOrRefresh();
           }}>
-          Hämta/Uppdatera status nedan
+          {t('Hämta/Uppdatera status nedan')}
         </Button>
         <Text
           style={{
@@ -305,7 +307,7 @@ export default function WifiMesh() {
                 ? 0.5
                 : undefined,
           }}>
-          Mesh interface skapat:
+          {t('Mesh interface skapat')}:
         </Text>
         <Text
           style={{
@@ -317,7 +319,7 @@ export default function WifiMesh() {
                 ? 0
                 : undefined,
           }}>
-          {meshInterfaceCreated ? 'Ja' : 'Nej'}
+          {meshInterfaceCreated ? t('Ja') : t('Nej')}
         </Text>
         <Text
           style={{
@@ -327,7 +329,7 @@ export default function WifiMesh() {
                 ? 0.5
                 : undefined,
           }}>
-          Mesh ipadress:
+          {t('Mesh ipadress')}:
         </Text>
         <Text
           style={{
@@ -350,7 +352,7 @@ export default function WifiMesh() {
                 ? 0.5
                 : undefined,
           }}>
-          Mesh MAC-adress:
+          {t('Mesh MAC-adress')}:
         </Text>
         <Text
           style={{
@@ -372,10 +374,18 @@ export default function WifiMesh() {
             <View style={styles.tableContainer}>
               <DataTable style={(styles.table, {width: 500})}>
                 <DataTable.Header style={styles.row}>
-                  <DataTable.Title style={{flex: 5}}>Dest</DataTable.Title>
-                  <DataTable.Title style={{flex: 5}}>Via</DataTable.Title>
-                  <DataTable.Title style={{flex: 1}}>Hop</DataTable.Title>
-                  <DataTable.Title style={{flex: 2}}>Quality</DataTable.Title>
+                  <DataTable.Title style={{flex: 5}}>
+                    {t('Dest')}
+                  </DataTable.Title>
+                  <DataTable.Title style={{flex: 5}}>
+                    {t('Via')}
+                  </DataTable.Title>
+                  <DataTable.Title style={{flex: 1}}>
+                    {t('Hop')}
+                  </DataTable.Title>
+                  <DataTable.Title style={{flex: 2}}>
+                    {t('Quality')}
+                  </DataTable.Title>
                 </DataTable.Header>
                 <ScrollView>
                   {mpaths?.map(mpath => (
@@ -385,7 +395,7 @@ export default function WifiMesh() {
                       </DataTable.Cell>
                       <DataTable.Cell style={{flex: 5}}>
                         {mpath.dest_addr === mpath.next_hop
-                          ? 'Direkt'
+                          ? t('Direkt')
                           : mpath.next_hop}
                       </DataTable.Cell>
                       <DataTable.Cell style={{flex: 1}}>

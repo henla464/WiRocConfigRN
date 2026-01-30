@@ -1,12 +1,10 @@
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import React from 'react';
 import {Dimensions} from 'react-native';
-import {useTheme} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {Notifications} from '@lib/components/Notifications';
 import {Toasts} from '@lib/components/Toasts';
-import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
-import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
 
 import Database from './components/Database';
 import HAM from './components/HAM';
@@ -19,8 +17,7 @@ import WifiMesh from './components/WifiMesh';
 const Tab = createMaterialTopTabNavigator();
 
 export default function OtherScreen() {
-  const deviceId = useActiveWiRocDevice();
-  const {data: hasRTC} = useWiRocPropertyQuery(deviceId, 'hashw/rtc');
+  const {t} = useTranslation();
 
   return (
     <>
@@ -39,13 +36,13 @@ export default function OtherScreen() {
         initialLayout={{
           width: Dimensions.get('window').width,
         }}>
-        <Tab.Screen name="Databas" component={Database} />
-        <Tab.Screen name="Tid/Väckning" component={WakeUp} />
-        <Tab.Screen name="Status" component={Status} />
-        <Tab.Screen name="Inställningar" component={Settings} />
-        <Tab.Screen name="Amatörradio" component={HAM} />
-        <Tab.Screen name="Wifi-mesh" component={WifiMesh} />
-        <Tab.Screen name="Uppdatera" component={Update} />
+        <Tab.Screen name={t('Databas')} component={Database} />
+        <Tab.Screen name={t('Tid/Väckning')} component={WakeUp} />
+        <Tab.Screen name={t('Status')} component={Status} />
+        <Tab.Screen name={t('Inställningar')} component={Settings} />
+        <Tab.Screen name={t('Amatörradio')} component={HAM} />
+        <Tab.Screen name={t('Wifi-mesh')} component={WifiMesh} />
+        <Tab.Screen name={t('Uppdatera')} component={Update} />
       </Tab.Navigator>
     </>
   );

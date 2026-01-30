@@ -9,6 +9,7 @@ import {
   TextInput,
   useTheme,
 } from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {TestPunch} from '@api/types';
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
@@ -17,6 +18,7 @@ import {useWiRocDeviceApi} from '@lib/hooks/useWiRocDeviceApi';
 import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
 
 export default function SendPunches() {
+  const {t} = useTranslation();
   const deviceId = useActiveWiRocDevice();
   const queryClient = useQueryClient();
   const wiRocDeviceApi = useWiRocDeviceApi(deviceId);
@@ -82,7 +84,7 @@ export default function SendPunches() {
       setIsSending(true);
       if (!siCardNo || siCardNo.length === 0 || isNaN(parseInt(siCardNo, 10))) {
         notify({
-          message: 'SI Nummer måste fyllas i',
+          message: t('SI Nummer måste fyllas i'),
           type: 'info',
         });
         return;
@@ -90,7 +92,7 @@ export default function SendPunches() {
 
       if (isNaN(numberOfPunches)) {
         notify({
-          message: 'Ogiltigt antal',
+          message: t('Ogiltigt antal'),
           type: 'info',
         });
         return;
@@ -98,7 +100,7 @@ export default function SendPunches() {
 
       if (isNaN(sendInterval)) {
         notify({
-          message: 'Ogiltigt intervall',
+          message: t('Ogiltigt intervall'),
           type: 'info',
         });
         return;
@@ -117,15 +119,15 @@ export default function SendPunches() {
   const getStatusDisplayName = (status: String) => {
     switch (status) {
       case 'Acked':
-        return 'Bekr.';
+        return t('Bekr.');
       case 'Not acked':
-        return 'Ej bekr.';
+        return t('Ej bekr.');
       case 'Sent':
-        return 'Skickad';
+        return t('Skickad');
       case 'Not added':
-        return 'Ej till.';
+        return t('Ej till.');
       case 'Added':
-        return 'Tillagd';
+        return t('Tillagd');
       default:
         return status;
     }
@@ -152,7 +154,7 @@ export default function SendPunches() {
         <TextInput
           disabled={isSending}
           value={siCardNo}
-          label="SI-nummer"
+          label={t('SI-nummer')}
           onChangeText={text => {
             if (text === '') {
               setSiCardNo('');
@@ -169,7 +171,7 @@ export default function SendPunches() {
         <TextInput
           disabled={isSending}
           value={numberOfPunchesInput}
-          label="Antal"
+          label={t('Antal')}
           error={isNaN(numberOfPunches)}
           selectTextOnFocus
           onChangeText={setNumberOfPunchesInput}
@@ -180,7 +182,7 @@ export default function SendPunches() {
         <TextInput
           disabled={isSending}
           value={sendIntervalInput}
-          label="Intervall"
+          label={t('Intervall')}
           right={<TextInput.Affix text="s" />}
           error={isNaN(sendInterval)}
           selectTextOnFocus
@@ -199,34 +201,34 @@ export default function SendPunches() {
           onPress={startStopSendPunches}
           labelStyle={{fontSize: 16}}
           style={{flex: 1}}>
-          {isSending ? 'Sluta skicka' : 'Skicka'}
+          {isSending ? t('Sluta skicka') : t('Skicka')}
         </Button>
       </Surface>
       <Surface style={{flex: 1}}>
         <DataTable style={styles.table}>
           <DataTable.Header style={styles.row}>
             <DataTable.Title textStyle={{fontSize: 20}} style={{flex: 14}}>
-              {ackReq ? 'ASI Nr' : 'NSI Nr'}
+              {t('SI Nr')}
             </DataTable.Title>
             <DataTable.Title
               textStyle={{fontSize: 20}}
               style={{flex: 11, justifyContent: 'center'}}>
-              Tid
+              {t('Tid')}
             </DataTable.Title>
             <DataTable.Title
               textStyle={{fontSize: 20}}
               style={(styles.centered, {flex: 7})}>
-              RSSI
+              {t('RSSI')}
             </DataTable.Title>
             <DataTable.Title
               textStyle={{fontSize: 20}}
               style={(styles.centered, {flex: 7})}>
-              Förs.
+              {t('Förs.')}
             </DataTable.Title>
             <DataTable.Title
               textStyle={{fontSize: 20}}
               style={(styles.centered, {flex: 10})}>
-              Status
+              {t('Status')}
             </DataTable.Title>
           </DataTable.Header>
           <Divider bold={true} />
@@ -300,7 +302,7 @@ export default function SendPunches() {
           <Divider bold={true} />
           <DataTable.Row key={'footer'} style={styles.row}>
             <DataTable.Cell textStyle={{fontSize: 22}} style={{flex: 31}}>
-              Procent lyckade
+              {t('Procent lyckade')}
             </DataTable.Cell>
             <DataTable.Cell
               textStyle={{fontSize: 22}}

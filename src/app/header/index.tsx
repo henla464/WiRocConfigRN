@@ -2,6 +2,7 @@ import {useNavigation} from '@react-navigation/native';
 import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {IconButton, Portal, Snackbar} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {
   useWiRocPropertyMutation,
@@ -11,6 +12,7 @@ import {
 import EditDeviceNameModal from './components/EditDeviceNameModal';
 
 export default function NavigationHeader({deviceId}: {deviceId: string}) {
+  const {t} = useTranslation();
   const navigation = useNavigation();
   const {data: batteryLevel = 0, refetch: refetchBatteryLevel} =
     useWiRocPropertyQuery(deviceId, 'batterylevel');
@@ -39,7 +41,7 @@ export default function NavigationHeader({deviceId}: {deviceId: string}) {
 
   const [isBatteryLevelSnackbarVisible, setBatteryLevelSnackbarVisible] =
     useState(false);
-  const snackbarText = `Enhetens batterinivå: ${batteryLevelRounded}%`;
+  const snackbarText = `${t('Enhetens batterinivå:')} ${batteryLevelRounded}%`;
 
   return (
     <>

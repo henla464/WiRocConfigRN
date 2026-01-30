@@ -2,6 +2,7 @@ import {useQuery} from '@tanstack/react-query';
 import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Button, Dialog, List, Menu, Portal, Text} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useNotify} from '@lib/hooks/useNotify';
@@ -29,6 +30,7 @@ interface IReleaseItem {
 }
 
 export default function Update() {
+  const {t} = useTranslation();
   const deviceId = useActiveWiRocDevice();
   const notify = useNotify();
 
@@ -116,13 +118,13 @@ export default function Update() {
       onSuccess: () => {
         notify({
           type: 'info',
-          message: 'Enheten kommer att uppdatera WiRoc BLE API-versionen',
+          message: t('Enheten kommer att uppdatera WiRoc BLE API-versionen'),
         });
       },
       onError: () => {
         notify({
           type: 'error',
-          message: 'Kunde inte uppdatera WiRoc BLE API version',
+          message: t('Kunde inte uppdatera WiRoc BLE API version'),
         });
       },
     },
@@ -135,13 +137,13 @@ export default function Update() {
       onSuccess: () => {
         notify({
           type: 'info',
-          message: 'Enheten kommer att uppdatera WiRoc-versionen',
+          message: t('Enheten kommer att uppdatera WiRoc-versionen'),
         });
       },
       onError: () => {
         notify({
           type: 'error',
-          message: 'Kunde inte uppdatera WiRoc version',
+          message: t('Kunde inte uppdatera WiRoc version'),
         });
       },
     },
@@ -180,8 +182,8 @@ export default function Update() {
         anchorPosition="bottom"
         anchor={
           <List.Item
-            title="Uppdatera WiRoc"
-            description={`Nuvarande WiRoc version: v${currentWiRocVersion}`}
+            title={t('Uppdatera WiRoc')}
+            description={`${t('Nuvarande WiRoc version')}: v${currentWiRocVersion}`}
             left={props => <List.Icon icon="radio-handheld" {...props} />}
             right={props => <List.Icon icon="chevron-right" {...props} />}
             onPress={() => setVersionMenuOpen(true)}
@@ -204,8 +206,8 @@ export default function Update() {
         anchorPosition="bottom"
         anchor={
           <List.Item
-            title="Uppdatera WiRoc BLE API"
-            description={`Nuvarande WiRoc BLE API version: v${currentWiRocBLEAPIVersion}`}
+            title={t('Uppdatera WiRoc BLE API')}
+            description={`${t('Nuvarande WiRoc BLE API version')}: v${currentWiRocBLEAPIVersion}`}
             left={props => <List.Icon icon="bluetooth" {...props} />}
             right={props => <List.Icon icon="chevron-right" {...props} />}
             onPress={() => setBleVersionMenuOpen(true)}
@@ -229,11 +231,11 @@ export default function Update() {
             setWiRocVersion(null);
           }}>
           <Dialog.Icon icon="alert" />
-          <Dialog.Title>Uppdatera WiRoc</Dialog.Title>
+          <Dialog.Title>{t('Uppdatera WiRoc')}</Dialog.Title>
           <Dialog.Content>
             <Text>
-              Är du säker på att du vill uppdatera WiRoc från version{' '}
-              {currentWiRocVersion} till version {wiRocVersion}?
+              {t('Är du säker på att du vill uppdatera WiRoc från version')}{' '}
+              {currentWiRocVersion} {t('till version')} {wiRocVersion}?
             </Text>
           </Dialog.Content>
           <Dialog.Actions>
@@ -241,7 +243,7 @@ export default function Update() {
               onPress={() => {
                 setWiRocVersion(null);
               }}>
-              Avbryt
+              {t('Avbryt')}
             </Button>
             <Button
               onPress={() => {
@@ -251,7 +253,7 @@ export default function Update() {
                   setWiRocVersion(null);
                 }
               }}>
-              Uppdatera
+              {t('Uppdatera')}
             </Button>
           </Dialog.Actions>
         </Dialog>
@@ -263,11 +265,14 @@ export default function Update() {
             setWiRocBLEAPIVersion(null);
           }}>
           <Dialog.Icon icon="alert" />
-          <Dialog.Title>Uppdatera WiRoc BLE API</Dialog.Title>
+          <Dialog.Title>{t('Uppdatera WiRoc BLE API')}</Dialog.Title>
           <Dialog.Content>
             <Text>
-              Är du säker på att du vill uppdatera WiRoc BLE API från version{' '}
-              {currentWiRocBLEAPIVersion} till version {wiRocBLEAPIVersion}?
+              {t(
+                'Är du säker på att du vill uppdatera WiRoc BLE API från version',
+              )}{' '}
+              {currentWiRocBLEAPIVersion} {t('till version')}{' '}
+              {wiRocBLEAPIVersion}?
             </Text>
           </Dialog.Content>
           <Dialog.Actions>
@@ -275,7 +280,7 @@ export default function Update() {
               onPress={() => {
                 setWiRocBLEAPIVersion(null);
               }}>
-              Avbryt
+              {t('Avbryt')}
             </Button>
             <Button
               onPress={() => {
@@ -285,7 +290,7 @@ export default function Update() {
                   setWiRocBLEAPIVersion(null);
                 }
               }}>
-              Uppdatera
+              {t('Uppdatera')}
             </Button>
           </Dialog.Actions>
         </Dialog>

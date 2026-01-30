@@ -138,8 +138,8 @@ export default function SerialBluetooth({
         <View style={styles.tableContainer}>
           <DataTable style={styles.table}>
             <DataTable.Header style={styles.row}>
-              <DataTable.Title>Namn</DataTable.Title>
-              <DataTable.Title>BT adress/Status</DataTable.Title>
+              <DataTable.Title>{t('Namn')}</DataTable.Title>
+              <DataTable.Title>{t('BT adress/Status')}</DataTable.Title>
               <DataTable.Title style={styles.buttonColumnCell}>
                 <View>
                   <Text> </Text>
@@ -176,7 +176,7 @@ export default function SerialBluetooth({
                       ? t('Koppla ifrån')
                       : item.Status === 'NotConnected'
                         ? t('Anslut')
-                        : 'ReadError'}
+                        : t('ReadError')}
                   </Button>
                 </DataTable.Cell>
               </DataTable.Row>

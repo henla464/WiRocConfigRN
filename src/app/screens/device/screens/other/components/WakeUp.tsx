@@ -5,6 +5,7 @@ import {StyleSheet, View} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
 import {Button, IconButton, Switch, Text} from 'react-native-paper';
+import {useTranslation} from 'react-i18next';
 
 import {SettableValues} from '@api/transformers';
 import SaveBanner from '@lib/components/SaveBanner';
@@ -18,6 +19,7 @@ import {
 import InformationModal from './InformationModal';
 
 export default function WakeUp() {
+  const {t} = useTranslation();
   const deviceId = useActiveWiRocDevice();
   const queryClient = useQueryClient();
 
@@ -112,9 +114,9 @@ export default function WakeUp() {
       <InformationModal
         closeModal={() => setIsInformationModalVisible(false)}
         modalVisible={isInformationModalVisible}
-        message={
-          'När WiRoc-enheten stängs av med knappen så aktiveras väckningen och det står då på displayen. Om enheten startas manuellt så avaktiveras väckningen och måste manuellt aktiveras här igen.'
-        }
+        message={t(
+          'När WiRoc-enheten stängs av med knappen så aktiveras väckningen och det står då på displayen. Om enheten startas manuellt så avaktiveras väckningen och måste manuellt aktiveras här igen.',
+        )}
       />
       <SaveBanner
         visible={form.formState.isDirty}
@@ -134,10 +136,14 @@ export default function WakeUp() {
       />
       <View style={styles.container}>
         <View style={styles.containerRow}>
-          <Text>Enhetens datum & tid: {wiRocDateTime}</Text>
+          <Text>
+            {t('Enhetens datum & tid')}: {wiRocDateTime}
+          </Text>
         </View>
         <View style={styles.containerRow}>
-          <Text>Telefonens datum & tid: {phoneDateTime}</Text>
+          <Text>
+            {t('Telefonens datum & tid')}: {phoneDateTime}
+          </Text>
         </View>
         <View style={styles.containerRow}>
           <Button
@@ -147,17 +153,17 @@ export default function WakeUp() {
               SetWiRocDateAndTime();
             }}
             style={[styles.button]}>
-            Sätt WiRoc-enhetens datum & tid
+            {t('Sätt WiRoc-enhetens datum & tid')}
           </Button>
         </View>
         {hasRTC && (
           <View>
             <View style={styles.containerRowCenter}>
-              <Text style={styles.header}>Väckningstid</Text>
+              <Text style={styles.header}>{t('Väckningstid')}</Text>
             </View>
             <View style={[styles.containerRow, {paddingRight: 20}]}>
               <Text style={styles.text}>
-                Aktivera väckning efter att enheten har stängts av:
+                {t('Aktivera väckning efter att enheten har stängts av:')}
               </Text>
               <IconButton
                 icon="information-outline"
