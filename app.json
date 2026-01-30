@@ -1,8 +1,8 @@
 {
   "expo": {
-    "name": "WiRocConfigRN",
+    "name": "WiRoc Config",
     "slug": "WiRocConfigRN",
-    "version": "v19",
+    "version": "v20",
     "icon": "./images/icon-512x512.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
@@ -22,7 +22,7 @@
         "backgroundColor": "#ffffff"
       },
       "package": "com.wirocconfigrn",
-      "versionCode": 19
+      "versionCode": 20
     },
     "plugins": [
       "react-native-ble-plx",
