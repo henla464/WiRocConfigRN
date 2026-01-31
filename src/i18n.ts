@@ -79,7 +79,7 @@ export const resources = {
       På: 'On',
       Av: 'Off',
       'Inga bekräftelser skickas på mottagna SRR-stämplingar':
-        'No confirmations are sent on received SRR time stamps',
+        'No acks are sent for received SRR-punches',
       Uppdatera: 'Update',
       'Uppdatera WiRoc': 'Update WiRoc',
       'Uppdatera WiRoc BLE API': 'Update WiRoc BLE API',
@@ -118,11 +118,11 @@ export const resources = {
       'IP-port krävs när SIRAP är aktiverat':
         'IP port is required when SIRAP is enabled',
       'SportIdent SRR': 'SportIdent SRR',
-      'Begär bekräftelse': 'Request acknowledgement',
+      'Begär bekräftelse': 'Request acks',
       'Mottagaren ska bekräfta mottagen stämpling':
-        'The receiver should confirm the received stamp',
+        'The receiver should confirm the received punch',
       'Mottagaren bekräftar inte mottagen stämpling':
-        'The receiver does not confirm the received stamp',
+        'The receiver does not confirm the received punch',
       Aktivera: 'Enable',
       SRR: 'SRR',
       Radiofunktion: 'Radio function',
@@ -172,7 +172,7 @@ export const resources = {
       Via: 'Via',
       Hop: 'Hop',
       Quality: 'Quality',
-      'Stoppa sökning': 'Stop search',
+      'Stoppa sökning': 'Stop scan',
       Konfiguration: 'Configuration',
       Test: 'Test',
       Övrigt: 'Other',
