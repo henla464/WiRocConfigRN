@@ -15,6 +15,7 @@ import useInterval from '@lib/hooks/useInterval';
 import {useNotify} from '@lib/hooks/useNotify';
 import {useStore} from '@store';
 import {WiRocDevice} from '@store/slices/wiRocDevicesSlice';
+import {log} from '@lib/log';
 
 interface DeviceCardProps {
   deviceId: string;
@@ -49,6 +50,14 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
       style={{
         ...styles.card,
         opacity: rssiValue === 0 ? 0.5 : 1,
+      }}
+      onPress={() => {
+        navigation.dispatch(
+          CommonActions.reset({
+            index: 0,
+            routes: [{name: 'Device', params: {deviceId}}],
+          }),
+        );
       }}>
       <Card.Content
         style={{
@@ -66,7 +75,6 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
             paddingTop: 0,
           }}>
           <Title>{name ?? deviceId}</Title>
-          <Paragraph>{deviceId}</Paragraph>
           <View
             style={{
               height: 27,
@@ -82,9 +90,17 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
             )}
           </View>
         </View>
-        <View style={{justifyContent: 'center', paddingRight: 0, width: 130}}>
+        <View
+          style={{
+            justifyContent: 'center',
+            width: 140,
+            padding: 0,
+            margin: 0,
+          }}>
           <Button
             mode="outlined"
+            compact={true}
+            style={{borderRadius: 13}}
             loading={bleConnection.status === 'connecting'}
             onPress={async () => {
               if (bleConnection.status === 'connected') {

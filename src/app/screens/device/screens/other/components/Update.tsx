@@ -10,6 +10,8 @@ import {
   useWiRocPropertyMutation,
   useWiRocPropertyQuery,
 } from '@lib/hooks/useWiRocPropertyQuery';
+import {useStore} from '@store/index';
+import {log} from '@lib/log';
 
 const configObj = require('../../../../../../../config/config.json');
 
@@ -54,6 +56,7 @@ export default function Update() {
     deviceId,
     'wirocbleapiversion',
   );
+  const activeDeviceId = useStore(state => state.activeDeviceId);
 
   const {data: wiRocPythonReleases = []} = useQuery<IReleaseItem[]>({
     enabled: HWVersion !== undefined && HWRevision !== undefined,
@@ -63,7 +66,9 @@ export default function Update() {
         'https://monitor.wiroc.se/api/v1/WiRocPython2Releases?sort=versionNumber desc&hwVersion=' +
         HWVersion +
         '&hwRevision=' +
-        HWRevision;
+        HWRevision +
+        '&BTAddress=' +
+        activeDeviceId;
       const response = await fetch(wirocPythonReleasesURL, {
         headers: {
           'Content-Type': 'application/json',
@@ -74,6 +79,7 @@ export default function Update() {
         throw new Error('Could not fetch WiRoc Python releases');
       }
       const json = await response.json();
+      log.debug(json);
       return json;
     },
   });
@@ -86,7 +92,9 @@ export default function Update() {
         'https://monitor.wiroc.se/api/v1/WiRocBLEAPIReleases?sort=versionNumber desc&hwVersion=' +
         HWVersion +
         '&hwRevision=' +
-        HWRevision;
+        HWRevision +
+        '&BTAddress=' +
+        activeDeviceId;
       const response = await fetch(wirocBLEAPIReleasesURL, {
         headers: {
           'Content-Type': 'application/json',
@@ -97,18 +105,19 @@ export default function Update() {
         throw new Error('Could not fetch WiRoc BLE API releases');
       }
       const json = await response.json();
+      log.debug(json);
       return json;
     },
   });
 
   const wiRocVersionList = wiRocPythonReleases.map(rel => ({
     key: rel.releaseName,
-    value: rel.releaseName,
+    value: rel.releaseName + ' (' + rel.releaseStatusDisplayName + ')',
   }));
 
   const wiRocBLEAPIVersionList = wiRocBleReleases.map(rel => ({
     key: rel.releaseName,
-    value: rel.releaseName,
+    value: rel.releaseName + ' (' + rel.releaseStatusDisplayName + ')',
   }));
 
   const {mutate: updateBLEAPIVersion} = useWiRocPropertyMutation(
@@ -155,7 +164,7 @@ export default function Update() {
   );
 
   const SetWiRocDateAndTime = () => {
-    var options: Intl.DateTimeFormatOptions = {
+    let options: Intl.DateTimeFormatOptions = {
       localeMatcher: 'lookup',
       year: 'numeric',
       month: '2-digit',
@@ -186,11 +195,16 @@ export default function Update() {
             description={`${t('Nuvarande WiRoc version')}: v${currentWiRocVersion}`}
             left={props => <List.Icon icon="radio-handheld" {...props} />}
             right={props => <List.Icon icon="chevron-right" {...props} />}
-            onPress={() => setVersionMenuOpen(true)}
+            onPress={() => {
+              setVersionMenuOpen(true);
+            }}
           />
         }>
         {wiRocVersionList.map(item => (
           <Menu.Item
+            contentStyle={{
+              width: '100%',
+            }}
             key={item.key}
             onPress={() => {
               setWiRocVersion(item.key);
@@ -210,11 +224,16 @@ export default function Update() {
             description={`${t('Nuvarande WiRoc BLE API version')}: v${currentWiRocBLEAPIVersion}`}
             left={props => <List.Icon icon="bluetooth" {...props} />}
             right={props => <List.Icon icon="chevron-right" {...props} />}
-            onPress={() => setBleVersionMenuOpen(true)}
+            onPress={() => {
+              setBleVersionMenuOpen(true);
+            }}
           />
         }>
         {wiRocBLEAPIVersionList.map(item => (
           <Menu.Item
+            contentStyle={{
+              width: '100%',
+            }}
             key={item.key}
             onPress={() => {
               setWiRocBLEAPIVersion(item.key);

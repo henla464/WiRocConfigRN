@@ -75,7 +75,8 @@ The values for MYAPP_UPLOAD_STORE_FILE etc is found in
 =============================
 
 Generate release
-npx react-native build-android --mode=release
+NODE_ENV=production npx react-native build-android --mode=release
+                    
 
 app bundle skapas i:
  /home/henla464/Documents/WiRoc/WiRocConfigRN/android/app/build/outputs/bundle/release

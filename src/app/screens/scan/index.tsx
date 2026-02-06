@@ -1,5 +1,5 @@
 import React from 'react';
-import {SafeAreaView, ScrollView, StatusBar, StyleSheet} from 'react-native';
+import {ScrollView, StatusBar, StyleSheet, SafeAreaView} from 'react-native';
 import {Button} from 'react-native-paper';
 import {useTranslation} from 'react-i18next';
 import {useShallow} from 'zustand/react/shallow';
@@ -15,11 +15,11 @@ export default function ScanForDevicesScreen() {
   );
 
   return (
-    <SafeAreaView>
+    <SafeAreaView style={{flex: 1}}>
       <StatusBar barStyle={'dark-content'} />
       <Notifications />
-      <ScrollView>
-        <ScanButton />
+      <ScanButton />
+      <ScrollView contentContainerStyle={{paddingBottom: 10}}>
         {deviceIds.map(deviceId => (
           <DeviceCard deviceId={deviceId} key={deviceId} />
         ))}
