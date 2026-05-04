@@ -46,9 +46,9 @@ export default function WakeUp() {
     'rtc/datetime',
   );
 
-  const {mutate: clearWakeup} = useWiRocPropertyMutation(
+  const {mutate: setWakeUpEnabled} = useWiRocPropertyMutation(
     deviceId,
-    'rtc/clearwakeup',
+    'rtc/wakeupenabled',
   );
 
   const {mutate: wakeup} = useWiRocPropertyMutation(deviceId, 'rtc/wakeup');
@@ -78,8 +78,9 @@ export default function WakeUp() {
     if (data['rtc/wakeupenabled'] && data['rtc/wakeup']) {
       // Only need to set wakeup time (it is enabled at the same time)
       wakeup(data['rtc/wakeup']);
+      setWakeUpEnabled(true);
     } else {
-      clearWakeup();
+      setWakeUpEnabled(false);
     }
     // refresh wakeupenabled since and wakeup time from device
     queryClient.invalidateQueries({
