@@ -31,18 +31,18 @@ type PropertiesChangedCallback = (
 type PunchRecievedCallback = (
   deviceId: string,
   data: {
-    punches: Array<{
+    punches: {
       SICardNumber: number;
       StationNumber: number;
       Time: string;
-    }>;
+    }[];
   },
 ) => void;
 
 type TestPunchSentCallback = (
   deviceId: string,
   data: {
-    punches: Array<{
+    punches: {
       Id: number;
       MsgId: number;
       Status: string;
@@ -52,7 +52,7 @@ type TestPunchSentCallback = (
       RSSI: number;
       Time: string;
       TypeName: string;
-    }>;
+    }[];
   },
 ) => void;
 
@@ -415,7 +415,7 @@ const createWiRocBleManager = () => {
 
   const onPropertiesChanged = (callback: PropertiesChangedCallback) => {
     const bufferSubscription = blePropertyBuffer.subscribe((deviceId, data) => {
-      log.debug('onPropertiesChanged', deviceId, data);
+      //log.debug('onPropertiesChanged', deviceId, data);
       callback(deviceId, parseWiRocBleProps(data));
     });
     return () => {

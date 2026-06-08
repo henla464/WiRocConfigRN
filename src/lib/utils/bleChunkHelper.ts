@@ -39,6 +39,12 @@ export const createBleChunkHelper = () => {
     // Reset
     totalRecievedByDevice[deviceId] = Buffer.from('');
 
+    // Skip empty/whitespace-only data (e.g. device busy during upgrade)
+    if (data.trim().length === 0) {
+      return;
+    }
+
+    log.debug('onPropertiesChanged', deviceId, data);
     subscribers.forEach(subscriber => subscriber(deviceId, data));
   };
 

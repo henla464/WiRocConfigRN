@@ -92,7 +92,7 @@ export default function WakeUp() {
   };
 
   const SetWiRocDateAndTime = () => {
-    var options: Intl.DateTimeFormatOptions = {
+    let options: Intl.DateTimeFormatOptions = {
       localeMatcher: 'lookup',
       year: 'numeric',
       month: '2-digit',

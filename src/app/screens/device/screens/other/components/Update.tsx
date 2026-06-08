@@ -1,10 +1,11 @@
-import {useQuery} from '@tanstack/react-query';
+import {useQuery, useQueryClient} from '@tanstack/react-query';
 import React, {useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {Button, Dialog, List, Menu, Portal, Text} from 'react-native-paper';
 import {useTranslation} from 'react-i18next';
 
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
+import useInterval from '@lib/hooks/useInterval';
 import {useNotify} from '@lib/hooks/useNotify';
 import {
   useWiRocPropertyMutation,
@@ -35,11 +36,20 @@ export default function Update() {
   const {t} = useTranslation();
   const deviceId = useActiveWiRocDevice();
   const notify = useNotify();
+  const queryClient = useQueryClient();
+  const removeAllNotifications = useStore(
+    state => state.removeAllNotifications,
+  );
 
   const [wiRocVersion, setWiRocVersion] = useState<string | null>(null);
   const [wiRocBLEAPIVersion, setWiRocBLEAPIVersion] = useState<string | null>(
     null,
   );
+  const [isWaitingForWiRocUpgrade, setIsWaitingForWiRocUpgrade] =
+    useState(false);
+  const [originalWiRocVersion, setOriginalWiRocVersion] = useState<
+    string | null
+  >(null);
 
   const {data: hwVersionAndRevision} = useWiRocPropertyQuery(
     deviceId,
@@ -48,10 +58,9 @@ export default function Update() {
   const HWVersion = hwVersionAndRevision?.substring(1).split('Rev')[0];
   const HWRevision = hwVersionAndRevision?.substring(1).split('Rev')[1];
 
-  const {data: currentWiRocVersion} = useWiRocPropertyQuery(
-    deviceId,
-    'wirocpythonversion',
-  );
+  const {data: currentWiRocVersion, refetch: refetchWiRocPythonVersion} =
+    useWiRocPropertyQuery(deviceId, 'wirocpythonversion');
+
   const {data: currentWiRocBLEAPIVersion} = useWiRocPropertyQuery(
     deviceId,
     'wirocbleapiversion',
@@ -146,8 +155,11 @@ export default function Update() {
       onSuccess: () => {
         notify({
           type: 'info',
-          message: t('Enheten kommer att uppdatera WiRoc-versionen'),
+          message: t('WiRoc-versionen kommer att uppdateras'),
         });
+        // Start polling the version until it changes, then invalidate cache
+        setOriginalWiRocVersion(currentWiRocVersion ?? null);
+        setIsWaitingForWiRocUpgrade(true);
       },
       onError: () => {
         notify({
@@ -161,6 +173,37 @@ export default function Update() {
   const {mutate: setDateTime} = useWiRocPropertyMutation(
     deviceId,
     'rtc/datetime',
+  );
+
+  // Poll for version change after upgrade is triggered
+  useInterval(
+    () => {
+      if (isWaitingForWiRocUpgrade && originalWiRocVersion !== null) {
+        refetchWiRocPythonVersion()
+          .then(({data}) => {
+            if (data && data !== originalWiRocVersion) {
+              log.info(
+                `WiRoc Python version changed from ${originalWiRocVersion} to ${data}, invalidating cache`,
+              );
+              setIsWaitingForWiRocUpgrade(false);
+              setOriginalWiRocVersion(null);
+              // Replace the "upgrade started" notification with completion
+              removeAllNotifications();
+              notify({
+                type: 'info',
+                message: t('Enheten har uppdaterats till version') + ' ' + data,
+              });
+              queryClient.invalidateQueries({
+                queryKey: ['wiRocDevice', deviceId],
+              });
+            }
+          })
+          .catch(() => {
+            // Device may be busy, try again next interval
+          });
+      }
+    },
+    isWaitingForWiRocUpgrade ? 1000 : null,
   );
 
   const SetWiRocDateAndTime = () => {

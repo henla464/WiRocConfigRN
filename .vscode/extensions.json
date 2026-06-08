@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "msjsdiag.vscode-react-native",
+    "GitHub.copilot",
+    "visualstudioexptteam.vscodeintellicode"
+  ]
+}

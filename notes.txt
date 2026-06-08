@@ -1,3 +1,14 @@
+Start Metro (expo project):
+npx expo start
+
+adb reverse tcp:8081 tcp:8081
+adb reverse tcp:19000 tcp:19000
+adb reverse tcp:19001 tcp:19001
+npx react-native run-android --appId com.wirocconfigrn.debug
+
+------------
+
+
 npx react-native start
 npm start
 npx react-native run-android

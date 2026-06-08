@@ -85,13 +85,15 @@ export const resources = {
       'Uppdatera WiRoc BLE API': 'Update WiRoc BLE API',
       'Nuvarande WiRoc version': 'Current WiRoc version',
       'Nuvarande WiRoc BLE API version': 'Current WiRoc BLE API version',
-      'Enheten kommer att uppdatera WiRoc-versionen':
-        'The device will update the WiRoc version',
+      'WiRoc-versionen kommer att uppdateras':
+        'The WiRoc version will be updated',
       'Kunde inte uppdatera WiRoc version': 'Could not update WiRoc version',
       'Enheten kommer att uppdatera WiRoc BLE API-versionen':
         'The device will update the WiRoc BLE API version',
       'Kunde inte uppdatera WiRoc BLE API version':
         'Could not update WiRoc BLE API version',
+      'Enheten har uppdaterats till version':
+        'The device has been updated to version',
       Nätverksanslutning: 'Network connection',
       'Konfigurera enhet': 'Configure device',
       'Särskilt tack till Björn Norrliden som utvecklat mycket av denna mobilapp.':
@@ -358,14 +360,16 @@ export const resources = {
       Uppdatera: 'Uppdatera',
       'Nuvarande WiRoc version': 'Nuvarande WiRoc version',
       'Nuvarande WiRoc BLE API version': 'Nuvarande WiRoc BLE API version',
-      'Enheten kommer att uppdatera WiRoc-versionen':
-        'Enheten kommer att uppdatera WiRoc-versionen',
+      'WiRoc-versionen kommer att uppdateras':
+        'WiRoc-versionen kommer att uppdateras',
       'Kunde inte uppdatera WiRoc version':
         'Kunde inte uppdatera WiRoc version',
       'Enheten kommer att uppdatera WiRoc BLE API-versionen':
         'Enheten kommer att uppdatera WiRoc BLE API-versionen',
       'Kunde inte uppdatera WiRoc BLE API version':
         'Kunde inte uppdatera WiRoc BLE API version',
+      'Enheten har uppdaterats till version':
+        'Enheten har uppdaterats till version',
       Nätverksanslutning: 'Nätverksanslutning',
       'Konfigurera enhet': 'Konfigurera enhet',
       'Särskilt tack till Björn Norrliden som utvecklat mycket av denna mobilapp.':

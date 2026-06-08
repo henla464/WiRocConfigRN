@@ -2,6 +2,7 @@ import {log} from '@lib/log';
 import {requestBlePermissions} from '@lib/utils/blePermissions';
 
 import {wiRocBleManager} from '@lib/utils/wiRocBleManager';
+import {queryClient} from '../../../queryClient';
 import {ImmerStateCreator} from '../types';
 import {WiRocBleConnection} from './wiRocDevicesSlice';
 
@@ -33,6 +34,10 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
   wiRocBleManager.onDeviceDisconnected((device, wasExpected) => {
     log.info('onDeviceConnected', `Disconnected from ${device.id}`);
     setWiRocConnection(device.id, state => (state.status = 'disconnected'));
+    // Clear cached data for the disconnected device so it gets refetched on reconnect
+    queryClient.invalidateQueries({
+      queryKey: ['wiRocDevice', device.id],
+    });
     if (!wasExpected) {
       get().addNotification({
         type: 'info',
