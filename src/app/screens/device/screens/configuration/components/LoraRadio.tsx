@@ -9,6 +9,7 @@ import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 
 import {SectionComponentProps} from '../';
 import OnOffChip from './OnOffChip';
+import WarningIcon from './WarningIcon';
 
 export default function LoraRadio({
   deviceId,
@@ -169,6 +170,9 @@ export default function LoraRadio({
               </>
             ) : null}
           </Text>
+          {(loraMode === 'REPEATER' ||
+            codeRate !== 0 ||
+            loraPower !== 22) && <WarningIcon />}
           {typeof isLoraRadioEnabled === 'boolean' && (
             <OnOffChip on={isLoraRadioEnabled} />
           )}

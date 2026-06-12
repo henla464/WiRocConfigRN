@@ -14,6 +14,7 @@ import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 
 import {SectionComponentProps} from '../';
 import OnOffChip from './OnOffChip';
+import WarningIcon from './WarningIcon';
 
 export default function RS232({
   deviceId,
@@ -67,6 +68,7 @@ export default function RS232({
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
           <Text>{sendReceive === 'RECEIVE' ? t('Ta emot') : t('Skicka')}</Text>
+          {sendReceive === 'SEND' && <WarningIcon />}
           <OnOffChip on={true} />
           {isExpanded ? (
             <Icon source="chevron-up" size={25} />

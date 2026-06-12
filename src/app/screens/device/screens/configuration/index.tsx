@@ -24,6 +24,7 @@ import SIRAP from './components/SIRAP';
 import SRR from './components/SRR';
 import SerialBluetooth from './components/SerialBluetooth';
 import USB from './components/USB';
+import WarningSummary from './components/WarningSummary';
 import {useTranslation} from 'react-i18next';
 
 type ConfigurationScreenProps = MaterialBottomTabScreenProps<
@@ -134,6 +135,7 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
               setCurrentScrollPosition(e.nativeEvent.contentOffset.y);
             }}
             style={{marginTop: mTop}}>
+            <WarningSummary deviceId={deviceId} />
             <View style={{backgroundColor: 'orange'}}>
               <Divider bold={true} />
               <Text style={styles.header}>{t('Indata')}</Text>

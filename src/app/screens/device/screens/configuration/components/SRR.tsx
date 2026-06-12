@@ -8,6 +8,7 @@ import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
 
 import {SectionComponentProps} from '../';
 import OnOffChip from './OnOffChip';
+import WarningIcon from './WarningIcon';
 import {ListItemMenu, ListItemMenuItem} from '@lib/components/ListItemMenu';
 import {SrrMode} from '@api/index';
 
@@ -112,6 +113,7 @@ export default function SRR({
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
           <Text>{SRRMode === 'RECEIVE' ? t('Mottagare') : t('Sändare')}</Text>
+          {SRRMode === 'SEND' && <WarningIcon />}
           <OnOffChip on={isSRREnabled} />
           {isExpanded ? (
             <Icon source="chevron-up" size={25} />
