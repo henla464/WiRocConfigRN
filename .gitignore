@@ -3,6 +3,9 @@
 # dependencies
 node_modules/
 
+# Seer
+.seer/
+
 # Expo
 .expo/
 dist/

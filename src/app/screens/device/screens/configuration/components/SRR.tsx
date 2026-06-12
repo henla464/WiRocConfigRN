@@ -1,17 +1,10 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
-import {
-  Checkbox,
-  Divider,
-  Icon,
-  List,
-  SegmentedButtons,
-  Switch,
-  Text,
-} from 'react-native-paper';
+import {Divider, Icon, List, Switch, Text} from 'react-native-paper';
 
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
+import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
 
 import {SectionComponentProps} from '../';
 import OnOffChip from './OnOffChip';
@@ -84,9 +77,19 @@ export default function SRR({
     onDefaultValuesChange,
   );
 
+  const {data: hasSendMode} = useWiRocPropertyQuery(
+    deviceId,
+    'srr/hassendmode',
+  );
+
   const modeOptions = [
     {value: 'RECEIVE', label: t('Mottagare'), icon: 'login', disabled: false},
-    {value: 'SEND', label: t('Sändare'), icon: 'logout', disabled: true},
+    {
+      value: 'SEND',
+      label: t('Sändare'),
+      icon: 'logout',
+      disabled: !hasSendMode,
+    },
   ];
   const selectedModeOption = modeOptions.find(m => m.value === SRRMode);
 

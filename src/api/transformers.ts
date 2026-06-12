@@ -93,6 +93,7 @@ export const getters = {
   'srr/redchannellistenonly': booleanGetter(),
   'srr/bluechannel': booleanGetter(),
   'srr/bluechannellistenonly': booleanGetter(),
+  'srr/hassendmode': booleanGetter(),
 
   'rtc/datetime': stringGetter(),
   'rtc/wakeup': stringGetter(),
