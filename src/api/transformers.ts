@@ -86,6 +86,7 @@ export const getters = {
   'hashw/srr': booleanGetter(),
   'hashw/rtc': booleanGetter(),
   scanbtaddresses: serialDevicesGetter(),
+  rfcomm: serialDevicesGetter(),
 
   'srr/enabled': booleanGetter(),
   'srr/mode': unionGetter<SrrMode>(),

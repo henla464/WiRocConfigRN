@@ -33,10 +33,7 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
     deviceId,
     'acknowledgementrequested',
   );
-  const {data: serialBTDevices} = useWiRocPropertyQuery(
-    deviceId,
-    'scanbtaddresses',
-  );
+  const {data: rfcommDevices} = useWiRocPropertyQuery(deviceId, 'rfcomm');
 
   const warnings: string[] = [];
 
@@ -58,13 +55,12 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
   if (rs232Mode !== undefined && rs232Mode === 'SEND') {
     warnings.push(t('warn_rs232_send'));
   }
-  if (serialBTDevices !== undefined) {
-    const hasUnconnected = (serialBTDevices as BluetoothDevice[]).some(
-      d => d.Status !== 'Connected',
-    );
-    if (hasUnconnected) {
-      warnings.push(t('warn_serial_bt_not_connected'));
-    }
+  if (
+    rfcommDevices !== undefined &&
+    rfcommDevices.length > 0 &&
+    (rfcommDevices as BluetoothDevice[]).some(d => d.Status !== 'Connected')
+  ) {
+    warnings.push(t('warn_serial_bt_not_connected'));
   }
   if (wifiMeshEnabled) {
     warnings.push(t('warn_wifi_mesh'));

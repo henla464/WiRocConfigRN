@@ -38,10 +38,7 @@ export default function SerialBluetooth({
       enabled: false, // The scan will be explicitly started by the user
     });
 
-  const {data: cachedBtDevices} = useWiRocPropertyQuery(
-    deviceId,
-    'scanbtaddresses',
-  );
+  const {data: rfcommDevices} = useWiRocPropertyQuery(deviceId, 'rfcomm');
 
   const {mutate: bindBt} = useWiRocPropertyMutation(deviceId, 'bindrfcomm');
   const {mutate: releaseBt} = useWiRocPropertyMutation(
@@ -64,9 +61,9 @@ export default function SerialBluetooth({
   );
 
   const isBTDeviceNotConnected =
-    cachedBtDevices !== undefined &&
-    cachedBtDevices.length > 0 &&
-    cachedBtDevices.some(device => device.Status !== 'Connected');
+    rfcommDevices !== undefined &&
+    rfcommDevices.length > 0 &&
+    rfcommDevices.some(device => device.Status !== 'Connected');
 
   const intervalScanBTDevices = useInterval(startScan, interval);
 
