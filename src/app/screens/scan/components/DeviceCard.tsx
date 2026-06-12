@@ -5,6 +5,7 @@ import {useTranslation} from 'react-i18next';
 import {
   Button,
   Card,
+  Icon,
   MD3Colors,
   Paragraph,
   ProgressBar,
@@ -15,7 +16,6 @@ import useInterval from '@lib/hooks/useInterval';
 import {useNotify} from '@lib/hooks/useNotify';
 import {useStore} from '@store';
 import {WiRocDevice} from '@store/slices/wiRocDevicesSlice';
-import {log} from '@lib/log';
 
 interface DeviceCardProps {
   deviceId: string;
@@ -49,7 +49,8 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
     <Card
       style={{
         ...styles.card,
-        opacity: rssiValue === 0 ? 0.5 : 1,
+        opacity:
+          rssiValue === 0 && bleConnection.status !== 'connected' ? 0.5 : 1,
       }}
       onPress={() => {
         navigation.dispatch(
@@ -80,7 +81,11 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
               height: 27,
             }}>
             {rssiValue === 0 ? (
-              <Paragraph>{t('Tidigare sedd enhet')}</Paragraph>
+              <Paragraph>
+                {bleConnection.status === 'connected'
+                  ? t('Ansluten')
+                  : t('Tidigare sedd enhet')}
+              </Paragraph>
             ) : (
               <ProgressBar
                 progress={getRssiWidth(rssiValue)}
@@ -129,6 +134,11 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
               : t('Anslut')}
           </Button>
         </View>
+        {bleConnection.status === 'connected' && (
+          <View style={{justifyContent: 'center', marginLeft: 4}}>
+            <Icon source="chevron-right" size={24} color="#999" />
+          </View>
+        )}
       </Card.Content>
     </Card>
   );

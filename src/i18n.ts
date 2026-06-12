@@ -239,6 +239,9 @@ export const resources = {
       warn_lora_no_ack: 'Lora is not requesting acknowledgements',
       warn_serial_bt_not_connected:
         'Serial Bluetooth device configured but not connected',
+      'Tillgängliga enheter': 'Available devices',
+      'Anslutna enheter': 'Connected devices',
+      'Ej hittade enheter': 'Not found devices',
     },
   },
   sv: {
@@ -467,6 +470,10 @@ export const resources = {
       warn_lora_no_ack: 'Lora begär inte bekräftelse',
       warn_serial_bt_not_connected:
         'Seriell Bluetooth-enhet konfigurerad men inte ansluten',
+      'Tillgängliga enheter': 'Tillgängliga enheter',
+      'Anslutna enheter': 'Anslutna enheter',
+      'Ej hittade enheter': 'Ej hittade enheter',
+      Ansluten: 'Ansluten',
     },
   },
 } as const;
