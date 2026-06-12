@@ -236,6 +236,9 @@ export const resources = {
       warn_rtc_wakeup: 'Wake-up is enabled at',
       bluetooth_off: 'Bluetooth needs to be enabled to scan for devices',
       bluetooth_enabling: 'Enabling Bluetooth...',
+      warn_lora_no_ack: 'Lora is not requesting acknowledgements',
+      warn_serial_bt_not_connected:
+        'Serial Bluetooth device configured but not connected',
     },
   },
   sv: {
@@ -461,6 +464,9 @@ export const resources = {
       warn_rtc_wakeup: 'Väckning är aktiverad kl',
       bluetooth_off: 'Bluetooth måste vara aktiverat för att söka enheter',
       bluetooth_enabling: 'Aktiverar Bluetooth...',
+      warn_lora_no_ack: 'Lora begär inte bekräftelse',
+      warn_serial_bt_not_connected:
+        'Seriell Bluetooth-enhet konfigurerad men inte ansluten',
     },
   },
 } as const;

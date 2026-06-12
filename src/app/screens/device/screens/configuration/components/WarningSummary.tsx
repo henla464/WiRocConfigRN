@@ -4,6 +4,7 @@ import {Text} from 'react-native-paper';
 import {useTranslation} from 'react-i18next';
 
 import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
+import {BluetoothDevice} from '@api/index';
 
 import WarningIcon from './WarningIcon';
 
@@ -28,6 +29,14 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
     'rtc/wakeupenabled',
   );
   const {data: wakeUpTime} = useWiRocPropertyQuery(deviceId, 'rtc/wakeup');
+  const {data: acknowledgementRequested} = useWiRocPropertyQuery(
+    deviceId,
+    'acknowledgementrequested',
+  );
+  const {data: serialBTDevices} = useWiRocPropertyQuery(
+    deviceId,
+    'scanbtaddresses',
+  );
 
   const warnings: string[] = [];
 
@@ -43,8 +52,19 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
   if (loraPower !== undefined && loraPower !== 22) {
     warnings.push(t('warn_lora_power'));
   }
+  if (acknowledgementRequested !== undefined && !acknowledgementRequested) {
+    warnings.push(t('warn_lora_no_ack'));
+  }
   if (rs232Mode !== undefined && rs232Mode === 'SEND') {
     warnings.push(t('warn_rs232_send'));
+  }
+  if (serialBTDevices !== undefined) {
+    const hasUnconnected = (serialBTDevices as BluetoothDevice[]).some(
+      d => d.Status !== 'Connected',
+    );
+    if (hasUnconnected) {
+      warnings.push(t('warn_serial_bt_not_connected'));
+    }
   }
   if (wifiMeshEnabled) {
     warnings.push(t('warn_wifi_mesh'));

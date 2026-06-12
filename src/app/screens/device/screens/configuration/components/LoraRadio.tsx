@@ -172,7 +172,8 @@ export default function LoraRadio({
           </Text>
           {(loraMode === 'REPEATER' ||
             codeRate !== 0 ||
-            loraPower !== 22) && <WarningIcon />}
+            loraPower !== 22 ||
+            !acknowledgementRequested) && <WarningIcon />}
           {typeof isLoraRadioEnabled === 'boolean' && (
             <OnOffChip on={isLoraRadioEnabled} />
           )}

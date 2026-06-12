@@ -21,6 +21,7 @@ import {log} from '@lib/log';
 
 import {SectionComponentProps} from '../';
 import OnOffChip from './OnOffChip';
+import WarningIcon from './WarningIcon';
 
 export default function SerialBluetooth({
   deviceId,
@@ -36,6 +37,11 @@ export default function SerialBluetooth({
     useWiRocPropertyQuery(deviceId, 'scanbtaddresses', {
       enabled: false, // The scan will be explicitly started by the user
     });
+
+  const {data: cachedBtDevices} = useWiRocPropertyQuery(
+    deviceId,
+    'scanbtaddresses',
+  );
 
   const {mutate: bindBt} = useWiRocPropertyMutation(deviceId, 'bindrfcomm');
   const {mutate: releaseBt} = useWiRocPropertyMutation(
@@ -56,6 +62,11 @@ export default function SerialBluetooth({
   const isBTDeviceConfigured = serialBTDevices.some(
     device => device.Status === 'Connected',
   );
+
+  const isBTDeviceNotConnected =
+    cachedBtDevices !== undefined &&
+    cachedBtDevices.length > 0 &&
+    cachedBtDevices.some(device => device.Status !== 'Connected');
 
   const intervalScanBTDevices = useInterval(startScan, interval);
 
@@ -104,6 +115,7 @@ export default function SerialBluetooth({
       }}
       right={({isExpanded}) => (
         <View style={styles.accordionHeader}>
+          {isBTDeviceNotConnected && <WarningIcon />}
           <OnOffChip on={isBTDeviceConfigured} />
           {isExpanded ? (
             <Icon source="chevron-up" size={25} />
