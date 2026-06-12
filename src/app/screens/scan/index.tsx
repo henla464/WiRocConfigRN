@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  Animated,
   ScrollView,
   StatusBar,
   StyleSheet,
@@ -9,7 +8,9 @@ import {
   Text,
 } from 'react-native';
 import {Button, IconButton} from 'react-native-paper';
-import {Swipeable} from 'react-native-gesture-handler';
+import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import Animated, {useAnimatedStyle} from 'react-native-reanimated';
+import type {SharedValue} from 'react-native-reanimated';
 import {useTranslation} from 'react-i18next';
 import {useShallow} from 'zustand/react/shallow';
 
@@ -85,27 +86,13 @@ export default function ScanForDevicesScreen() {
             {notFound.map(deviceId => (
               <Swipeable
                 key={deviceId}
-                renderRightActions={(_progress, dragX) => {
-                  const scale = dragX.interpolate({
-                    inputRange: [-80, 0],
-                    outputRange: [1, 0.5],
-                    extrapolate: 'clamp',
-                  });
-                  const viewStyle = [
-                    styles.swipeAction,
-                    {transform: [{scale}]},
-                  ];
-                  return (
-                    <Animated.View style={viewStyle}>
-                      <IconButton
-                        icon="delete-outline"
-                        iconColor="#fff"
-                        size={24}
-                        onPress={() => removeWiRocDevice(deviceId)}
-                      />
-                    </Animated.View>
-                  );
-                }}>
+                renderRightActions={(_progress, translation) => (
+                  <SwipeDeleteAction
+                    translation={translation}
+                    deviceId={deviceId}
+                    onRemove={removeWiRocDevice}
+                  />
+                )}>
                 <DeviceCard deviceId={deviceId} />
               </Swipeable>
             ))}
@@ -115,6 +102,35 @@ export default function ScanForDevicesScreen() {
     </SafeAreaView>
   );
 }
+
+const SwipeDeleteAction = ({
+  translation,
+  deviceId,
+  onRemove,
+}: {
+  translation: SharedValue<number>;
+  deviceId: string;
+  onRemove: (deviceId: string) => void;
+}) => {
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [
+      {
+        translateX: Math.max(translation.value + 88, 0),
+      },
+    ],
+  }));
+
+  return (
+    <Animated.View style={[styles.swipeAction, animatedStyle]}>
+      <IconButton
+        icon="delete-outline"
+        iconColor="#fff"
+        size={28}
+        onPress={() => onRemove(deviceId)}
+      />
+    </Animated.View>
+  );
+};
 
 const SectionLabel = ({label}: {label: string}) => (
   <View style={styles.sectionHeader}>
@@ -160,7 +176,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#d32f2f',
     justifyContent: 'center',
     alignItems: 'center',
-    width: 80,
+    width: 88,
     marginTop: 8,
     marginBottom: 2,
     marginRight: 11,
