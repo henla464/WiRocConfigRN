@@ -68,7 +68,7 @@ export default function ScanForDevicesScreen() {
           <>
             <SectionLabel label={t('Tillgängliga enheter')} />
             {available.map(deviceId => (
-              <DeviceCard deviceId={deviceId} key={deviceId} />
+              <DeviceCard deviceId={deviceId} key={deviceId} disabled />
             ))}
           </>
         )}
@@ -93,7 +93,7 @@ export default function ScanForDevicesScreen() {
                     onRemove={removeWiRocDevice}
                   />
                 )}>
-                <DeviceCard deviceId={deviceId} />
+                <DeviceCard deviceId={deviceId} disabled />
               </Swipeable>
             ))}
           </>

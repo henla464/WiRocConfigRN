@@ -19,11 +19,15 @@ import {WiRocDevice} from '@store/slices/wiRocDevicesSlice';
 
 interface DeviceCardProps {
   deviceId: string;
+  disabled?: boolean;
 }
 
 const RECENTLY_SEEN_TIMEOUT = 10e3;
 
-export default function DeviceCard({deviceId}: DeviceCardProps) {
+export default function DeviceCard({
+  deviceId,
+  disabled = false,
+}: DeviceCardProps) {
   const {t} = useTranslation();
   const notify = useNotify();
 
@@ -52,14 +56,18 @@ export default function DeviceCard({deviceId}: DeviceCardProps) {
         opacity:
           rssiValue === 0 && bleConnection.status !== 'connected' ? 0.5 : 1,
       }}
-      onPress={() => {
-        navigation.dispatch(
-          CommonActions.reset({
-            index: 0,
-            routes: [{name: 'Device', params: {deviceId}}],
-          }),
-        );
-      }}>
+      onPress={
+        disabled
+          ? undefined
+          : () => {
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{name: 'Device', params: {deviceId}}],
+                }),
+              );
+            }
+      }>
       <Card.Content
         style={{
           flexDirection: 'row',
