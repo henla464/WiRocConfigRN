@@ -1,6 +1,15 @@
 import React from 'react';
-import {ScrollView, StatusBar, StyleSheet, SafeAreaView, View, Text} from 'react-native';
-import {Button} from 'react-native-paper';
+import {
+  Animated,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+  SafeAreaView,
+  View,
+  Text,
+} from 'react-native';
+import {Button, IconButton} from 'react-native-paper';
+import {Swipeable} from 'react-native-gesture-handler';
 import {useTranslation} from 'react-i18next';
 import {useShallow} from 'zustand/react/shallow';
 
@@ -14,6 +23,7 @@ const RECENTLY_SEEN_TIMEOUT = 10_000;
 export default function ScanForDevicesScreen() {
   const {t} = useTranslation();
   const devices = useStore(useShallow(state => state.wiRocDevices));
+  const removeWiRocDevice = useStore(state => state.removeWiRocDevice);
   const now = Date.now();
 
   // Group devices:
@@ -73,7 +83,31 @@ export default function ScanForDevicesScreen() {
           <>
             <SectionLabel label={t('Ej hittade enheter')} />
             {notFound.map(deviceId => (
-              <DeviceCard deviceId={deviceId} key={deviceId} />
+              <Swipeable
+                key={deviceId}
+                renderRightActions={(_progress, dragX) => {
+                  const scale = dragX.interpolate({
+                    inputRange: [-80, 0],
+                    outputRange: [1, 0.5],
+                    extrapolate: 'clamp',
+                  });
+                  const viewStyle = [
+                    styles.swipeAction,
+                    {transform: [{scale}]},
+                  ];
+                  return (
+                    <Animated.View style={viewStyle}>
+                      <IconButton
+                        icon="delete-outline"
+                        iconColor="#fff"
+                        size={24}
+                        onPress={() => removeWiRocDevice(deviceId)}
+                      />
+                    </Animated.View>
+                  );
+                }}>
+                <DeviceCard deviceId={deviceId} />
+              </Swipeable>
             ))}
           </>
         )}
@@ -121,5 +155,14 @@ const styles = StyleSheet.create({
     color: '#666',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
+  },
+  swipeAction: {
+    backgroundColor: '#d32f2f',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    marginTop: 8,
+    marginBottom: 2,
+    marginRight: 11,
   },
 });

@@ -9,6 +9,7 @@ export interface WiRocDevicesSliceState {
    */
   activeDeviceId: string | null;
   addWiRocDevice: (deviceId: string, device: WiRocDevice) => void;
+  removeWiRocDevice: (deviceId: string) => void;
   setActiveDeviceId: (deviceId: string | null) => void;
   setDeviceName: (deviceId: string, name: string) => void;
 
@@ -66,6 +67,14 @@ export const createWiRocDevicesSlice: ImmerStateCreator<
     addWiRocDevice: (deviceId, device) => {
       set(state => {
         state.wiRocDevices[deviceId] = device;
+      });
+    },
+    removeWiRocDevice: deviceId => {
+      set(state => {
+        delete state.wiRocDevices[deviceId];
+        if (state.activeDeviceId === deviceId) {
+          state.activeDeviceId = null;
+        }
       });
     },
     wiRocDevices: Object.assign(
