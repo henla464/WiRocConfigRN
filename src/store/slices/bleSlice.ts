@@ -1,7 +1,9 @@
 import {log} from '@lib/log';
+import {Platform} from 'react-native';
+import {startActivityAsync} from 'expo-intent-launcher';
 import {requestBlePermissions} from '@lib/utils/blePermissions';
 
-import {wiRocBleManager} from '@lib/utils/wiRocBleManager';
+import {wiRocBleManager, bleManager} from '@lib/utils/wiRocBleManager';
 import {queryClient} from '../../../queryClient';
 import {ImmerStateCreator} from '../types';
 import {WiRocBleConnection} from './wiRocDevicesSlice';
@@ -65,6 +67,28 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
         return;
       }
       log.info('Permissions granted');
+
+      const bleState = await bleManager.state();
+      log.info('BLE state:', bleState);
+      if (bleState !== 'PoweredOn') {
+        get().addNotification({
+          type: 'info',
+          message:
+            'Bluetooth måste vara aktiverat för att söka enheter',
+        });
+        if (Platform.OS === 'android') {
+          try {
+            await startActivityAsync(
+              'android.bluetooth.adapter.action.REQUEST_ENABLE',
+            );
+            log.info('Bluetooth enable intent sent');
+          } catch (e) {
+            log.error('Failed to open Bluetooth enable dialog', e);
+          }
+        }
+        return;
+      }
+
       set(state => {
         state.isScanning = true;
       });
