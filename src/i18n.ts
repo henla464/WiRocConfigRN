@@ -242,6 +242,7 @@ export const resources = {
       'Tillgängliga enheter': 'Available devices',
       'Anslutna enheter': 'Connected devices',
       'Ej hittade enheter': 'Not found devices',
+      'Demo-enheter': 'Demo devices',
     },
   },
   sv: {
@@ -474,6 +475,7 @@ export const resources = {
       'Anslutna enheter': 'Anslutna enheter',
       'Ej hittade enheter': 'Ej hittade enheter',
       Ansluten: 'Ansluten',
+      'Demo-enheter': 'Demo-enheter',
     },
   },
 } as const;

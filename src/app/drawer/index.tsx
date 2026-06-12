@@ -21,8 +21,15 @@ import ConnectionIcon from './components/ConnectionIcon';
 
 export function DrawerContent(props: DrawerContentComponentProps) {
   const {t} = useTranslation();
-  const devices = useStore(state =>
+  const allDevices = useStore(state =>
     sortBy(Object.entries(state.wiRocDevices), ([, device]) => device.name),
+  );
+
+  const wiRocDevices = allDevices.filter(
+    ([, device]) => device.apiBackend !== 'demo',
+  );
+  const demoDevices = allDevices.filter(
+    ([, device]) => device.apiBackend === 'demo',
   );
   const connectDevice = useStore(state => state.connectBleDevice);
   const disconnectDevice = useStore(state => state.disconnectBleDevice);
@@ -67,7 +74,7 @@ export function DrawerContent(props: DrawerContentComponentProps) {
               {t('WiRoc enheter')}
             </Text>
           }>
-          {devices.map(([deviceId, device]) => (
+          {wiRocDevices.map(([deviceId, device]) => (
             <TouchableRipple
               key={deviceId}
               onPress={async () => {
@@ -137,6 +144,38 @@ export function DrawerContent(props: DrawerContentComponentProps) {
             </TouchableRipple>
           ))}
         </Drawer.Section>
+        {demoDevices.length > 0 && (
+          <Drawer.Section
+            title={
+              <Text style={{fontSize: 20, fontWeight: 'bold'}}>
+                {t('Demo-enheter')}
+              </Text>
+            }>
+            {demoDevices.map(([deviceId, device]) => (
+              <TouchableRipple
+                key={deviceId}
+                onPress={() => {
+                  props.navigation.dispatch(
+                    CommonActions.reset({
+                      index: 0,
+                      routes: [{name: 'Device', params: {deviceId}}],
+                    }),
+                  );
+                }}>
+                <View style={styles.foundDevices}>
+                  <View style={styles.columnContainer}>
+                    <View>
+                      <Text>{device.name}</Text>
+                    </View>
+                    <View>
+                      <Caption style={styles.caption}>{deviceId}</Caption>
+                    </View>
+                  </View>
+                </View>
+              </TouchableRipple>
+            ))}
+          </Drawer.Section>
+        )}
       </View>
     </DrawerContentScrollView>
   );
