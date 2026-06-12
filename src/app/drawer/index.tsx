@@ -74,75 +74,86 @@ export function DrawerContent(props: DrawerContentComponentProps) {
               {t('WiRoc enheter')}
             </Text>
           }>
-          {wiRocDevices.map(([deviceId, device]) => (
-            <TouchableRipple
-              key={deviceId}
-              onPress={async () => {
-                if (
-                  !device.bleConnection ||
-                  device.bleConnection?.status === 'connected'
-                ) {
-                  props.navigation.dispatch(
-                    CommonActions.reset({
-                      index: 0,
-                      routes: [{name: 'Device', params: {deviceId}}],
-                    }),
-                  );
-                }
-              }}>
-              <View style={styles.foundDevices}>
-                <View style={styles.columnContainer}>
-                  <View>
-                    <Text
-                      style={
-                        device.bleConnection?.status === 'connected'
-                          ? styles.connectedDevice
-                          : null
-                      }>
-                      {device.name}
-                    </Text>
+          {wiRocDevices.map(([deviceId, device]) => {
+            const isNavigable =
+              !device.bleConnection ||
+              device.bleConnection?.status === 'connected';
+            return (
+              <TouchableRipple
+                key={deviceId}
+                onPress={async () => {
+                  if (isNavigable) {
+                    props.navigation.dispatch(
+                      CommonActions.reset({
+                        index: 0,
+                        routes: [{name: 'Device', params: {deviceId}}],
+                      }),
+                    );
+                  }
+                }}>
+                <View style={styles.foundDevices}>
+                  <View style={styles.columnContainer}>
+                    <View>
+                      <Text
+                        style={
+                          device.bleConnection?.status === 'connected'
+                            ? styles.connectedDevice
+                            : null
+                        }>
+                        {device.name}
+                      </Text>
+                    </View>
+                    <View>
+                      <Caption style={styles.caption}>{deviceId}</Caption>
+                    </View>
                   </View>
-                  <View>
-                    <Caption style={styles.caption}>{deviceId}</Caption>
+                  <View style={styles.actionsRow}>
+                    {isNavigable && (
+                      <Icon source="chevron-right" size={24} color="#999" />
+                    )}
+                    {device.bleConnection && (
+                      <Button
+                        loading={device.bleConnection.status === 'connecting'}
+                        onPress={async () => {
+                          if (device.bleConnection?.status === 'connected') {
+                            await disconnectDevice(deviceId);
+                            props.navigation.navigate('ScanForDevices');
+                          } else {
+                            try {
+                              await connectDevice(deviceId);
+                              props.navigation.dispatch(
+                                CommonActions.reset({
+                                  index: 0,
+                                  routes: [
+                                    {name: 'Device', params: {deviceId}},
+                                  ],
+                                }),
+                              );
+                            } catch (err) {
+                              notify({
+                                type: 'error',
+                                message:
+                                  t('Kunde inte ansluta till enheten: ') +
+                                  (err instanceof Error
+                                    ? err.message
+                                    : t('Okänt fel')),
+                              });
+                            }
+                          }
+                        }}
+                        icon={({}) => (
+                          <ConnectionIcon
+                            status={device.bleConnection?.status}
+                          />
+                        )}>
+                        {' '}
+                      </Button>
+                    )}
                   </View>
                 </View>
-                {device.bleConnection && (
-                  <Button
-                    loading={device.bleConnection.status === 'connecting'}
-                    onPress={async () => {
-                      if (device.bleConnection?.status === 'connected') {
-                        await disconnectDevice(deviceId);
-                        props.navigation.navigate('ScanForDevices');
-                      } else {
-                        try {
-                          await connectDevice(deviceId);
-                          props.navigation.dispatch(
-                            CommonActions.reset({
-                              index: 0,
-                              routes: [{name: 'Device', params: {deviceId}}],
-                            }),
-                          );
-                        } catch (err) {
-                          notify({
-                            type: 'error',
-                            message:
-                              t('Kunde inte ansluta till enheten: ') +
-                              (err instanceof Error
-                                ? err.message
-                                : t('Okänt fel')),
-                          });
-                        }
-                      }
-                    }}
-                    icon={({}) => (
-                      <ConnectionIcon status={device.bleConnection?.status} />
-                    )}>
-                    {' '}
-                  </Button>
-                )}
-              </View>
-            </TouchableRipple>
-          ))}
+              </TouchableRipple>
+            );
+          })}
         </Drawer.Section>
         {demoDevices.length > 0 && (
           <Drawer.Section
@@ -170,6 +181,9 @@ export function DrawerContent(props: DrawerContentComponentProps) {
                     <View>
                       <Caption style={styles.caption}>{deviceId}</Caption>
                     </View>
+                  </View>
+                  <View style={styles.actionsRow}>
+                    <Icon source="chevron-right" size={24} color="#999" />
                   </View>
                 </View>
               </TouchableRipple>
@@ -228,5 +242,9 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingLeft: 16,
     height: 75,
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 });
