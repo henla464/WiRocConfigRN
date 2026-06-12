@@ -234,6 +234,8 @@ export const resources = {
       warn_rs232_send: 'Serial RS232 is in SEND mode',
       warn_wifi_mesh: 'WiFi-mesh is enabled',
       warn_rtc_wakeup: 'Wake-up is enabled at',
+      bluetooth_off: 'Bluetooth needs to be enabled to scan for devices',
+      bluetooth_enabling: 'Enabling Bluetooth...',
     },
   },
   sv: {
@@ -457,6 +459,8 @@ export const resources = {
       warn_rs232_send: 'Seriell RS232 är i SÄND-läge',
       warn_wifi_mesh: 'Wifi-mesh är aktiverat',
       warn_rtc_wakeup: 'Väckning är aktiverad kl',
+      bluetooth_off: 'Bluetooth måste vara aktiverat för att söka enheter',
+      bluetooth_enabling: 'Aktiverar Bluetooth...',
     },
   },
 } as const;
