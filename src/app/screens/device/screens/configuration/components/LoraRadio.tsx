@@ -6,6 +6,7 @@ import {useTranslation} from 'react-i18next';
 import {LoraMode, LoraRange} from '@api/index';
 import {ListItemMenu, ListItemMenuItem} from '@lib/components/ListItemMenu';
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
+import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
 
 import {SectionComponentProps} from '../';
 import OnOffChip from './OnOffChip';
@@ -80,6 +81,9 @@ export default function LoraRadio({
     },
   ] = useConfigurationProperty(deviceId, 'ham/enabled', onDefaultValuesChange);
 
+  const {data: loraModule} = useWiRocPropertyQuery(deviceId, 'loramodule');
+  const isRak3172 = loraModule === 'RAK3172';
+
   const modeOptions = [
     {value: 'RECEIVER', label: t('Mottagare'), icon: 'login'},
     {value: 'SENDER', label: t('Sändare'), icon: 'logout'},
@@ -103,10 +107,15 @@ export default function LoraRadio({
   const selectedChannelOption = channelOptions.find(c => c.value === channel);
 
   const codeRateOptions = [
-    {value: 0, label: '4/5 (1 ECC bit, 4 data bits)'},
-    {value: 1, label: '4/6 (2 ECC bits, 4 data bits)'},
-    {value: 2, label: '4/7 (3 ECC bits, 4 data bits)'},
-    {value: 3, label: '4/8 (4 ECC bits, 4 data bits)'},
+    {
+      value: 0,
+      label: '4/4 (0 ECC bit, 4 data bits)',
+      disabled: !isRak3172,
+    },
+    {value: 1, label: '4/5 (1 ECC bit, 4 data bits)'},
+    {value: 2, label: '4/6 (2 ECC bits, 4 data bits)'},
+    {value: 3, label: '4/7 (3 ECC bits, 4 data bits)'},
+    {value: 4, label: '4/8 (4 ECC bits, 4 data bits)'},
   ];
   const selectedCodeRateOption = codeRateOptions.find(
     c => c.value === codeRate,
@@ -148,9 +157,11 @@ export default function LoraRadio({
   ];
   const selectedPowerOption = powerOptions.find(p => p.value === loraPower);
 
+  const defaultCodeRate = 1;
+
   const hasWarning =
     (loraMode !== undefined && loraMode === 'REPEATER') ||
-    (codeRate !== undefined && codeRate !== 0) ||
+    (codeRate !== undefined && codeRate !== defaultCodeRate) ||
     (loraPower !== undefined && loraPower !== 22) ||
     (loraMode !== undefined &&
       loraMode !== 'RECEIVER' &&
@@ -297,6 +308,7 @@ export default function LoraRadio({
               <ListItemMenuItem
                 key={item.value}
                 title={item.label}
+                disabled={item.disabled}
                 onPress={() => {
                   setCodeRate(item.value);
                 }}

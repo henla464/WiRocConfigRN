@@ -88,8 +88,8 @@ export const resources = {
       'WiRoc-versionen kommer att uppdateras':
         'The WiRoc version will be updated',
       'Kunde inte uppdatera WiRoc version': 'Could not update WiRoc version',
-      'Enheten kommer att uppdatera WiRoc BLE API-versionen':
-        'The device will update the WiRoc BLE API version',
+      'Enheten kommer att uppdatera WiRoc BLE API-versionen. Vänta en stund och anslut sedan igen.':
+        'The device will update the WiRoc BLE API version. Wait a short while and then connect again.',
       'Kunde inte uppdatera WiRoc BLE API version':
         'Could not update WiRoc BLE API version',
       'Enheten har uppdaterats till version':
@@ -381,8 +381,8 @@ export const resources = {
         'WiRoc-versionen kommer att uppdateras',
       'Kunde inte uppdatera WiRoc version':
         'Kunde inte uppdatera WiRoc version',
-      'Enheten kommer att uppdatera WiRoc BLE API-versionen':
-        'Enheten kommer att uppdatera WiRoc BLE API-versionen',
+      'Enheten kommer att uppdatera WiRoc BLE API-versionen. Vänta en stund och anslut sedan igen.':
+        'Enheten kommer att uppdatera WiRoc BLE API-versionen. Vänta en stund och anslut sedan igen.',
       'Kunde inte uppdatera WiRoc BLE API version':
         'Kunde inte uppdatera WiRoc BLE API version',
       'Enheten har uppdaterats till version':

@@ -34,6 +34,9 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
     'acknowledgementrequested',
   );
   const {data: rfcommDevices} = useWiRocPropertyQuery(deviceId, 'rfcomm');
+  const {data: loraModule} = useWiRocPropertyQuery(deviceId, 'loramodule');
+  const isRak3172 = loraModule === 'RAK3172';
+  const defaultCodeRate = isRak3172 ? 0 : 1;
 
   const warnings: string[] = [];
 
@@ -43,7 +46,7 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
   if (loraMode !== undefined && loraMode === 'REPEATER') {
     warnings.push(t('warn_lora_repeater'));
   }
-  if (codeRate !== undefined && codeRate !== 0) {
+  if (codeRate !== undefined && codeRate !== defaultCodeRate) {
     warnings.push(t('warn_lora_code_rate'));
   }
   if (loraPower !== undefined && loraPower !== 22) {
@@ -72,8 +75,7 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
   }
   if (wakeUpEnabled) {
     warnings.push(
-      t('warn_rtc_wakeup') +
-        (wakeUpTime !== undefined ? ' ' + wakeUpTime : ''),
+      t('warn_rtc_wakeup') + (wakeUpTime !== undefined ? ' ' + wakeUpTime : ''),
     );
   }
 

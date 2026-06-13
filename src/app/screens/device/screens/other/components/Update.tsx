@@ -41,6 +41,8 @@ export default function Update() {
     state => state.removeAllNotifications,
   );
 
+  const disconnectBleDevice = useStore(state => state.disconnectBleDevice);
+
   const [wiRocVersion, setWiRocVersion] = useState<string | null>(null);
   const [wiRocBLEAPIVersion, setWiRocBLEAPIVersion] = useState<string | null>(
     null,
@@ -136,8 +138,12 @@ export default function Update() {
       onSuccess: () => {
         notify({
           type: 'info',
-          message: t('Enheten kommer att uppdatera WiRoc BLE API-versionen'),
+          message: t(
+            'Enheten kommer att uppdatera WiRoc BLE API-versionen. Vänta en stund och anslut sedan igen.',
+          ),
         });
+        // Disconnect so the app navigates to the scan screen naturally
+        disconnectBleDevice(deviceId);
       },
       onError: () => {
         notify({
