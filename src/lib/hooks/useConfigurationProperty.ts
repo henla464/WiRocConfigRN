@@ -7,7 +7,10 @@ import {
   SettableValues,
 } from '@api/transformers';
 
-import {useWiRocPropertyQuery} from './useWiRocPropertyQuery';
+import {
+  UseWiRocPropertyQueryOptions,
+  useWiRocPropertyQuery,
+} from './useWiRocPropertyQuery';
 
 /**
  * Wrapper around useWiRocPropertyQuery _and_ react-hook-form's useController.
@@ -33,8 +36,13 @@ export const useConfigurationProperty = <
     UseControllerProps<SettableValues, PropName>,
     'name'
   >,
+  queryOptions?: UseWiRocPropertyQueryOptions<PropName>,
 ) => {
-  const query = useWiRocPropertyQuery<PropName>(deviceId, propName);
+  const query = useWiRocPropertyQuery<PropName>(
+    deviceId,
+    propName,
+    queryOptions,
+  );
 
   const {data: originalValue} = query;
 

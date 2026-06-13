@@ -23,7 +23,13 @@ export default function LoraRadio({
     {
       field: {value: isLoraRadioEnabled, onChange: setLoraRadioEnabled},
     },
-  ] = useConfigurationProperty(deviceId, 'lora/enabled', onDefaultValuesChange);
+  ] = useConfigurationProperty(
+    deviceId,
+    'lora/enabled',
+    onDefaultValuesChange,
+    undefined,
+    {defaultValue: true},
+  );
 
   const [
     {

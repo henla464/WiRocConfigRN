@@ -87,6 +87,7 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
     // This request throws if the hardware does not have SRR,
     // so don't bother the automatic reatry...
     retry: false,
+    defaultValue: false,
   });
 
   const {data: hasRfcomm} = useWiRocPropertyQuery(deviceId, 'hashw/rfcomm', {

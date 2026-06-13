@@ -20,7 +20,7 @@ type SetterName = keyof typeof setters;
  * Wrapper around react-query's useQuery hook,
  * for fetching a WiRoc property value.
  */
-interface UseWiRocPropertyQueryOptions<PropName extends GetterName>
+export interface UseWiRocPropertyQueryOptions<PropName extends GetterName>
   extends Omit<
     Parameters<typeof useQuery<unknown, unknown, GetterValueOf<PropName>>>[0],
     'queryKey'
