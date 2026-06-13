@@ -85,6 +85,7 @@ export const getters = {
   webserverurl: stringGetter(),
   'hashw/srr': booleanGetter(),
   'hashw/rtc': booleanGetter(),
+  'hashw/rfcomm': booleanGetter(),
   scanbtaddresses: serialDevicesGetter(),
   rfcomm: serialDevicesGetter(),
 

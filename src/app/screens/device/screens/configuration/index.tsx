@@ -89,6 +89,10 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
     retry: false,
   });
 
+  const {data: hasRfcomm} = useWiRocPropertyQuery(deviceId, 'hashw/rfcomm', {
+    retry: false,
+  });
+
   const [mTop, setMTop] = useState(0);
   const [currentScrollPosition, setCurrentScrollPosition] = useState(0);
 
@@ -142,8 +146,8 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
               <Divider bold={true} />
               <USB {...commonSectionProps} />
               <Divider bold={true} />
-              <SerialBluetooth {...commonSectionProps} />
-              <Divider bold={true} />
+              {hasRfcomm && <SerialBluetooth {...commonSectionProps} />}
+              {hasRfcomm && <Divider bold={true} />}
               {hasSRR && <SRR {...commonSectionProps} />}
               {hasSRR && <Divider bold={true} />}
             </View>

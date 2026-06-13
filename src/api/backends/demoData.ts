@@ -34,6 +34,7 @@ export const demoData: Readonly<Partial<Record<GettablePropName, string>>> = {
     'LasePrivate\nno\n72\nDIRECT-2c-HP M15 LaserJet\nno\n60\nTP-Link_F2EB\nno\n55\nWiRoc\nyes\n52\nGhostbusters\nno\n37',
   'hashw/srr': '1',
   'hashw/rtc': '1',
+  'hashw/rfcomm': '1',
   services: JSON.stringify({
     services: [
       {
