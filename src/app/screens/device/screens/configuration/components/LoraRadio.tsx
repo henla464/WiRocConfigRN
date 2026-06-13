@@ -81,6 +81,18 @@ export default function LoraRadio({
     },
   ] = useConfigurationProperty(deviceId, 'ham/enabled', onDefaultValuesChange);
 
+  const [
+    {
+      field: {value: listenOnly, onChange: setListenOnly},
+    },
+  ] = useConfigurationProperty(
+    deviceId,
+    'lora/listenonly',
+    onDefaultValuesChange,
+    undefined,
+    {defaultValue: false},
+  );
+
   const {data: loraModule} = useWiRocPropertyQuery(deviceId, 'loramodule');
   const isRak3172 = loraModule === 'RAK3172';
 
@@ -276,29 +288,61 @@ export default function LoraRadio({
               />
             ))}
           </ListItemMenu>
-          <List.Item
-            left={props => <List.Icon {...props} icon="reply" />}
-            disabled={!isLoraRadioEnabled}
-            style={{
-              opacity: isLoraRadioEnabled ? undefined : 0.5,
-            }}
-            title={t('Begär bekräftelse')}
-            description={
-              acknowledgementRequested
-                ? t('Mottagaren ska bekräfta mottagen stämpling')
-                : t('Mottagaren bekräftar inte mottagen stämpling')
-            }
-            right={props => (
-              <Switch
-                {...props}
-                value={acknowledgementRequested}
-                onValueChange={value => {
-                  setAcknowledgementRequested(value);
-                }}
-                disabled={!isLoraRadioEnabled}
-              />
-            )}
-          />
+          {loraMode !== 'RECEIVER' && (
+            <List.Item
+              left={props => <List.Icon {...props} icon="reply" />}
+              disabled={!isLoraRadioEnabled}
+              style={{
+                opacity: isLoraRadioEnabled ? undefined : 0.5,
+              }}
+              title={t('Begär bekräftelse')}
+              description={
+                acknowledgementRequested
+                  ? t('Mottagaren ska bekräfta mottagen stämpling')
+                  : t('Mottagaren bekräftar inte mottagen stämpling')
+              }
+              right={props => (
+                <Switch
+                  {...props}
+                  value={acknowledgementRequested}
+                  onValueChange={value => {
+                    setAcknowledgementRequested(value);
+                  }}
+                  disabled={!isLoraRadioEnabled}
+                />
+              )}
+            />
+          )}
+          {loraMode === 'RECEIVER' && (
+            <List.Item
+              left={props => <List.Icon {...props} icon="ear-hearing" />}
+              disabled={!isLoraRadioEnabled}
+              style={{
+                opacity: isLoraRadioEnabled ? undefined : 0.5,
+              }}
+              title={t('Lyssna endast')}
+              descriptionNumberOfLines={3}
+              description={
+                listenOnly
+                  ? t(
+                      'Inga bekräftelser skickas på mottagna Lora-meddelanden även om det begärs av sändaren',
+                    )
+                  : t(
+                      'Bekräftelse skickas för mottagna Lora-meddelanden när det begärs av sändaren',
+                    )
+              }
+              right={props => (
+                <Switch
+                  {...props}
+                  value={listenOnly}
+                  onValueChange={value => {
+                    setListenOnly(value);
+                  }}
+                  disabled={!isLoraRadioEnabled}
+                />
+              )}
+            />
+          )}
           <ListItemMenu
             disabled={!isLoraRadioEnabled}
             icon="code-json"
@@ -348,9 +392,9 @@ const styles = StyleSheet.create({
   containerColumn: {
     flex: 1,
     flexDirection: 'column',
-    paddingLeft: 10,
+    paddingLeft: 4,
     paddingTop: 10,
-    paddingRight: 10,
+    paddingRight: 4,
     paddingBottom: 10,
     alignItems: 'center',
   },

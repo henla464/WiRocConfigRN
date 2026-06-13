@@ -4,6 +4,7 @@ export const demoData: Readonly<Partial<Record<GettablePropName, string>>> = {
   loramode: 'RECEIVER',
   channel: '2',
   loramodule: 'DRF1268DS',
+  'lora/listenonly': '0',
   lorarange: 'L',
   onewayreceive: '0',
   force4800baudrate: '0',

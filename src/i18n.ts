@@ -80,6 +80,9 @@ export const resources = {
       Av: 'Off',
       'Inga bekräftelser skickas på mottagna SRR-stämplingar':
         'No acks are sent for received SRR-punches',
+      'Lyssna endast': 'Listen only',
+      'Inga bekräftelser skickas på mottagna Lora-meddelanden även om det begärs av sändaren':
+        'No acks are sent for received Lora-messages even when requested by sender',
       Uppdatera: 'Update',
       'Uppdatera WiRoc': 'Update WiRoc',
       'Uppdatera WiRoc BLE API': 'Update WiRoc BLE API',
@@ -109,6 +112,8 @@ export const resources = {
       Skicka: 'Send',
       'Använd 4800 bps': 'Use 4800 bps',
       'Bekräftelse skickas': 'Acknowledgement sent',
+      'Bekräftelse skickas för mottagna Lora-meddelanden när det begärs av sändaren':
+        'Acknowledgement is sent for received Lora messages when requested by sender',
       Mottagare: 'Receiver',
       Sändare: 'Sender',
       Repeterare: 'Repeater',
@@ -260,6 +265,8 @@ export const resources = {
       Skicka: 'Skicka',
       'Använd 4800 bps': 'Använd 4800 bps',
       'Bekräftelse skickas': 'Bekräftelse skickas',
+      'Bekräftelse skickas för mottagna Lora-meddelanden när det begärs av sändaren':
+        'Bekräftelse skickas för mottagna Lora-meddelanden när det begärs av sändaren',
       Mottagare: 'Mottagare',
       Sändare: 'Sändare',
       Repeterare: 'Repeterare',
@@ -273,6 +280,9 @@ export const resources = {
       'SportIdent SRR': 'SportIdent SRR',
       'Inga bekräftelser skickas på mottagna SRR-stämplingar':
         'Inga bekräftelser skickas på mottagna SRR-stämplingar',
+      'Lyssna endast': 'Lyssna endast',
+      'Inga bekräftelser skickas på mottagna Lora-meddelanden även om det begärs av sändaren':
+        'Inga bekräftelser skickas på mottagna Lora-meddelanden även om det begärs av sändaren',
       'Begär bekräftelse': 'Begär bekräftelse',
       'Mottagaren ska bekräfta mottagen stämpling':
         'Mottagaren ska bekräfta mottagen stämpling',
