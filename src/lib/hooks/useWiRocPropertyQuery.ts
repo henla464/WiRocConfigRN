@@ -20,6 +20,18 @@ type SetterName = keyof typeof setters;
  * Wrapper around react-query's useQuery hook,
  * for fetching a WiRoc property value.
  */
+interface UseWiRocPropertyQueryOptions<PropName extends GetterName>
+  extends Omit<
+    Parameters<typeof useQuery<unknown, unknown, GetterValueOf<PropName>>>[0],
+    'queryKey'
+  > {
+  /**
+   * Default value to return when the property hasn't been fetched
+   * (e.g. the WiRoc device is too old and doesn't support it).
+   */
+  defaultValue?: GetterValueOf<PropName>;
+}
+
 export const useWiRocPropertyQuery = <PropName extends GetterName>(
   /**
    * The id of the device to fetch the property from.
@@ -32,14 +44,13 @@ export const useWiRocPropertyQuery = <PropName extends GetterName>(
   propertyName: PropName,
 
   /**
-   * Options to pass through to react-query's useQuery hook.
+   * Options to pass through to react-query's useQuery hook,
+   * plus an optional defaultValue for unsupported properties.
    */
-  options: Omit<
-    Parameters<typeof useQuery<unknown, unknown, GetterValueOf<PropName>>>[0],
-    'queryKey'
-  > = {},
+  options: UseWiRocPropertyQueryOptions<PropName> = {},
 ) => {
   const api = useWiRocDeviceApi(deviceId);
+  const {defaultValue, ...queryOptions} = options;
 
   const query = useQuery<unknown, unknown, GetterValueOf<PropName>>({
     queryKey: getKey(deviceId, propertyName),
@@ -56,10 +67,11 @@ export const useWiRocPropertyQuery = <PropName extends GetterName>(
     },
     staleTime: Infinity,
     retry: false,
-    ...options,
+    ...queryOptions,
   });
   return {
     ...query,
+    data: query.data !== undefined ? query.data : defaultValue,
     propertyName,
   };
 };

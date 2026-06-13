@@ -91,6 +91,7 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
 
   const {data: hasRfcomm} = useWiRocPropertyQuery(deviceId, 'hashw/rfcomm', {
     retry: false,
+    defaultValue: true,
   });
 
   const [mTop, setMTop] = useState(0);
