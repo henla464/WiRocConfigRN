@@ -152,10 +152,12 @@ export const resources = {
         'Are you sure you want to update WiRoc BLE API from version',
       'till version': 'to version',
       till: 'to',
+      'Tryck för att ändra': 'Tap to change',
       Väckningstid: 'Wake-up time',
       'Aktivera väckning efter att enheten har stängts av:':
         'Enable wake-up after the device is shut down:',
       'Sätt WiRoc-enhetens datum & tid': 'Set WiRoc device date & time',
+      'Stäng av enheten': 'Shut down device',
       'När WiRoc-enheten stängs av med knappen så aktiveras väckningen och det står då på displayen. Om enheten startas manuellt så avaktiveras väckningen och måste manuellt aktiveras här igen.':
         'When the WiRoc device is turned off with the button, the wake-up is activated and it is displayed on the screen. If the device is started manually, the wake-up is deactivated and must be manually activated again here.',
       'Nodnummer är obligatoriskt (ska vara unikt)':
@@ -306,10 +308,12 @@ export const resources = {
         'Är du säker på att du vill uppdatera WiRoc BLE API från version',
       'till version': 'till version',
       till: 'till',
+      'Tryck för att ändra': 'Tryck för att ändra',
       Väckningstid: 'Väckningstid',
       'Aktivera väckning efter att enheten har stängts av:':
         'Aktivera väckning efter att enheten har stängts av:',
       'Sätt WiRoc-enhetens datum & tid': 'Sätt WiRoc-enhetens datum & tid',
+      'Stäng av enheten': 'Stäng av enheten',
       'När WiRoc-enheten stängs av med knappen så aktiveras väckningen och det står då på displayen. Om enheten startas manuellt så avaktiveras väckningen och måste manuellt aktiveras här igen.':
         'När WiRoc-enheten stängs av med knappen så aktiveras väckningen och det står då på displayen. Om enheten startas manuellt så avaktiveras väckningen och måste manuellt aktiveras här igen.',
       'Nodnummer är obligatoriskt (ska vara unikt)':

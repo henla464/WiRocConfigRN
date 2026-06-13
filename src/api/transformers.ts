@@ -164,6 +164,8 @@ export const setters = {
   'rtc/wakeupenabled': booleanSetter(),
   'rtc/clearwakeup': voidSetter(),
 
+  'power/shutdown': voidSetter(),
+
   'ham/enabled': booleanSetter(),
   'ham/callsign': stringSetter(),
 

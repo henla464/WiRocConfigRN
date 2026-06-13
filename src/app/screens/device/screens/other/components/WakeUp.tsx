@@ -4,7 +4,14 @@ import {Controller, useForm} from 'react-hook-form';
 import {StyleSheet, View} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
 import DateTimePickerModal from 'react-native-modal-datetime-picker';
-import {Button, IconButton, Switch, Text} from 'react-native-paper';
+import {
+  Button,
+  Icon,
+  IconButton,
+  Switch,
+  Text,
+  TouchableRipple,
+} from 'react-native-paper';
 import {useTranslation} from 'react-i18next';
 
 import {SettableValues} from '@api/transformers';
@@ -52,6 +59,10 @@ export default function WakeUp() {
   );
 
   const {mutate: wakeup} = useWiRocPropertyMutation(deviceId, 'rtc/wakeup');
+  const {mutate: shutdown} = useWiRocPropertyMutation(
+    deviceId,
+    'power/shutdown',
+  );
 
   const form = useForm<Partial<SettableValues>>({
     defaultValues: {
@@ -192,20 +203,29 @@ export default function WakeUp() {
                 name="rtc/wakeup"
                 render={({field: {value, onChange}}) => (
                   <>
-                    <Button
+                    <TouchableRipple
                       disabled={!form.watch('rtc/wakeupenabled')}
-                      icon=""
-                      mode="outlined"
                       onPress={() => setIsTimePickerVisible(true)}
-                      style={styles.wakeUpButton}
-                      labelStyle={
-                        form.watch('rtc/wakeupenabled')
-                          ? styles.wakeUpButtonLabelStyle
-                          : styles.wakeUpButtonDisabledLabelStyle
-                      }
-                      contentStyle={styles.wakeUpButtonContent}>
-                      {value}
-                    </Button>
+                      style={styles.wakeUpButton}>
+                      <View style={styles.wakeUpButtonInner}>
+                        <Icon
+                          source="clock-outline"
+                          size={20}
+                          color="#6750A4"
+                        />
+                        <Text
+                          style={
+                            form.watch('rtc/wakeupenabled')
+                              ? styles.wakeUpTimeText
+                              : styles.wakeUpTimeTextDisabled
+                          }>
+                          {value}
+                        </Text>
+                        <Text style={styles.wakeUpTapHint}>
+                          {t('Tryck för att ändra')}
+                        </Text>
+                      </View>
+                    </TouchableRipple>
                     <DateTimePickerModal
                       isVisible={isTimePickerVisible}
                       mode="time"
@@ -222,6 +242,19 @@ export default function WakeUp() {
                   </>
                 )}
               />
+            </View>
+            <View style={styles.containerRowCenter}>
+              <Button
+                icon="power-standby"
+                mode="contained"
+                buttonColor="#6750A4"
+                disabled={
+                  form.formState.isDirty || !form.watch('rtc/wakeupenabled')
+                }
+                onPress={() => shutdown()}
+                style={styles.shutdownButton}>
+                {t('Stäng av enheten')}
+              </Button>
             </View>
           </View>
         )}
@@ -278,32 +311,33 @@ const styles = StyleSheet.create({
   },
   wakeUpButton: {
     flex: 0.7,
-    padding: 0,
-    margin: 0,
+    borderWidth: 2,
+    borderColor: '#6750A4',
+    borderRadius: 16,
+    backgroundColor: '#F7F2FA',
+    padding: 16,
+    marginTop: 20,
   },
-  wakeUpButtonLabelStyle: {
+  wakeUpButtonInner: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  wakeUpTimeText: {
     color: 'black',
     fontSize: 80,
-    height: 120,
-    paddingTop: 80,
-    paddingLeft: 0,
-    margin: 0,
+    lineHeight: 88,
     fontWeight: '900',
   },
-  wakeUpButtonDisabledLabelStyle: {
+  wakeUpTimeTextDisabled: {
     color: 'grey',
     fontSize: 80,
-    height: 120,
-    paddingTop: 80,
-    paddingLeft: 0,
-    margin: 0,
+    lineHeight: 88,
     fontWeight: '900',
   },
-
-  wakeUpButtonContent: {
-    textAlign: 'center',
-    padding: 0,
-    margin: 0,
+  wakeUpTapHint: {
+    color: '#6750A4',
+    fontSize: 12,
+    marginTop: 4,
   },
   wakeupTime: {
     fontSize: 100,
@@ -311,6 +345,10 @@ const styles = StyleSheet.create({
   header: {
     color: 'black',
     fontSize: 30,
+  },
+  shutdownButton: {
+    marginTop: 24,
+    padding: 10,
   },
   text: {
     fontSize: 20,
