@@ -49,7 +49,12 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
   if (loraPower !== undefined && loraPower !== 22) {
     warnings.push(t('warn_lora_power'));
   }
-  if (acknowledgementRequested !== undefined && !acknowledgementRequested) {
+  if (
+    loraMode !== undefined &&
+    loraMode !== 'RECEIVER' &&
+    acknowledgementRequested !== undefined &&
+    !acknowledgementRequested
+  ) {
     warnings.push(t('warn_lora_no_ack'));
   }
   if (rs232Mode !== undefined && rs232Mode === 'SEND') {

@@ -142,6 +142,15 @@ export default function LoraRadio({
   ];
   const selectedPowerOption = powerOptions.find(p => p.value === loraPower);
 
+  const hasWarning =
+    (loraMode !== undefined && loraMode === 'REPEATER') ||
+    (codeRate !== undefined && codeRate !== 0) ||
+    (loraPower !== undefined && loraPower !== 22) ||
+    (loraMode !== undefined &&
+      loraMode !== 'RECEIVER' &&
+      acknowledgementRequested !== undefined &&
+      !acknowledgementRequested);
+
   return (
     <List.Accordion
       id="lora"
@@ -170,10 +179,7 @@ export default function LoraRadio({
               </>
             ) : null}
           </Text>
-          {(loraMode === 'REPEATER' ||
-            codeRate !== 0 ||
-            loraPower !== 22 ||
-            !acknowledgementRequested) && <WarningIcon />}
+          {hasWarning && <WarningIcon />}
           {typeof isLoraRadioEnabled === 'boolean' && (
             <OnOffChip on={isLoraRadioEnabled} />
           )}
