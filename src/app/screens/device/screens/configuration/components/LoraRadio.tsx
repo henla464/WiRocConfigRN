@@ -163,21 +163,21 @@ export default function LoraRadio({
   );
 
   const rangeOptions = [
-    {label: 'Ultra Long 73 bps', value: 'UL', disabled: false},
-    {label: 'eXtra Long 134 bps', value: 'XL', disabled: false},
-    {label: 'Long 244 bps', value: 'L', disabled: false},
-    {label: 'Medium Long 439 bps', value: 'ML', disabled: false},
-    {label: 'Medium Fast 781 bps', value: 'MS', disabled: false},
-    {label: 'Fast 1367 bps', value: 'S', disabled: false},
+    {label: 'Ultra Long', value: 'UL', disabled: false},
+    {label: 'eXtra Long', value: 'XL', disabled: false},
+    {label: 'Long', value: 'L', disabled: false},
+    {label: 'Medium Long', value: 'ML', disabled: false},
+    {label: 'Medium Fast', value: 'MS', disabled: false},
+    {label: 'Fast', value: 'S', disabled: false},
     ...(isVersion123OrLater
       ? [
           {
-            label: 'eXtra Fast 2734 bps',
+            label: 'eXtra Fast',
             value: 'XF',
             disabled: isRakChannel,
           },
           {
-            label: 'Ultra Fast 3906 bps',
+            label: 'Ultra Fast',
             value: 'UF',
             disabled: isRakChannel,
           },
@@ -185,6 +185,32 @@ export default function LoraRadio({
       : []),
   ];
   const selectedRangeOption = rangeOptions.find(r => r.value === loraRange);
+
+  // BPS lookup table: [range][codeRateIndex] for half/full channels
+  const bpsTableHalf: Record<string, number[]> = {
+    UL: [102, 81, 68, 58, 51],
+    XL: [184, 146, 122, 105, 92],
+    L: [326, 260, 217, 186, 163],
+    ML: [570, 455, 380, 326, 285],
+    MS: [976, 781, 651, 558, 488],
+    S: [1628, 1367, 1085, 930, 814],
+  };
+  const bpsTableFull: Record<string, number[]> = {
+    UL: [92, 73, 61, 52, 46],
+    XL: [168, 134, 112, 96, 84],
+    L: [306, 244, 203, 174, 153],
+    ML: [550, 439, 366, 314, 275],
+    MS: [976, 781, 651, 558, 488],
+    S: [1708, 1367, 1139, 977, 854],
+    XF: [2930, 2344, 1953, 1674, 1465],
+    UF: [4882, 3906, 3255, 2790, 2441],
+  };
+  const bpsTable = isRakChannel ? bpsTableHalf : bpsTableFull;
+  const codeRateIndex = codeRate !== undefined ? codeRate : 1;
+  const computedBps =
+    loraRange && bpsTable[loraRange]
+      ? bpsTable[loraRange][codeRateIndex]
+      : null;
 
   const powerOptions = [
     {value: 1, label: '1 dBm'},
@@ -320,7 +346,10 @@ export default function LoraRadio({
             icon="signal-distance-variant"
             title={t('Räckvidd / Datahastighet')}
             description={
-              rangeOptions.find(r => r.value === loraRange)?.label ?? '?'
+              selectedRangeOption
+                ? selectedRangeOption.label +
+                  (computedBps !== null ? ' (' + computedBps + ' bps)' : '')
+                : '?'
             }>
             {rangeOptions.map(item => (
               <ListItemMenuItem
