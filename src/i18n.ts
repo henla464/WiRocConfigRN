@@ -255,6 +255,7 @@ export const resources = {
       bluetooth_off: 'Bluetooth needs to be enabled to scan for devices',
       bluetooth_enabling: 'Enabling Bluetooth...',
       warn_lora_no_ack: 'Lora is not requesting acknowledgements',
+      warn_lora_listen_only: 'Lora Listen only is enabled, no acks are sent',
       warn_serial_bt_not_connected:
         'Serial Bluetooth device configured but not connected',
       'Tillgängliga enheter': 'Available devices',
@@ -505,6 +506,8 @@ export const resources = {
       bluetooth_off: 'Bluetooth måste vara aktiverat för att söka enheter',
       bluetooth_enabling: 'Aktiverar Bluetooth...',
       warn_lora_no_ack: 'Lora begär inte bekräftelse',
+      warn_lora_listen_only:
+        'Lora Lyssna endast är aktiverat, inga bekräftelser skickas',
       warn_serial_bt_not_connected:
         'Seriell Bluetooth-enhet konfigurerad men inte ansluten',
       'Tillgängliga enheter': 'Tillgängliga enheter',

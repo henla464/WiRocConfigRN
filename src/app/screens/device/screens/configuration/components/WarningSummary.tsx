@@ -33,9 +33,8 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
     deviceId,
     'acknowledgementrequested',
   );
+  const {data: listenOnly} = useWiRocPropertyQuery(deviceId, 'lora/listenonly');
   const {data: rfcommDevices} = useWiRocPropertyQuery(deviceId, 'rfcomm');
-  const {data: loraModule} = useWiRocPropertyQuery(deviceId, 'loramodule');
-  const isRak3172 = loraModule === 'RAK3172';
   const defaultCodeRate = 1;
 
   const warnings: string[] = [];
@@ -59,6 +58,9 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
     !acknowledgementRequested
   ) {
     warnings.push(t('warn_lora_no_ack'));
+  }
+  if (loraMode === 'RECEIVER' && listenOnly !== undefined && listenOnly) {
+    warnings.push(t('warn_lora_listen_only'));
   }
   if (rs232Mode !== undefined && rs232Mode === 'SEND') {
     warnings.push(t('warn_rs232_send'));

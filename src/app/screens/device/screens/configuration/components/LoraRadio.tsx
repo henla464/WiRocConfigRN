@@ -221,7 +221,8 @@ export default function LoraRadio({
     (loraMode !== undefined &&
       loraMode !== 'RECEIVER' &&
       acknowledgementRequested !== undefined &&
-      !acknowledgementRequested);
+      !acknowledgementRequested) ||
+    (loraMode === 'RECEIVER' && listenOnly !== undefined && listenOnly);
 
   return (
     <List.Accordion
