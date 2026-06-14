@@ -110,6 +110,22 @@ export default function LoraRadio({
     {value: '4', label: '4'},
     {value: '5', label: '5'},
     {value: '6', label: '6'},
+    ...(isRak3172
+      ? [
+          {value: '1A', label: '1A'},
+          {value: '1B', label: '1B'},
+          {value: '2A', label: '2A'},
+          {value: '2B', label: '2B'},
+          {value: '3A', label: '3A'},
+          {value: '3B', label: '3B'},
+          {value: '4A', label: '4A'},
+          {value: '4B', label: '4B'},
+          {value: '5A', label: '5A'},
+          {value: '5B', label: '5B'},
+          {value: '6A', label: '6A'},
+          {value: '6B', label: '6B'},
+        ]
+      : []),
     {value: 'HAM1', label: 'HAM1', disabled: !isHamEnabled},
     {value: 'HAM2', label: 'HAM2', disabled: !isHamEnabled},
     {value: 'HAM3', label: 'HAM3', disabled: !isHamEnabled},
