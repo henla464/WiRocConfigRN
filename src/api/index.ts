@@ -6,7 +6,15 @@ import {createRestApiBackend} from './backends/rest';
 import {WiRocApiBackend} from './types';
 
 export type LoraMode = 'RECEIVER' | 'REPEATER' | 'SENDER';
-export type LoraRange = 'UL' | 'XL' | 'L' | 'ML' | 'MS' | 'S';
+export type LoraRange =
+  | 'UL'
+  | 'XL'
+  | 'L'
+  | 'ML'
+  | 'MS'
+  | 'S'
+  | 'XF'
+  | 'UF';
 export interface Wifi {
   networkName: string;
   isConnected: boolean;

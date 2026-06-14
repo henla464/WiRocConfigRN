@@ -96,6 +96,19 @@ export default function LoraRadio({
   const {data: loraModule} = useWiRocPropertyQuery(deviceId, 'loramodule');
   const isRak3172 = loraModule === 'RAK3172';
 
+  const {data: wiRocVersion} = useWiRocPropertyQuery(
+    deviceId,
+    'wirocpythonversion',
+  );
+  const versionParts = wiRocVersion?.split('.').map(Number);
+  const isVersion123OrLater =
+    versionParts !== undefined &&
+    versionParts.length >= 2 &&
+    (versionParts[0] > 1 || (versionParts[0] === 1 && versionParts[1] >= 23));
+
+  const isRakChannel =
+    channel !== undefined && (channel.endsWith('A') || channel.endsWith('B'));
+
   const modeOptions = [
     {value: 'RECEIVER', label: t('Mottagare'), icon: 'login'},
     {value: 'SENDER', label: t('Sändare'), icon: 'logout'},
@@ -150,12 +163,26 @@ export default function LoraRadio({
   );
 
   const rangeOptions = [
-    {label: 'Ultra Long 73 bps', value: 'UL'},
-    {label: 'eXtra Long 134 bps', value: 'XL'},
-    {label: 'Long 244 bps', value: 'L'},
-    {label: 'Medium Long 439 bps', value: 'ML'},
-    {label: 'Medium short 781 bps', value: 'MS'},
-    {label: 'Short 1367 bps', value: 'S'},
+    {label: 'Ultra Long 73 bps', value: 'UL', disabled: false},
+    {label: 'eXtra Long 134 bps', value: 'XL', disabled: false},
+    {label: 'Long 244 bps', value: 'L', disabled: false},
+    {label: 'Medium Long 439 bps', value: 'ML', disabled: false},
+    {label: 'Medium Fast 781 bps', value: 'MS', disabled: false},
+    {label: 'Fast 1367 bps', value: 'S', disabled: false},
+    ...(isVersion123OrLater
+      ? [
+          {
+            label: 'eXtra Fast 2734 bps',
+            value: 'XF',
+            disabled: isRakChannel,
+          },
+          {
+            label: 'Ultra Fast 3906 bps',
+            value: 'UF',
+            disabled: isRakChannel,
+          },
+        ]
+      : []),
   ];
   const selectedRangeOption = rangeOptions.find(r => r.value === loraRange);
 
@@ -298,6 +325,7 @@ export default function LoraRadio({
               <ListItemMenuItem
                 key={item.value}
                 title={item.label}
+                disabled={item.disabled}
                 onPress={() => {
                   setLoraRange(item.value as LoraRange);
                 }}
