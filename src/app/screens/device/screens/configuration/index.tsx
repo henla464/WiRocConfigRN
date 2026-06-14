@@ -117,19 +117,23 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
             save={handleSubmit(onSubmit)}
             reload={() => reset()}
             onHideAnimationFinished={() => {
-              setMTop(0);
-              scrollViewRef?.scrollTo({
-                x: 0,
-                y: currentScrollPosition - 133,
-                animated: false,
+              requestAnimationFrame(() => {
+                setMTop(0);
+                scrollViewRef?.scrollTo({
+                  x: 0,
+                  y: currentScrollPosition - 133,
+                  animated: false,
+                });
               });
             }}
             onShowAnimationFinished={() => {
-              setMTop(133);
-              scrollViewRef?.scrollTo({
-                x: 0,
-                y: currentScrollPosition + 133,
-                animated: false,
+              requestAnimationFrame(() => {
+                setMTop(133);
+                scrollViewRef?.scrollTo({
+                  x: 0,
+                  y: currentScrollPosition + 133,
+                  animated: false,
+                });
               });
             }}
           />
