@@ -36,7 +36,7 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
   const {data: rfcommDevices} = useWiRocPropertyQuery(deviceId, 'rfcomm');
   const {data: loraModule} = useWiRocPropertyQuery(deviceId, 'loramodule');
   const isRak3172 = loraModule === 'RAK3172';
-  const defaultCodeRate = isRak3172 ? 0 : 1;
+  const defaultCodeRate = 1;
 
   const warnings: string[] = [];
 
