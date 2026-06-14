@@ -199,7 +199,18 @@ export const resources = {
       Signalstyrka: 'Signal strength',
       Enhetsnamn: 'Device name',
       'Ändra enhetsnamn': 'Change device name',
-      Password: 'Password',
+      Lösenord: 'Password',
+      'Monitor åtkomst': 'Monitor access',
+      'E-post': 'Email',
+      Enhet: 'Device',
+      'Ange din email och lösenord till monitor.wiroc.se för att ge dig åtkomst att redigera denna enhet på monitor.wiroc.se':
+        'Enter your email and password for monitor.wiroc.se to grant yourself access to edit this device on monitor.wiroc.se',
+      'Ange både e-postadress och lösenord':
+        'Enter both email address and password',
+      'Åtkomst beviljad till {{device}} för {{user}}':
+        'Access granted to {{device}} for {{user}}',
+      'Kunde inte bevilja åtkomst: ': 'Could not grant access: ',
+      'Ge åtkomst till enhet': 'Grant device access',
       'SI-nummer': 'SI card number',
       Antal: 'Number',
       Intervall: 'Interval',
@@ -438,7 +449,18 @@ export const resources = {
       Signalstyrka: 'Signalstyrka',
       Enhetsnamn: 'Enhetsnamn',
       'Ändra enhetsnamn': 'Ändra enhetsnamn',
-      Password: 'Lösenord',
+      Lösenord: 'Lösenord',
+      Enhetsåtkomst: 'Enhetsåtkomst',
+      'E-post': 'E-post',
+      Enhet: 'Enhet',
+      'Ange din email och lösenord till monitor.wiroc.se för att ge dig åtkomst att redigera denna enhet på monitor.wiroc.se':
+        'Ange din email och lösenord till monitor.wiroc.se för att ge dig åtkomst att redigera denna enhet på monitor.wiroc.se',
+      'Ange både e-postadress och lösenord':
+        'Ange både e-postadress och lösenord',
+      'Åtkomst beviljad till {{device}} för {{user}}':
+        'Åtkomst beviljad till {{device}} för {{user}}',
+      'Kunde inte bevilja åtkomst: ': 'Kunde inte bevilja åtkomst: ',
+      'Ge åtkomst till enhet': 'Ge åtkomst till enhet',
       'SI-nummer': 'SI-nummer',
       Antal: 'Antal',
       Intervall: 'Intervall',

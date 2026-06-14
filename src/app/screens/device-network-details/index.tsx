@@ -92,7 +92,7 @@ export const DeviceNetworkDetailsScreen = (props: Props) => {
                   disabled={isConnecting}
                   autoFocus
                   onSubmitEditing={connect}
-                  label={t('Password')}
+                  label={t('Lösenord')}
                   secureTextEntry={isPasswordHidden}
                   onChangeText={(text: string) => {
                     setPassword(text);

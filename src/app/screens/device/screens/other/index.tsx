@@ -7,6 +7,7 @@ import {Notifications} from '@lib/components/Notifications';
 import {Toasts} from '@lib/components/Toasts';
 
 import Database from './components/Database';
+import DeviceAccess from './components/DeviceAccess';
 import HAM from './components/HAM';
 import Settings from './components/Settings';
 import Status from './components/Status';
@@ -42,6 +43,7 @@ export default function OtherScreen() {
         <Tab.Screen name={t('Inställningar')} component={Settings} />
         <Tab.Screen name={t('Amatörradio')} component={HAM} />
         <Tab.Screen name={t('Wifi-mesh')} component={WifiMesh} />
+        <Tab.Screen name={t('Monitor åtkomst')} component={DeviceAccess} />
         <Tab.Screen name={t('Uppdatera')} component={Update} />
       </Tab.Navigator>
     </>
