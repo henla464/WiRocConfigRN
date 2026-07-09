@@ -1,9 +1,7 @@
-Start Metro (expo project):
+Start expo in one terminal:
 npx expo start
 
-adb reverse tcp:8081 tcp:8081
-adb reverse tcp:19000 tcp:19000
-adb reverse tcp:19001 tcp:19001
+then run this in another:
 npx react-native run-android --appId com.wirocconfigrn.debug
 
 ------------

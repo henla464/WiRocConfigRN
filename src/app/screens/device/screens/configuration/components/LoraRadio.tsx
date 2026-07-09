@@ -34,9 +34,35 @@ export default function LoraRadio({
 
   const [
     {
-      field: {value: channel, onChange: setChannel},
+      field: {value: drf1268dsCompatMode, onChange: setDrf1268dsCompatMode},
     },
-  ] = useConfigurationProperty(deviceId, 'channel', onDefaultValuesChange);
+  ] = useConfigurationProperty(
+    deviceId,
+    'lora/drf1268dscompatmode',
+    onDefaultValuesChange,
+    undefined,
+    {defaultValue: false},
+  );
+
+  const [
+    {
+      field: {value: channel, onChange: setChannel},
+      fieldState: {error: channelError},
+    },
+  ] = useConfigurationProperty(deviceId, 'channel', onDefaultValuesChange, {
+    rules: {
+      validate: (value: string) => {
+        if (
+          drf1268dsCompatMode &&
+          value !== undefined &&
+          (value.endsWith('A') || value.endsWith('B'))
+        ) {
+          return 'Half channels not available in DRF1268DS compatibility mode';
+        }
+        return true;
+      },
+    },
+  });
 
   const [
     {
@@ -106,7 +132,7 @@ export default function LoraRadio({
     versionParts.length >= 2 &&
     (versionParts[0] > 1 || (versionParts[0] === 1 && versionParts[1] >= 23));
 
-  const isRakChannel =
+  const isNarrowChannel =
     channel !== undefined && (channel.endsWith('A') || channel.endsWith('B'));
 
   const modeOptions = [
@@ -125,18 +151,18 @@ export default function LoraRadio({
     {value: '6', label: '6'},
     ...(isRak3172
       ? [
-          {value: '1A', label: '1A'},
-          {value: '1B', label: '1B'},
-          {value: '2A', label: '2A'},
-          {value: '2B', label: '2B'},
-          {value: '3A', label: '3A'},
-          {value: '3B', label: '3B'},
-          {value: '4A', label: '4A'},
-          {value: '4B', label: '4B'},
-          {value: '5A', label: '5A'},
-          {value: '5B', label: '5B'},
-          {value: '6A', label: '6A'},
-          {value: '6B', label: '6B'},
+          {value: '1A', label: '1A', disabled: drf1268dsCompatMode},
+          {value: '1B', label: '1B', disabled: drf1268dsCompatMode},
+          {value: '2A', label: '2A', disabled: drf1268dsCompatMode},
+          {value: '2B', label: '2B', disabled: drf1268dsCompatMode},
+          {value: '3A', label: '3A', disabled: drf1268dsCompatMode},
+          {value: '3B', label: '3B', disabled: drf1268dsCompatMode},
+          {value: '4A', label: '4A', disabled: drf1268dsCompatMode},
+          {value: '4B', label: '4B', disabled: drf1268dsCompatMode},
+          {value: '5A', label: '5A', disabled: drf1268dsCompatMode},
+          {value: '5B', label: '5B', disabled: drf1268dsCompatMode},
+          {value: '6A', label: '6A', disabled: drf1268dsCompatMode},
+          {value: '6B', label: '6B', disabled: drf1268dsCompatMode},
         ]
       : []),
     {value: 'HAM1', label: 'HAM1', disabled: !isHamEnabled},
@@ -163,28 +189,32 @@ export default function LoraRadio({
   );
 
   const rangeOptions = [
-    {label: 'Ultra Long', value: 'UL', disabled: false},
-    {label: 'eXtra Long', value: 'XL', disabled: false},
-    {label: 'Long', value: 'L', disabled: false},
-    {label: 'Medium Long', value: 'ML', disabled: false},
-    {label: 'Medium Fast', value: 'MS', disabled: false},
-    {label: 'Fast', value: 'S', disabled: false},
+    {label: 'Ultra Long', value: 'UL', altValue: '', disabled: false},
+    {label: 'eXtra Long', value: 'XL', altValue: '', disabled: false},
+    {label: 'Long', value: 'L', altValue: '', disabled: false},
+    {label: 'Medium Long', value: 'ML', altValue: '', disabled: false},
+    {label: 'Medium Fast', value: 'MS', altValue: 'MF', disabled: false},
+    {label: 'Fast', value: 'S', altValue: 'F', disabled: false},
     ...(isVersion123OrLater
       ? [
           {
             label: 'eXtra Fast',
             value: 'XF',
-            disabled: isRakChannel,
+            altValue: '',
+            disabled: isNarrowChannel,
           },
           {
             label: 'Ultra Fast',
             value: 'UF',
-            disabled: isRakChannel,
+            altValue: '',
+            disabled: isNarrowChannel,
           },
         ]
       : []),
   ];
-  const selectedRangeOption = rangeOptions.find(r => r.value === loraRange);
+  const selectedRangeOption = rangeOptions.find(
+    r => r.value === loraRange || r.altValue === loraRange,
+  );
 
   // BPS lookup table: [range][codeRateIndex] for half/full channels
   const bpsTableHalf: Record<string, number[]> = {
@@ -192,24 +222,28 @@ export default function LoraRadio({
     XL: [184, 146, 122, 105, 92],
     L: [326, 260, 217, 186, 163],
     ML: [570, 455, 380, 326, 285],
-    MS: [976, 781, 651, 558, 488],
-    S: [1628, 1367, 1085, 930, 814],
+    MF: [976, 781, 651, 558, 488],
+    F: [1628, 1367, 1085, 930, 814],
   };
   const bpsTableFull: Record<string, number[]> = {
     UL: [92, 73, 61, 52, 46],
     XL: [168, 134, 112, 96, 84],
     L: [306, 244, 203, 174, 153],
     ML: [550, 439, 366, 314, 275],
-    MS: [976, 781, 651, 558, 488],
-    S: [1708, 1367, 1139, 977, 854],
+    MF: [976, 781, 651, 558, 488],
+    F: [1708, 1367, 1139, 977, 854],
     XF: [2930, 2344, 1953, 1674, 1465],
     UF: [4882, 3906, 3255, 2790, 2441],
   };
-  const bpsTable = isRakChannel ? bpsTableHalf : bpsTableFull;
+  const bpsTable = isNarrowChannel ? bpsTableHalf : bpsTableFull;
   const codeRateIndex = codeRate !== undefined ? codeRate : 1;
+  // Normalize range aliases: the device may report MS or MF (same range),
+  // and S or F (same range). Map everything to the canonical MF/F keys.
+  const rangeCanonical: Record<string, string> = {MS: 'MF', S: 'F'};
+  const lookupKey = loraRange ? (rangeCanonical[loraRange] ?? loraRange) : undefined;
   const computedBps =
-    loraRange && bpsTable[loraRange]
-      ? bpsTable[loraRange][codeRateIndex]
+    lookupKey && bpsTable[lookupKey]
+      ? bpsTable[lookupKey][codeRateIndex]
       : null;
 
   const powerOptions = [
@@ -325,6 +359,31 @@ export default function LoraRadio({
               />
             ))}
           </ListItemMenu>
+          {isRak3172 && (
+            <List.Item
+              left={props => <List.Icon {...props} icon="chip" />}
+              disabled={!isLoraRadioEnabled}
+              style={{
+                opacity: isLoraRadioEnabled ? undefined : 0.5,
+              }}
+              title={t('DRF1268DS kompatibilitetsläge')}
+              description={
+                drf1268dsCompatMode
+                  ? t('Kompatibilitetsläge för DRF1268DS är aktiverat')
+                  : t('Kompatibilitetsläge för DRF1268DS är avaktiverat')
+              }
+              right={props => (
+                <Switch
+                  {...props}
+                  value={drf1268dsCompatMode}
+                  onValueChange={value => {
+                    setDrf1268dsCompatMode(value);
+                  }}
+                  disabled={!isLoraRadioEnabled}
+                />
+              )}
+            />
+          )}
           <ListItemMenu
             disabled={!isLoraRadioEnabled}
             icon="sine-wave"

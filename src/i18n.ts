@@ -83,6 +83,11 @@ export const resources = {
       'Lyssna endast': 'Listen only',
       'Inga bekräftelser skickas på mottagna Lora-meddelanden även om det begärs av sändaren':
         'No acks are sent for received Lora-messages even when requested by sender',
+      'DRF1268DS kompatibilitetsläge': 'DRF1268DS Compatibility',
+      'Kompatibilitetsläge för DRF1268DS är aktiverat':
+        'Compatibility with hardware v7 and earlier is enabled',
+      'Kompatibilitetsläge för DRF1268DS är avaktiverat':
+        'Compatibility with hardware v7 and earlier is disabled',
       Uppdatera: 'Update',
       'Uppdatera WiRoc': 'Update WiRoc',
       'Uppdatera WiRoc BLE API': 'Update WiRoc BLE API',
@@ -218,6 +223,7 @@ export const resources = {
       'Visa stämplingar': 'Show punches',
       'Ej till.': 'Not added',
       Tillagd: 'Added',
+      Misslyckad: 'Failed',
       USB: 'USB',
       'IP-adress': 'IP address',
       'IP-port': 'IP port',
@@ -295,6 +301,11 @@ export const resources = {
       'Lyssna endast': 'Lyssna endast',
       'Inga bekräftelser skickas på mottagna Lora-meddelanden även om det begärs av sändaren':
         'Inga bekräftelser skickas på mottagna Lora-meddelanden även om det begärs av sändaren',
+      'DRF1268DS kompatibilitetsläge': 'DRF1268DS Kompatibilitet',
+      'Kompatibilitetsläge för DRF1268DS är aktiverat':
+        'Kompatibilitet med hårdvara v7 och tidigare är aktiverat',
+      'Kompatibilitetsläge för DRF1268DS är avaktiverat':
+        'Kompatibilitet med hårdvara v7 och tidigare är avaktiverat',
       'Begär bekräftelse': 'Begär bekräftelse',
       'Mottagaren ska bekräfta mottagen stämpling':
         'Mottagaren ska bekräfta mottagen stämpling',
@@ -469,6 +480,7 @@ export const resources = {
       'Visa stämplingar': 'Visa stämplingar',
       'Ej till.': 'Ej till.',
       Tillagd: 'Tillagd',
+      Misslyckad: 'Misslyckad',
       USB: 'USB',
       'IP-adress': 'IP-adress',
       'IP-port': 'IP-port',

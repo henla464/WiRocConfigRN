@@ -27,7 +27,8 @@ export interface Punch {
 }
 
 export interface TestPunch {
-  Id: number;
+  Id: string;
+  TestPunchId: number;
   MsgId: number;
   Status: string;
   Type: string;
@@ -36,6 +37,7 @@ export interface TestPunch {
   RSSI: number;
   Time: string;
   TypeName: string;
+  MaxTries: number;
 }
 
 export type PropertiesChangedCallback = (

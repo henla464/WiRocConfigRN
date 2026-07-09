@@ -28,7 +28,10 @@ export default function SendPunches() {
   const [sendIntervalInput, setSendIntervalInput] = useState('1');
   const sendInterval = parseFloat(sendIntervalInput);
   const [isSending, setIsSending] = useState(false);
+  const [, setTick] = useState(0);
   const stateRef = useRef<TestPunch[]>();
+  const sirapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const sirapSentTimestamps = useRef<Record<string, number>>({});
   const notify = useNotify();
 
   const {data: punches = []} = useQuery<unknown, unknown, TestPunch[]>({
@@ -51,34 +54,83 @@ export default function SendPunches() {
 
   useEffect(() => {
     let completedPunches = punches.filter(punch => {
+      if (punch.Type !== 'TestPunch') {
+        return false;
+      }
+      if (punch.TypeName === 'SIRAP') {
+        // SIRAP: no ACK, "Sent" or "Failed" means done
+        if (punch.Status === 'Sent') {
+          if (!(punch.Id in sirapSentTimestamps.current)) {
+            sirapSentTimestamps.current[punch.Id] = Date.now();
+          }
+          return true;
+        }
+        if (punch.Status === 'Failed') {
+          // Failed is immediate, no settle period
+          sirapSentTimestamps.current[punch.Id] = 0;
+          if (punch.NoOfSendTries >= punch.MaxTries) {
+            return true;
+          }
+        }
+        return false;
+      }
+      // LORA: acked, not-acked, failed-after-tries, or explicit Failed
       return (
-        punch.Type === 'TestPunch' &&
-        punch.TypeName === 'LORA' &&
-        ((punch.Status === 'Acked' && ackReq) ||
-          (punch.Status === 'Not acked' && !ackReq) ||
-          (punch.NoOfSendTries > 1 &&
-            (punch.Status === 'Not sent' || punch.Status === 'Not acked')))
+        (punch.Status === 'Acked' && ackReq) ||
+        (punch.Status === 'Not acked' && !ackReq) ||
+        punch.Status === 'Failed' ||
+        (punch.NoOfSendTries > 1 &&
+          (punch.Status === 'Not sent' || punch.Status === 'Not acked'))
       );
     });
 
     let testPunches = punches.filter(punch => {
       return punch.Type === 'TestPunch';
     });
+    // Use TestPunchId: same punch appears for both LORA and SIRAP, count once
+    const uniqueTestPunchIds = new Set(testPunches.map(p => p.TestPunchId))
+      .size;
     let noOfCompletedRows = completedPunches.length;
 
     if (
-      testPunches.length === numberOfPunches &&
-      numberOfPunches === noOfCompletedRows
+      uniqueTestPunchIds === numberOfPunches &&
+      testPunches.length === noOfCompletedRows
     ) {
-      // all received, stop listening
-      wiRocDeviceApi.stopWatchingTestPunches();
-      setIsSending(false);
+      // Find remaining time for the most recent unsettled SIRAP Sent
+      const sirapRemaining = Math.max(
+        0,
+        ...completedPunches
+          .filter(p => p.TypeName === 'SIRAP' && p.Status === 'Sent')
+          .map(p => {
+            const ts = sirapSentTimestamps.current[p.Id] ?? 0;
+            return 2000 - (Date.now() - ts);
+          }),
+      );
+
+      if (sirapRemaining > 0) {
+        // SIRAP Sent: wait for settle period to pass before stopping
+        if (sirapTimeoutRef.current) {
+          clearTimeout(sirapTimeoutRef.current);
+        }
+        sirapTimeoutRef.current = setTimeout(() => {
+          wiRocDeviceApi.stopWatchingTestPunches();
+          setIsSending(false);
+        }, sirapRemaining);
+      } else {
+        // LORA: stop immediately
+        wiRocDeviceApi.stopWatchingTestPunches();
+        setIsSending(false);
+      }
     }
   }, [punches, ackReq, numberOfPunches, deviceId, wiRocDeviceApi]);
 
   const startStopSendPunches = async () => {
     if (isSending) {
       setIsSending(false);
+      if (sirapTimeoutRef.current) {
+        clearTimeout(sirapTimeoutRef.current);
+        sirapTimeoutRef.current = null;
+      }
       wiRocDeviceApi.stopWatchingTestPunches();
     } else {
       setIsSending(true);
@@ -107,6 +159,7 @@ export default function SendPunches() {
       }
 
       queryClient.setQueryData([deviceId, 'testPunches'], []);
+      sirapSentTimestamps.current = {};
       wiRocDeviceApi.startWatchingTestPunches();
       wiRocDeviceApi.startSendingTestPunches({
         numberOfPunches,
@@ -116,12 +169,14 @@ export default function SendPunches() {
     }
   };
 
-  const getStatusDisplayName = (status: String) => {
+  const getStatusDisplayName = (status: string) => {
     switch (status) {
       case 'Acked':
         return t('Bekr.');
       case 'Not acked':
         return t('Ej bekr.');
+      case 'Failed':
+        return t('Misslyckad');
       case 'Sent':
         return t('Skickad');
       case 'Not added':
@@ -132,6 +187,82 @@ export default function SendPunches() {
         return status;
     }
   };
+
+  const isSettledSirap = (punch: TestPunch) => {
+    if (punch.TypeName !== 'SIRAP') {
+      return false;
+    }
+    if (punch.Status === 'Failed' && punch.NoOfSendTries >= punch.MaxTries) {
+      return true;
+    }
+    if (punch.Status === 'Sent') {
+      return true;
+    }
+    return false;
+  };
+
+  const getTypeSymbol = (typeName: string) => {
+    switch (typeName) {
+      case 'LORA':
+        return '🛜';
+      case 'SIRAP':
+        return '🔗';
+      default:
+        return typeName;
+    }
+  };
+
+  const getStatusStyle = (punch: TestPunch) => {
+    if (punch.Type === 'Punch') {
+      return styles.punchBackgroundColor;
+    } else {
+      if (punch.TypeName === 'SIRAP') {
+        if (
+          punch.Status === 'Failed' &&
+          punch.NoOfSendTries >= punch.MaxTries
+        ) {
+          return styles.failure;
+        }
+        if (punch.Status === 'Sent') {
+          return styles.success;
+        }
+        return styles.centered;
+      } else {
+        if (punch.Status === 'Failed') {
+          return styles.failure;
+        }
+      }
+      if (!ackReq) {
+        return styles.centered;
+      }
+      if (punch.Status === 'Acked') {
+        return styles.success;
+      }
+      if (punch.Status === 'Not acked') {
+        return styles.failure;
+      }
+      return styles.centered;
+    }
+  };
+
+  // Tick every second while waiting for 2s SIRAP settle period to pass
+  useEffect(() => {
+    if (!isSending) {
+      return;
+    }
+    const hasPending = punches.some(
+      p =>
+        p.TypeName === 'SIRAP' &&
+        p.Status === 'Sent' &&
+        sirapSentTimestamps.current[p.Id] !== undefined &&
+        Date.now() - sirapSentTimestamps.current[p.Id] < 2000,
+    );
+    if (!hasPending) {
+      return;
+    }
+    const interval = setInterval(() => setTick(t => t + 1), 1000);
+    return () => clearInterval(interval);
+  }, [punches, isSending]);
 
   const {colors} = useTheme();
   return (
@@ -207,43 +338,46 @@ export default function SendPunches() {
       <Surface style={{flex: 1}}>
         <DataTable style={styles.table}>
           <DataTable.Header style={styles.row}>
-            <DataTable.Title textStyle={{fontSize: 20}} style={{flex: 14}}>
-              {t('SI Nr')}
+            <DataTable.Title
+              textStyle={{fontSize: 20}}
+              style={[{flex: 5}, styles.centered]}>
+              {' '}
             </DataTable.Title>
             <DataTable.Title
               textStyle={{fontSize: 20}}
-              style={{flex: 11, justifyContent: 'center'}}>
+              style={{flex: 8, justifyContent: 'center'}}>
               {t('Tid')}
             </DataTable.Title>
             <DataTable.Title
               textStyle={{fontSize: 20}}
-              style={(styles.centered, {flex: 7})}>
+              style={[styles.centered, {flex: 8}]}>
               {t('RSSI')}
             </DataTable.Title>
             <DataTable.Title
               textStyle={{fontSize: 20}}
-              style={(styles.centered, {flex: 7})}>
+              style={[styles.centered, {flex: 7}]}>
               {t('Förs.')}
             </DataTable.Title>
             <DataTable.Title
               textStyle={{fontSize: 20}}
-              style={(styles.centered, {flex: 10})}>
+              style={[styles.centered, {flex: 10}]}>
               {t('Status')}
             </DataTable.Title>
           </DataTable.Header>
           <Divider bold={true} />
           <ScrollView contentContainerStyle={{flexGrow: 1}} style={{}}>
-            {punches.map(punch => (
+            {punches.map((punch, idx) => (
               <DataTable.Row key={punch.Id} style={styles.row}>
                 <DataTable.Cell
-                  textStyle={{fontSize: 22}}
+                  textStyle={{fontSize: 20}}
                   style={[
-                    {flex: 14},
+                    {flex: 5},
+                    styles.centered,
                     punch.Type === 'Punch'
                       ? styles.punchBackgroundColor
                       : styles.testPunchBackgroundColor,
                   ]}>
-                  {punch.SINo}
+                  {getTypeSymbol(punch.TypeName)}
                 </DataTable.Cell>
                 <DataTable.Cell
                   textStyle={{fontSize: 20}}
@@ -252,14 +386,14 @@ export default function SendPunches() {
                       ? styles.punchBackgroundColor
                       : styles.testPunchBackgroundColor,
                     styles.centered,
-                    {flex: 12},
+                    {flex: 8},
                   ]}>
                   {punch.Time}
                 </DataTable.Cell>
                 <DataTable.Cell
                   textStyle={{fontSize: 22}}
                   style={[
-                    {flex: 6, justifyContent: 'center'},
+                    {flex: 8, justifyContent: 'center'},
                     punch.Type === 'Punch'
                       ? styles.punchBackgroundColor
                       : styles.testPunchBackgroundColor,
@@ -269,31 +403,26 @@ export default function SendPunches() {
                 <DataTable.Cell
                   textStyle={{fontSize: 22}}
                   style={[
+                    {flex: 7},
                     punch.Type === 'Punch'
                       ? [styles.punchBackgroundColor, styles.centered]
-                      : punch.NoOfSendTries > 1
-                        ? styles.failure
-                        : punch.Status === 'Acked'
-                          ? styles.success
-                          : styles.centered,
-                    {flex: 7},
+                      : isSettledSirap(punch)
+                        ? punch.NoOfSendTries > 1 || punch.Status === 'Failed'
+                          ? styles.failure
+                          : styles.success
+                        : punch.Status === 'Failed'
+                          ? styles.failure
+                          : punch.NoOfSendTries > 1
+                            ? styles.failure
+                            : punch.Status === 'Acked'
+                              ? styles.success
+                              : styles.centered,
                   ]}>
                   {punch.NoOfSendTries}
                 </DataTable.Cell>
                 <DataTable.Cell
                   textStyle={{fontSize: 20}}
-                  style={[
-                    punch.Type === 'Punch'
-                      ? styles.punchBackgroundColor
-                      : !ackReq
-                        ? null
-                        : punch.Status === 'Acked'
-                          ? styles.success
-                          : punch.Status === 'Not acked'
-                            ? styles.failure
-                            : styles.centered,
-                    {flex: 10},
-                  ]}>
+                  style={[{flex: 10}, getStatusStyle(punch)]}>
                   {getStatusDisplayName(punch.Status)}
                 </DataTable.Cell>
               </DataTable.Row>
@@ -301,14 +430,18 @@ export default function SendPunches() {
           </ScrollView>
           <Divider bold={true} />
           <DataTable.Row key={'footer'} style={styles.row}>
-            <DataTable.Cell textStyle={{fontSize: 22}} style={{flex: 31}}>
+            <DataTable.Cell textStyle={{fontSize: 22}} style={{flex: 21}}>
               {t('Procent lyckade')}
             </DataTable.Cell>
             <DataTable.Cell
               textStyle={{fontSize: 22}}
-              style={{flex: 8, justifyContent: 'center'}}>
+              style={{flex: 7, justifyContent: 'center'}}>
               {formatPercentage(
-                punches.filter(p => p.Status === 'Acked').length /
+                punches.filter(
+                  p =>
+                    p.Status === 'Acked' ||
+                    (p.TypeName === 'SIRAP' && p.Status === 'Sent'),
+                ).length /
                   punches
                     .filter(punch => {
                       return punch.Status !== 'Punch';
@@ -321,7 +454,11 @@ export default function SendPunches() {
               textStyle={{fontSize: 22}}
               style={{flex: 10, justifyContent: 'center'}}>
               {formatPercentage(
-                punches.filter(p => p.Status === 'Acked').length /
+                punches.filter(
+                  p =>
+                    p.Status === 'Acked' ||
+                    (p.TypeName === 'SIRAP' && p.Status === 'Sent'),
+                ).length /
                   punches.filter(punch => {
                     return punch.Status !== 'Punch';
                   }).length,

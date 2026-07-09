@@ -125,7 +125,7 @@ export default function Status() {
               <DataTable.Title>{t('Instans')}</DataTable.Title>
             </DataTable.Header>
             {inData?.map(inD => (
-              <DataTable.Row key={inD.TypeName} style={styles.row}>
+              <DataTable.Row key={inD.InstanceName} style={styles.row}>
                 <DataTable.Cell>{inD.TypeName}</DataTable.Cell>
                 <DataTable.Cell>{inD.InstanceName}</DataTable.Cell>
               </DataTable.Row>

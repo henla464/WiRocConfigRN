@@ -94,9 +94,30 @@ export function WiRocDeviceSubscriber({deviceId}: WiRocDeviceSubscriberProps) {
             const newPunches = sentPunches.filter(p =>
               previousPunches.every(p2 => p2.Id !== p.Id),
             );
-            const updatedPunches = previousPunches.map(p => {
+            let updatedPunches = previousPunches.map(p => {
               return sentPunches.find(p2 => p2.Id === p.Id) ?? p;
             });
+
+            // Remove stale "Not added" rows whose Id prefix (e.g. "12_")
+            // was replaced by rows with the same prefix (e.g. "12_1", "12_3")
+            const replacementPrefixes = new Set(
+              sentPunches
+                .filter(p => p.Status !== 'Not added')
+                .map(p => {
+                  const underscoreIdx = p.Id.lastIndexOf('_');
+                  return underscoreIdx >= 0
+                    ? p.Id.substring(0, underscoreIdx + 1)
+                    : null;
+                })
+                .filter(Boolean) as string[],
+            );
+            updatedPunches = updatedPunches.filter(p => {
+              if (p.Status !== 'Not added') {
+                return true;
+              }
+              return !replacementPrefixes.has(p.Id);
+            });
+
             log.debug(
               `[${deviceId}] Adding ${newPunches.length} new test punch${
                 sentPunches.length === 1 ? '' : 'es'
