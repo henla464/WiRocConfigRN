@@ -35,6 +35,7 @@ export interface TestPunch {
   SINo: number;
   NoOfSendTries: number;
   RSSI: number;
+  SNR: number;
   Time: string;
   TypeName: string;
   MaxTries: number;

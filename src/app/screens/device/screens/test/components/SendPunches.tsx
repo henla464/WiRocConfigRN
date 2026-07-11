@@ -29,7 +29,7 @@ export default function SendPunches() {
   const sendInterval = parseFloat(sendIntervalInput);
   const [isSending, setIsSending] = useState(false);
   const [, setTick] = useState(0);
-  const stateRef = useRef<TestPunch[]>();
+  const stateRef = useRef<TestPunch[]>(null);
   const sirapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const sirapSentTimestamps = useRef<Record<string, number>>({});
   const notify = useNotify();
@@ -51,6 +51,9 @@ export default function SendPunches() {
     deviceId,
     'acknowledgementrequested',
   );
+
+  const {data: loraModule} = useWiRocPropertyQuery(deviceId, 'loramodule');
+  const isRak3172 = loraModule === 'RAK3172';
 
   useEffect(() => {
     let completedPunches = punches.filter(punch => {
@@ -340,22 +343,29 @@ export default function SendPunches() {
           <DataTable.Header style={styles.row}>
             <DataTable.Title
               textStyle={{fontSize: 20}}
-              style={[{flex: 5}, styles.centered]}>
+              style={[{flex: 3}, styles.centered]}>
               {' '}
             </DataTable.Title>
             <DataTable.Title
               textStyle={{fontSize: 20}}
-              style={{flex: 8, justifyContent: 'center'}}>
+              style={{flex: 9, justifyContent: 'center'}}>
               {t('Tid')}
             </DataTable.Title>
             <DataTable.Title
               textStyle={{fontSize: 20}}
-              style={[styles.centered, {flex: 8}]}>
+              style={[styles.centered, {flex: 6}]}>
               {t('RSSI')}
             </DataTable.Title>
+            {isRak3172 && (
+              <DataTable.Title
+                textStyle={{fontSize: 20}}
+                style={[styles.centered, {flex: 5}]}>
+                {'SNR'}
+              </DataTable.Title>
+            )}
             <DataTable.Title
               textStyle={{fontSize: 20}}
-              style={[styles.centered, {flex: 7}]}>
+              style={[styles.centered, {flex: 6}]}>
               {t('Förs.')}
             </DataTable.Title>
             <DataTable.Title
@@ -371,7 +381,7 @@ export default function SendPunches() {
                 <DataTable.Cell
                   textStyle={{fontSize: 20}}
                   style={[
-                    {flex: 5},
+                    {flex: 3},
                     styles.centered,
                     punch.Type === 'Punch'
                       ? styles.punchBackgroundColor
@@ -386,24 +396,36 @@ export default function SendPunches() {
                       ? styles.punchBackgroundColor
                       : styles.testPunchBackgroundColor,
                     styles.centered,
-                    {flex: 8},
+                    {flex: 9},
                   ]}>
                   {punch.Time}
                 </DataTable.Cell>
                 <DataTable.Cell
                   textStyle={{fontSize: 22}}
                   style={[
-                    {flex: 8, justifyContent: 'center'},
+                    {flex: 6, justifyContent: 'center'},
                     punch.Type === 'Punch'
                       ? styles.punchBackgroundColor
                       : styles.testPunchBackgroundColor,
                   ]}>
                   {punch.RSSI}
                 </DataTable.Cell>
+                {isRak3172 && (
+                  <DataTable.Cell
+                    textStyle={{fontSize: 22}}
+                    style={[
+                      {flex: 5, justifyContent: 'center'},
+                      punch.Type === 'Punch'
+                        ? styles.punchBackgroundColor
+                        : styles.testPunchBackgroundColor,
+                    ]}>
+                    {punch.SNR}
+                  </DataTable.Cell>
+                )}
                 <DataTable.Cell
                   textStyle={{fontSize: 22}}
                   style={[
-                    {flex: 7},
+                    {flex: 6},
                     punch.Type === 'Punch'
                       ? [styles.punchBackgroundColor, styles.centered]
                       : isSettledSirap(punch)
@@ -430,12 +452,14 @@ export default function SendPunches() {
           </ScrollView>
           <Divider bold={true} />
           <DataTable.Row key={'footer'} style={styles.row}>
-            <DataTable.Cell textStyle={{fontSize: 22}} style={{flex: 21}}>
+            <DataTable.Cell
+              textStyle={{fontSize: 22}}
+              style={{flex: isRak3172 ? 23 : 18}}>
               {t('Procent lyckade')}
             </DataTable.Cell>
             <DataTable.Cell
               textStyle={{fontSize: 22}}
-              style={{flex: 7, justifyContent: 'center'}}>
+              style={{flex: 6, justifyContent: 'center'}}>
               {formatPercentage(
                 punches.filter(
                   p =>
@@ -452,12 +476,13 @@ export default function SendPunches() {
             </DataTable.Cell>
             <DataTable.Cell
               textStyle={{fontSize: 22}}
-              style={{flex: 10, justifyContent: 'center'}}>
+              style={{flex: 9, justifyContent: 'center'}}>
               {formatPercentage(
                 punches.filter(
                   p =>
-                    p.Status === 'Acked' ||
-                    (p.TypeName === 'SIRAP' && p.Status === 'Sent'),
+                    p.Type === 'TestPunch' &&
+                    (p.Status === 'Acked' ||
+                      (p.TypeName === 'SIRAP' && p.Status === 'Sent')),
                 ).length /
                   punches.filter(punch => {
                     return punch.Status !== 'Punch';
@@ -494,6 +519,7 @@ const styles = StyleSheet.create({
   },
   punchBackgroundColor: {
     backgroundColor: 'lightgray',
+    justifyContent: 'center',
   },
   testPunchBackgroundColor: {},
 });

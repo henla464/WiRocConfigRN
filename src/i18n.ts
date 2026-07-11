@@ -480,7 +480,7 @@ export const resources = {
       'Visa stämplingar': 'Visa stämplingar',
       'Ej till.': 'Ej till.',
       Tillagd: 'Tillagd',
-      Misslyckad: 'Misslyckad',
+      Misslyckad: 'Missly.',
       USB: 'USB',
       'IP-adress': 'IP-adress',
       'IP-port': 'IP-port',
