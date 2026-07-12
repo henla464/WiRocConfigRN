@@ -119,7 +119,7 @@ export default function LoraRadio({
     {defaultValue: false},
   );
 
-  const {data: loraModule} = useWiRocPropertyQuery(deviceId, 'loramodule');
+  const {data: loraModule} = useWiRocPropertyQuery(deviceId, 'lora/module');
   const isRak3172 = loraModule === 'RAK3172';
 
   const {data: wiRocVersion} = useWiRocPropertyQuery(
@@ -240,7 +240,9 @@ export default function LoraRadio({
   // Normalize range aliases: the device may report MS or MF (same range),
   // and S or F (same range). Map everything to the canonical MF/F keys.
   const rangeCanonical: Record<string, string> = {MS: 'MF', S: 'F'};
-  const lookupKey = loraRange ? (rangeCanonical[loraRange] ?? loraRange) : undefined;
+  const lookupKey = loraRange
+    ? (rangeCanonical[loraRange] ?? loraRange)
+    : undefined;
   const computedBps =
     lookupKey && bpsTable[lookupKey]
       ? bpsTable[lookupKey][codeRateIndex]

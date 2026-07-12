@@ -82,11 +82,20 @@ signingConfigs {
 The values for MYAPP_UPLOAD_STORE_FILE etc is found in
 ~/.gradle/gradle.properties
 =============================
+Create an apk
+
+cd android
+NODE_ENV=production ./gradlew assembleRelease
+
+apk can be found in:
+android/app/build/outputs/apk/release/
+
+=============================
 
 change version in:
 android/app/build.gradle
 app.json
-about/index.tsx
+src/app/screens/about/index.tsx
 
 Generate release
 NODE_ENV=production npx react-native build-android --mode=release

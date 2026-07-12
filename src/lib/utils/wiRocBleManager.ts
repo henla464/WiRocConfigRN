@@ -438,7 +438,7 @@ const createWiRocBleManager = () => {
   const onTestPunchesSent = (callback: TestPunchSentCallback) => {
     const bufferSubscription = bleTestPunchesBuffer.subscribe(
       (deviceId, data) => {
-        log.debug('onTestPunchSent', deviceId, data, typeof data);
+        //log.debug('onTestPunchSent', deviceId, data, typeof data);
         callback(deviceId, JSON.parse(data));
       },
     );
@@ -515,7 +515,7 @@ const allPropertiesOrder: GettablePropName[] = [
   'batterylevel',
   'ipaddress',
   'power',
-  'loramodule',
+  'lora/module',
   'lorarange',
   'wirocpythonversion',
   'wirocbleapiversion',

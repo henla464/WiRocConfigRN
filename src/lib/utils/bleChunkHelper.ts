@@ -23,11 +23,11 @@ export const createBleChunkHelper = () => {
     ]);
 
     if (newChunk.length >= chunkLengthToUse) {
-      log.debug(
-        'expecting more data, totalRecieved:',
-        totalRecievedByDevice[deviceId].length,
-        totalRecievedByDevice[deviceId].toString('utf8'),
-      );
+      //log.debug(
+      //  'expecting more data, totalRecieved:',
+      //  totalRecievedByDevice[deviceId].length,
+      //  totalRecievedByDevice[deviceId].toString('utf8'),
+      //);
       // This is not the full value, wait for the next fragment
       return;
     }

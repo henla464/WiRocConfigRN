@@ -55,6 +55,7 @@ export const getters = {
   acknowledgementrequested: booleanGetter(5),
   'lora/listenonly': booleanGetter(),
   'lora/drf1268dscompatmode': booleanGetter(),
+  'lora/module': stringGetter(11),
   datarate: numberGetter(6),
   channel: stringGetter(7),
   batterylevel: numberGetter(8),

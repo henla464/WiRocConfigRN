@@ -2,6 +2,7 @@ import {QueryClient, useQueryClient} from '@tanstack/react-query';
 import {useEffect, useRef} from 'react';
 
 import {GettablePropName, getters, setters} from '@api/transformers';
+import {Settings} from '@api';
 import {Punch, TestPunch} from '@api/types';
 import {useWiRocDeviceApi} from '@lib/hooks/useWiRocDeviceApi';
 import {log} from '@lib/log';
@@ -91,28 +92,64 @@ export function WiRocDeviceSubscriber({deviceId}: WiRocDeviceSubscriberProps) {
         queryClient.setQueryData<TestPunch[]>(
           [deviceId, 'testPunches'],
           (previousPunches = [] as TestPunch[]) => {
-            const newPunches = sentPunches.filter(p =>
-              previousPunches.every(p2 => p2.Id !== p.Id),
+            const statusOrder: Record<string, number> = {
+              'Not added': 0,
+              'No subscr.': 1,
+              Added: 2,
+              Sent: 3,
+              Acked: 4,
+              'Not acked': 4,
+              Failed: 4,
+            };
+            const getOrder = (status: string) => statusOrder[status] ?? 3;
+            const extractPrefix = (id: string) => {
+              const idx = id.lastIndexOf('_');
+              return idx >= 0 ? id.substring(0, idx + 1) : null;
+            };
+            const existingPrefixes = new Set(
+              previousPunches
+                .map(p => extractPrefix(p.Id))
+                .filter(Boolean) as string[],
             );
-            let updatedPunches = previousPunches.map(p => {
-              return sentPunches.find(p2 => p2.Id === p.Id) ?? p;
+
+            const newPunches = sentPunches.filter(p => {
+              // Not a new ID at all
+              if (previousPunches.some(p2 => p2.Id === p.Id)) return false;
+              // Don't add transient rows (Not added/No subscr./Added) as new
+              // if a row with the same TestPunchData.id prefix already exists
+              const transient =
+                p.Status === 'Not added' ||
+                p.Status === 'No subscr.' ||
+                p.Status === 'Added';
+              if (transient) {
+                const prefix = extractPrefix(p.Id);
+                if (prefix && existingPrefixes.has(prefix)) return false;
+              }
+              return true;
             });
 
-            // Remove stale "Not added" rows whose Id prefix (e.g. "12_")
+            let updatedPunches = previousPunches.map(p => {
+              const incoming = sentPunches.find(p2 => p2.Id === p.Id);
+              // Only update if the incoming status is at least as far along
+              // (BLE notifications can arrive out of order)
+              if (incoming && getOrder(incoming.Status) < getOrder(p.Status)) {
+                return p;
+              }
+              return incoming ?? p;
+            });
+
+            // Remove stale transient rows whose Id prefix (e.g. "12_")
             // was replaced by rows with the same prefix (e.g. "12_1", "12_3")
             const replacementPrefixes = new Set(
               sentPunches
-                .filter(p => p.Status !== 'Not added')
-                .map(p => {
-                  const underscoreIdx = p.Id.lastIndexOf('_');
-                  return underscoreIdx >= 0
-                    ? p.Id.substring(0, underscoreIdx + 1)
-                    : null;
-                })
+                .filter(
+                  p => p.Status !== 'Not added' && p.Status !== 'No subscr.',
+                )
+                .map(p => extractPrefix(p.Id))
                 .filter(Boolean) as string[],
             );
             updatedPunches = updatedPunches.filter(p => {
-              if (p.Status !== 'Not added') {
+              if (p.Status !== 'Not added' && p.Status !== 'No subscr.') {
                 return true;
               }
               return !replacementPrefixes.has(p.Id);
@@ -154,12 +191,17 @@ export const updateQueryDataForDevice = (
       )}`,
     );
     if (propertyName === 'settings') {
-      const newSetting = value as {Key: string; value: string};
+      const newSetting = value as {Key: string; Value: string};
 
       log.debug(`[${deviceId}] Merging settings`);
-      log.debug(`[${deviceId}] Current:`, type, current, current?.settings);
+      log.debug(
+        `[${deviceId}] Current:`,
+        type,
+        current,
+        (current as Settings)?.settings,
+      );
       const updatedSettings: {Key: string; Value: string}[] = (
-        current?.settings ?? []
+        (current as Settings)?.settings ?? []
       ).map((setting: {Key: string; Value: string}) => {
         if (setting?.Key === newSetting?.Key) {
           return newSetting;
