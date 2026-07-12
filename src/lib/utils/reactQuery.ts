@@ -102,7 +102,8 @@ export function WiRocDeviceSubscriber({deviceId}: WiRocDeviceSubscriberProps) {
               Failed: 4,
             };
             const getOrder = (status: string) => statusOrder[status] ?? 3;
-            const extractPrefix = (id: string) => {
+            const extractPrefix = (id?: string) => {
+              if (!id) return null;
               const idx = id.lastIndexOf('_');
               return idx >= 0 ? id.substring(0, idx + 1) : null;
             };
