@@ -61,7 +61,6 @@ export const getters = {
   batterylevel: numberGetter(8),
   ipaddress: stringGetter(9),
   power: numberGetter(10),
-  loramodule: stringGetter(11),
   lorarange: unionGetter<LoraRange>(12),
   wirocpythonversion: stringGetter(13),
   wirocbleapiversion: stringGetter(14),

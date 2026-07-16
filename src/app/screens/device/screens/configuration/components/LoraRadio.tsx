@@ -223,7 +223,7 @@ export default function LoraRadio({
     L: [326, 260, 217, 186, 163],
     ML: [570, 455, 380, 326, 285],
     MF: [976, 781, 651, 558, 488],
-    F: [1628, 1367, 1085, 930, 814],
+    F: [1628, 1302, 1085, 930, 814],
   };
   const bpsTableFull: Record<string, number[]> = {
     UL: [92, 73, 61, 52, 46],
