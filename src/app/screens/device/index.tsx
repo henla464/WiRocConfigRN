@@ -31,7 +31,7 @@ export default function DeviceScreen(props: Props) {
     setActiveDeviceId(deviceId);
   }, [setActiveDeviceId, deviceId]);
 
-  const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'wirocdevicename');
+  const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'device/name');
 
   useEffect(() => {
     navigation.setOptions({

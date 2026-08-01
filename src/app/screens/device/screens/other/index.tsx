@@ -13,7 +13,6 @@ import Settings from './components/Settings';
 import Status from './components/Status';
 import Update from './components/Update';
 import WakeUp from './components/WakeUp';
-import WifiMesh from './components/WifiMesh';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -42,7 +41,6 @@ export default function OtherScreen() {
         <Tab.Screen name={t('Status')} component={Status} />
         <Tab.Screen name={t('Inställningar')} component={Settings} />
         <Tab.Screen name={t('Amatörradio')} component={HAM} />
-        <Tab.Screen name={t('Wifi-mesh')} component={WifiMesh} />
         <Tab.Screen name={t('Monitor åtkomst')} component={DeviceAccess} />
         <Tab.Screen name={t('Uppdatera')} component={Update} />
       </Tab.Navigator>

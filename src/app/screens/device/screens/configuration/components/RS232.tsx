@@ -28,7 +28,7 @@ export default function RS232({
     {
       field: {value: sendReceive, onChange: setSendReceive},
     },
-  ] = useConfigurationProperty(deviceId, 'rs232mode', onDefaultValuesChange);
+  ] = useConfigurationProperty(deviceId, 'sportident/rs232/mode', onDefaultValuesChange);
 
   const [
     {
@@ -36,7 +36,7 @@ export default function RS232({
     },
   ] = useConfigurationProperty(
     deviceId,
-    'rs232onewayreceive',
+    'sportident/rs232/onewayreceive',
     onDefaultValuesChange,
   );
   const [
@@ -45,7 +45,7 @@ export default function RS232({
     },
   ] = useConfigurationProperty(
     deviceId,
-    'forcers2324800baudrate',
+    'sportident/rs232/force4800baudrate',
     onDefaultValuesChange,
   );
 

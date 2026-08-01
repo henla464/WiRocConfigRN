@@ -55,7 +55,7 @@ export function WiRocDeviceSubscriber({deviceId}: WiRocDeviceSubscriberProps) {
             return;
           }
 
-          if (key === 'wirocdevicename') {
+          if (key === 'device/name') {
             // HACK: When the device name changes, we should also
             // update the zustand state of it, since that is used
             // also when we're not connected.

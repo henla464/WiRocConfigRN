@@ -15,20 +15,20 @@ export default function NavigationHeader({deviceId}: {deviceId: string}) {
   const {t} = useTranslation();
   const navigation = useNavigation();
   const {data: batteryLevel = 0, refetch: refetchBatteryLevel} =
-    useWiRocPropertyQuery(deviceId, 'batterylevel');
+    useWiRocPropertyQuery(deviceId, 'power/battery');
 
   const {data: isCharging, refetch: refetchIsCharging} = useWiRocPropertyQuery(
     deviceId,
-    'ischarging',
+    'power/charging',
   );
 
-  const {data: ip} = useWiRocPropertyQuery(deviceId, 'ip');
-  const {data: wifiNetworks = []} = useWiRocPropertyQuery(deviceId, 'listwifi');
+  const {data: ip} = useWiRocPropertyQuery(deviceId, 'network/ip');
+  const {data: wifiNetworks = []} = useWiRocPropertyQuery(deviceId, 'network/listwifi');
 
-  const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'wirocdevicename');
+  const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'device/name');
   const {mutate: mutateDeviceName} = useWiRocPropertyMutation(
     deviceId,
-    'wirocdevicename',
+    'device/name',
   );
 
   const isConnected =

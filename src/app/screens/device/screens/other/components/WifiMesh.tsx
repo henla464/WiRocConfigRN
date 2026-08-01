@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {ScrollView, StyleSheet, View} from 'react-native';
-import {Switch, List, Text, Button, DataTable} from 'react-native-paper';
+import {Switch, List, Text, Button, DataTable, Surface} from 'react-native-paper';
 import {useTranslation} from 'react-i18next';
 
 import {SettablePropName, SettableValues} from '@api/transformers';
@@ -166,22 +166,31 @@ export default function WifiMesh() {
   };
 
   return (
-    <ScrollView>
-      <View style={styles.container}>
-        <SaveBanner
-          visible={formState.isDirty}
-          isSaveDisabled={!formState.isValid}
-          errors={formState.errors}
-          save={handleSubmit(onSubmit)}
-          reload={() => reset()}
-          onHideAnimationFinished={() => {
-            setMTop(0);
-          }}
-          onShowAnimationFinished={() => {
-            setMTop(133);
-          }}
-        />
-        <View style={(styles.containerColumn, {marginTop: mTop})}>
+    <View style={{flex: 1}}>
+      <SaveBanner
+        visible={formState.isDirty}
+        isSaveDisabled={!formState.isValid}
+        errors={formState.errors}
+        save={handleSubmit(onSubmit)}
+        reload={() => reset()}
+        onHideAnimationFinished={() => {
+          setMTop(0);
+        }}
+        onShowAnimationFinished={() => {
+          setMTop(133);
+        }}
+      />
+      <ScrollView style={{marginTop: mTop}}>
+        <View style={styles.container}>
+          <Surface style={styles.infoSurface}>
+            <View style={{padding: 16, gap: 8}}>
+              <Text variant="titleSmall">{t('Om Wifi-mesh')}</Text>
+              <Text variant="bodyMedium">
+                {t('wifimesh_info')}
+              </Text>
+            </View>
+          </Surface>
+        <View style={styles.containerColumn}>
           <List.Item
             title={t('Wifi-mesh')}
             description={isWifiMeshEnabled ? t('På') : t('Av')}
@@ -411,8 +420,9 @@ export default function WifiMesh() {
             </View>
           </ScrollView>
         </View>
-      </View>
-    </ScrollView>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
@@ -473,5 +483,10 @@ const styles = StyleSheet.create({
     margin: 10,
     marginLeft: 0,
     marginRight: 0,
+  },
+  infoSurface: {
+    padding: 0,
+    marginBottom: 16,
+    backgroundColor: '#E3F2FD',
   },
 });

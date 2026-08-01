@@ -49,7 +49,7 @@ export default function LoraRadio({
       field: {value: channel, onChange: setChannel},
       fieldState: {error: channelError},
     },
-  ] = useConfigurationProperty(deviceId, 'channel', onDefaultValuesChange, {
+  ] = useConfigurationProperty(deviceId, 'lora/channel', onDefaultValuesChange, {
     rules: {
       validate: (value: string) => {
         if (
@@ -68,25 +68,25 @@ export default function LoraRadio({
     {
       field: {value: loraMode, onChange: setLoraMode},
     },
-  ] = useConfigurationProperty(deviceId, 'loramode', onDefaultValuesChange);
+  ] = useConfigurationProperty(deviceId, 'lora/mode', onDefaultValuesChange);
 
   const [
     {
       field: {value: loraRange, onChange: setLoraRange},
     },
-  ] = useConfigurationProperty(deviceId, 'lorarange', onDefaultValuesChange);
+  ] = useConfigurationProperty(deviceId, 'lora/lorarange', onDefaultValuesChange);
 
   const [
     {
       field: {value: loraPower, onChange: setLoraPower},
     },
-  ] = useConfigurationProperty(deviceId, 'power', onDefaultValuesChange);
+  ] = useConfigurationProperty(deviceId, 'lora/power', onDefaultValuesChange);
 
   const [
     {
       field: {value: codeRate, onChange: setCodeRate},
     },
-  ] = useConfigurationProperty(deviceId, 'coderate', onDefaultValuesChange);
+  ] = useConfigurationProperty(deviceId, 'lora/coderate', onDefaultValuesChange);
 
   const [
     {
@@ -97,7 +97,7 @@ export default function LoraRadio({
     },
   ] = useConfigurationProperty(
     deviceId,
-    'acknowledgementrequested',
+    'lora/acknowledgementrequested',
     onDefaultValuesChange,
   );
 
@@ -124,7 +124,7 @@ export default function LoraRadio({
 
   const {data: wiRocVersion} = useWiRocPropertyQuery(
     deviceId,
-    'wirocpythonversion',
+    'device/version/wirocpython',
   );
   const versionParts = wiRocVersion?.split('.').map(Number);
   const isVersion123OrLater =

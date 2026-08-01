@@ -19,7 +19,7 @@ export default function DeviceAccess() {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'wirocdevicename');
+  const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'device/name');
   const bleConnectionStatus = useStore(
     state => state.wiRocDevices[deviceId]?.bleConnection?.status,
   );

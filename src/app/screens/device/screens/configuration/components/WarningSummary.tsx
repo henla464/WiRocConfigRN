@@ -16,10 +16,10 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
   const {t} = useTranslation();
 
   const {data: srrMode} = useWiRocPropertyQuery(deviceId, 'srr/mode');
-  const {data: loraMode} = useWiRocPropertyQuery(deviceId, 'loramode');
-  const {data: codeRate} = useWiRocPropertyQuery(deviceId, 'coderate');
-  const {data: loraPower} = useWiRocPropertyQuery(deviceId, 'power');
-  const {data: rs232Mode} = useWiRocPropertyQuery(deviceId, 'rs232mode');
+  const {data: loraMode} = useWiRocPropertyQuery(deviceId, 'lora/mode');
+  const {data: codeRate} = useWiRocPropertyQuery(deviceId, 'lora/coderate');
+  const {data: loraPower} = useWiRocPropertyQuery(deviceId, 'lora/power');
+  const {data: rs232Mode} = useWiRocPropertyQuery(deviceId, 'sportident/rs232/mode');
   const {data: wifiMeshEnabled} = useWiRocPropertyQuery(
     deviceId,
     'wifimesh/enabled',
@@ -31,10 +31,10 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
   const {data: wakeUpTime} = useWiRocPropertyQuery(deviceId, 'rtc/wakeup');
   const {data: acknowledgementRequested} = useWiRocPropertyQuery(
     deviceId,
-    'acknowledgementrequested',
+    'lora/acknowledgementrequested',
   );
   const {data: listenOnly} = useWiRocPropertyQuery(deviceId, 'lora/listenonly');
-  const {data: rfcommDevices} = useWiRocPropertyQuery(deviceId, 'rfcomm');
+  const {data: rfcommDevices} = useWiRocPropertyQuery(deviceId, 'bluetooth/rfcomm');
   const defaultCodeRate = 1;
 
   const warnings: string[] = [];

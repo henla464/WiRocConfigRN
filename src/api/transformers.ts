@@ -47,38 +47,38 @@ interface Setter<T, R = T> {
 }
 
 export const getters = {
-  ischarging: booleanGetter(0),
-  wirocdevicename: stringGetter(1),
-  sendtosirapipport: stringGetter(2),
-  sendtosirapip: stringGetter(3),
-  sendtosirapenabled: booleanGetter(4),
-  acknowledgementrequested: booleanGetter(5),
+  'power/charging': booleanGetter(0),
+  'device/name': stringGetter(1),
+  'sirap/ipport': stringGetter(2),
+  'sirap/ip': stringGetter(3),
+  'sirap/enabled': booleanGetter(4),
+  'lora/acknowledgementrequested': booleanGetter(5),
   'lora/listenonly': booleanGetter(),
   'lora/drf1268dscompatmode': booleanGetter(),
   'lora/module': stringGetter(11),
   datarate: numberGetter(6),
-  channel: stringGetter(7),
-  batterylevel: numberGetter(8),
+  'lora/channel': stringGetter(7),
+  'power/battery': numberGetter(8),
   ipaddress: stringGetter(9),
-  power: numberGetter(10),
-  lorarange: unionGetter<LoraRange>(12),
-  wirocpythonversion: stringGetter(13),
-  wirocbleapiversion: stringGetter(14),
-  wirochwversion: stringGetter(15),
-  onewayreceive: booleanGetter(16),
-  force4800baudrate: booleanGetter(17),
-  loramode: unionGetter<LoraMode>(18),
-  rxgainenabled: booleanGetter(19),
-  coderate: numberGetter(20),
-  rs232mode: unionGetter<Rs232Mode>(21),
-  rs232onewayreceive: booleanGetter(22),
-  forcers2324800baudrate: booleanGetter(23),
-  btserialonewayreceive: booleanGetter(24),
-  forcebtserial4800baudrate: booleanGetter(25),
-  listwifi: wifiListGetter(),
-  ip: stringGetter(),
-  wifiip: stringGetter(),
-  usbethernetip: stringGetter(),
+  'lora/power': numberGetter(10),
+  'lora/lorarange': unionGetter<LoraRange>(12),
+  'device/version/wirocpython': stringGetter(13),
+  'device/version/wirocbleapi': stringGetter(14),
+  'device/version/wirochw': stringGetter(15),
+  'sportident/usb/onewayreceive': booleanGetter(16),
+  'sportident/usb/force4800baudrate': booleanGetter(17),
+  'lora/mode': unionGetter<LoraMode>(18),
+  'lora/rxgainenabled': booleanGetter(19),
+  'lora/coderate': numberGetter(20),
+  'sportident/rs232/mode': unionGetter<Rs232Mode>(21),
+  'sportident/rs232/onewayreceive': booleanGetter(22),
+  'sportident/rs232/force4800baudrate': booleanGetter(23),
+  'btserial/onewayreceive': booleanGetter(24),
+  'btserial/force4800baudrate': booleanGetter(25),
+  'network/listwifi': wifiListGetter(),
+  'network/ip': stringGetter(),
+  'network/wifiip': stringGetter(),
+  'network/usbethernetip': stringGetter(),
   'network/interfaces': jsonGetter<string[]>(),
   'lora/enabled': booleanGetter(),
   services: jsonGetter<Services>(),
@@ -88,8 +88,8 @@ export const getters = {
   'hashw/srr': booleanGetter(),
   'hashw/rtc': booleanGetter(),
   'hashw/rfcomm': booleanGetter(),
-  scanbtaddresses: serialDevicesGetter(),
-  rfcomm: serialDevicesGetter(),
+  'bluetooth/scan': serialDevicesGetter(),
+  'bluetooth/rfcomm': serialDevicesGetter(),
 
   'srr/enabled': booleanGetter(),
   'srr/mode': unionGetter<SrrMode>(),
@@ -115,31 +115,39 @@ export const getters = {
   'wifimesh/mac': stringGetter(),
   'wifimesh/routetointerface': stringGetter(),
   'wifimesh/mpath': jsonGetter<MPaths>(),
+
+  'network/tailscale/enabled': booleanGetter(),
+  'network/tailscale/login': stringGetter(),
+  'network/tailscale/status': stringGetter(),
+
+  'network/ethernetip': stringGetter(),
+
+  'roc/enabled': booleanGetter(),
 };
 
 export const setters = {
-  wirocdevicename: stringSetter(),
-  sendtosirapipport: stringSetter(),
-  sendtosirapip: stringSetter(),
-  sendtosirapenabled: booleanSetter(),
-  acknowledgementrequested: booleanSetter(),
+  'device/name': stringSetter(),
+  'sirap/ipport': stringSetter(),
+  'sirap/ip': stringSetter(),
+  'sirap/enabled': booleanSetter(),
+  'lora/acknowledgementrequested': booleanSetter(),
   'lora/listenonly': booleanSetter(),
   'lora/drf1268dscompatmode': booleanSetter(),
   datarate: numberSetter(),
-  channel: stringSetter(),
+  'lora/channel': stringSetter(),
   ipaddress: stringSetter(),
-  power: numberSetter(),
-  lorarange: unionSetter<LoraRange>(),
-  onewayreceive: booleanSetter(),
-  force4800baudrate: booleanSetter(),
-  loramode: unionSetter<LoraMode>(),
-  rxgainenabled: booleanSetter(),
-  coderate: numberSetter(),
-  rs232mode: unionSetter<Rs232Mode>(),
-  rs232onewayreceive: booleanSetter(),
-  forcers2324800baudrate: booleanSetter(),
-  btserialonewayreceive: booleanSetter(),
-  forcebtserial4800baudrate: booleanSetter(),
+  'lora/power': numberSetter(),
+  'lora/lorarange': unionSetter<LoraRange>(),
+  'sportident/usb/onewayreceive': booleanSetter(),
+  'sportident/usb/force4800baudrate': booleanSetter(),
+  'lora/mode': unionSetter<LoraMode>(),
+  'lora/rxgainenabled': booleanSetter(),
+  'lora/coderate': numberSetter(),
+  'sportident/rs232/mode': unionSetter<Rs232Mode>(),
+  'sportident/rs232/onewayreceive': booleanSetter(),
+  'sportident/rs232/force4800baudrate': booleanSetter(),
+  'btserial/onewayreceive': booleanSetter(),
+  'btserial/force4800baudrate': booleanSetter(),
   'lora/enabled': booleanSetter(),
   webserverurl: stringSetter(),
   deletepunches: voidSetter(),
@@ -149,12 +157,12 @@ export const setters = {
   upgradewirocpython: stringSetter(),
   upgradewirocble: stringSetter(),
 
-  bindrfcomm: bindRfCommSetter(),
-  releaserfcomm: releaseRfCommSetter(),
+  'bluetooth/rfcomm/bind': bindRfCommSetter(),
+  'bluetooth/rfcomm/release': releaseRfCommSetter(),
 
-  connectwifi: connectWifiSetter(),
-  disconnectwifi: disconnectWifiSetter(),
-  renewip: renewIpSetter(), // TODO returns OK, check value
+  'network/connectwifi': connectWifiSetter(),
+  'network/disconnectwifi': disconnectWifiSetter(),
+  'network/renewip': renewIpSetter(), // TODO returns OK, check value
 
   'srr/enabled': booleanSetter(),
   'srr/mode': unionSetter<SrrMode>(),
@@ -178,6 +186,11 @@ export const setters = {
   'wifimesh/nodenumber': numberSetter(),
   'wifimesh/routetointerface': stringSetter(),
 
+  'network/tailscale/enabled': booleanSetter(),
+  'network/tailscale/login': tailscaleLoginSetter(),
+
+  'roc/enabled': booleanSetter(),
+
   setting: settingSetter(),
 };
 
@@ -188,7 +201,7 @@ function bindRfCommSetter(): Setter<
   return {
     serialize: value => [value.btAddress, value.btName],
     deserializeResponse: (value: string) => JSON.parse(value).Value, // TODO check if webroute API should change?
-    responseTarget: 'scanbtaddresses',
+    responseTarget: 'bluetooth/scan',
   };
 }
 
@@ -196,7 +209,7 @@ function releaseRfCommSetter(): Setter<string, BluetoothDevice[]> {
   return {
     serialize: value => `${value}`,
     deserializeResponse: (value: string) => JSON.parse(value).Value,
-    responseTarget: 'scanbtaddresses',
+    responseTarget: 'bluetooth/scan',
   };
 }
 
@@ -341,7 +354,15 @@ function disconnectWifiSetter(): Setter<void, void> {
   };
 }
 
-function renewIpSetter(): Setter<'ethernet' | 'wifi', void> {
+function tailscaleLoginSetter(): Setter<void, string> {
+  return {
+    serialize: () => '',
+    deserializeResponse: (value: string) => value,
+    responseTarget: 'network/tailscale/login',
+  };
+}
+
+function renewIpSetter(): Setter<string, void> {
   return {
     serialize: value => value,
     deserializeResponse: (value: string) => {

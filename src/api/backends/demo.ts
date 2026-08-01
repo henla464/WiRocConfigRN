@@ -26,11 +26,18 @@ class DemoDevice {
   private onTestPunchesSentSubscribers = new Set<TestPunchesSentCallback>();
 
   constructor(public deviceName: string) {
-    this.demoData.wirocdevicename = deviceName;
+    this.demoData['device/name'] = deviceName;
   }
 
   public async getProperty(propertyName: GettablePropName) {
-    const response = this.demoData[propertyName];
+    let response = this.demoData[propertyName];
+    // Fall back to initialDemoData in case new properties were added
+    // after this DemoDevice instance was cached (e.g. across Fast Refresh).
+    if (response === undefined && propertyName in initialDemoData) {
+      response = initialDemoData[propertyName];
+      // Also cache it in the instance so next lookup is fast
+      this.demoData[propertyName] = response;
+    }
     if (response === undefined) {
       throw new Error(`Property ${propertyName} not found in demo data`);
     }
@@ -55,8 +62,8 @@ class DemoDevice {
       return 'OK';
     }
 
-    if (propertyName === 'connectwifi') {
-      const newWifiList = chunk(this.demoData.listwifi!.split('\n'), 3)
+    if (propertyName === 'network/connectwifi') {
+      const newWifiList = chunk(this.demoData['network/listwifi']!.split('\n'), 3)
         .map(([networkName, connected, rssi]) => ({
           networkName,
           isConnected: connected === 'yes',
@@ -71,17 +78,17 @@ class DemoDevice {
             `${wifi.networkName}\n${wifi.isConnected}\n${wifi.signalStrength}`,
         )
         .join('\n');
-      this.demoData.listwifi = newWifiList;
+      this.demoData['network/listwifi'] = newWifiList;
       this.onPropertiesChangesSubscribers.forEach(callback => {
         callback({
-          listwifi: newWifiList,
+          'network/listwifi': newWifiList,
         });
       });
       return 'OK';
     }
 
-    if (propertyName === 'disconnectwifi') {
-      const newWifiList = chunk(this.demoData.listwifi!.split('\n'), 3)
+    if (propertyName === 'network/disconnectwifi') {
+      const newWifiList = chunk(this.demoData['network/listwifi']!.split('\n'), 3)
         .map(([networkName, connected, rssi]) => ({
           networkName,
           isConnected: connected === 'yes',
@@ -96,24 +103,24 @@ class DemoDevice {
             `${wifi.networkName}\n${wifi.isConnected}\n${wifi.signalStrength}`,
         )
         .join('\n');
-      this.demoData.listwifi = newWifiList;
+      this.demoData['network/listwifi'] = newWifiList;
       this.onPropertiesChangesSubscribers.forEach(callback => {
         callback({
-          listwifi: newWifiList,
+          'network/listwifi': newWifiList,
         });
       });
       return 'OK';
     }
 
-    if (propertyName === 'renewip') {
-      this.demoData.ip =
-        this.demoData.ip === initialDemoData.ip
+    if (propertyName === 'network/renewip') {
+      this.demoData['network/ip'] =
+        this.demoData['network/ip'] === initialDemoData['network/ip']
           ? '192.168.1.44'
-          : initialDemoData.ip;
+          : initialDemoData['network/ip'];
 
       this.onPropertiesChangesSubscribers.forEach(callback => {
         callback({
-          ip: this.demoData.ip,
+          'network/ip': this.demoData['network/ip'],
         });
       });
 
@@ -152,8 +159,79 @@ class DemoDevice {
       return 'OK';
     }
 
-    if (propertyName === 'bindrfcomm') {
-      const updated = JSON.parse(this.demoData.scanbtaddresses!).map(
+    if (propertyName === 'rtc/wakeupenabled') {
+      this.demoData['rtc/wakeupenabled'] = values[0];
+      this.onPropertiesChangesSubscribers.forEach(callback => {
+        callback({
+          'rtc/wakeupenabled': values[0],
+        });
+      });
+      return values[0];
+    }
+
+    if (propertyName === 'rtc/datetime') {
+      this.demoData['rtc/datetime'] = values[0];
+      this.onPropertiesChangesSubscribers.forEach(callback => {
+        callback({
+          'rtc/datetime': values[0],
+        });
+      });
+      return values[0];
+    }
+
+    if (propertyName === 'network/tailscale/login') {
+      const loginUrl =
+        'https://login.tailscale.com/a/demologin' +
+        Math.random().toString(36).substring(2, 10);
+      this.demoData['network/tailscale/login'] = loginUrl;
+      this.onPropertiesChangesSubscribers.forEach(callback => {
+        callback({
+          'network/tailscale/login': loginUrl,
+        });
+      });
+      return loginUrl;
+    }
+
+    if (propertyName === 'wifimesh/enabled') {
+      this.demoData['wifimesh/enabled'] = values[0];
+      if (values[0] === '1') {
+        const nodeNumber = this.demoData['wifimesh/nodenumber'] || '1';
+        this.demoData['wifimesh/ipaddress'] = `192.168.25.${nodeNumber}`;
+        this.demoData['wifimesh/interfacecreated'] = '1';
+        this.demoData['wifimesh/mac'] = '02:00:00:00:00:01';
+      } else {
+        this.demoData['wifimesh/ipaddress'] = '';
+        this.demoData['wifimesh/interfacecreated'] = '0';
+        this.demoData['wifimesh/mac'] = '';
+      }
+      this.onPropertiesChangesSubscribers.forEach(callback => {
+        callback({
+          'wifimesh/enabled': values[0],
+          'wifimesh/ipaddress': this.demoData['wifimesh/ipaddress'],
+          'wifimesh/interfacecreated': this.demoData['wifimesh/interfacecreated'],
+          'wifimesh/mac': this.demoData['wifimesh/mac'],
+        });
+      });
+      return values[0];
+    }
+
+    if (propertyName === 'wifimesh/nodenumber') {
+      this.demoData['wifimesh/nodenumber'] = values[0];
+      // Update mesh IP when node number changes and mesh is enabled
+      if (this.demoData['wifimesh/enabled'] === '1') {
+        this.demoData['wifimesh/ipaddress'] = `192.168.25.${values[0]}`;
+      }
+      this.onPropertiesChangesSubscribers.forEach(callback => {
+        callback({
+          'wifimesh/nodenumber': values[0],
+          'wifimesh/ipaddress': this.demoData['wifimesh/ipaddress'],
+        });
+      });
+      return values[0];
+    }
+
+    if (propertyName === 'bluetooth/rfcomm/bind') {
+      const updated = JSON.parse(this.demoData['bluetooth/scan']!).map(
         (device: BluetoothDevice) => {
           if (device.BTAddress === values[0]) {
             return {
@@ -164,14 +242,14 @@ class DemoDevice {
           return device;
         },
       );
-      this.demoData.scanbtaddresses = JSON.stringify(updated);
+      this.demoData['bluetooth/scan'] = JSON.stringify(updated);
       return JSON.stringify({
         Value: updated,
       });
     }
 
-    if (propertyName === 'releaserfcomm') {
-      const updated = JSON.parse(this.demoData.scanbtaddresses!).map(
+    if (propertyName === 'bluetooth/rfcomm/release') {
+      const updated = JSON.parse(this.demoData['bluetooth/scan']!).map(
         (device: BluetoothDevice) => {
           if (device.BTAddress === values[0]) {
             return {
@@ -182,29 +260,29 @@ class DemoDevice {
           return device;
         },
       );
-      this.demoData.scanbtaddresses = JSON.stringify(updated);
+      this.demoData['bluetooth/scan'] = JSON.stringify(updated);
       return JSON.stringify({
         Value: updated,
       });
     }
 
     if (propertyName === 'upgradewirocpython') {
-      this.demoData.wirocpythonversion =
-        values[0].match(/v?(.*)/)?.[1] ?? this.demoData.wirocpythonversion;
+      this.demoData['device/version/wirocpython'] =
+        values[0].match(/v?(.*)/)?.[1] ?? this.demoData['device/version/wirocpython'];
       this.onPropertiesChangesSubscribers.forEach(callback => {
         callback({
-          wirocpythonversion: this.demoData.wirocpythonversion,
+          'device/version/wirocpython': this.demoData['device/version/wirocpython'],
         });
       });
       return 'OK';
     }
 
     if (propertyName === 'upgradewirocble') {
-      this.demoData.wirocbleapiversion =
-        values[0].match(/v?(.*)/)?.[1] ?? this.demoData.wirocbleapiversion;
+      this.demoData['device/version/wirocbleapi'] =
+        values[0].match(/v?(.*)/)?.[1] ?? this.demoData['device/version/wirocbleapi'];
       this.onPropertiesChangesSubscribers.forEach(callback => {
         callback({
-          wirocbleapiversion: this.demoData.wirocbleapiversion,
+          'device/version/wirocbleapi': this.demoData['device/version/wirocbleapi'],
         });
       });
       return 'OK';

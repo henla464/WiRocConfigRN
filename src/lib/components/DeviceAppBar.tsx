@@ -10,7 +10,7 @@ import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
 export function DeviceAppBar({options, back}: NativeStackHeaderProps) {
   const navigation = useNavigation();
   const deviceId = useActiveWiRocDevice();
-  const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'wirocdevicename');
+  const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'device/name');
   return (
     <Appbar.Header
       style={{

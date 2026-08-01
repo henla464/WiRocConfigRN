@@ -55,17 +55,17 @@ export default function Update() {
 
   const {data: hwVersionAndRevision} = useWiRocPropertyQuery(
     deviceId,
-    'wirochwversion',
+    'device/version/wirochw',
   );
   const HWVersion = hwVersionAndRevision?.substring(1).split('Rev')[0];
   const HWRevision = hwVersionAndRevision?.substring(1).split('Rev')[1];
 
   const {data: currentWiRocVersion, refetch: refetchWiRocPythonVersion} =
-    useWiRocPropertyQuery(deviceId, 'wirocpythonversion');
+    useWiRocPropertyQuery(deviceId, 'device/version/wirocpython');
 
   const {data: currentWiRocBLEAPIVersion} = useWiRocPropertyQuery(
     deviceId,
-    'wirocbleapiversion',
+    'device/version/wirocbleapi',
   );
   const activeDeviceId = useStore(state => state.activeDeviceId);
 

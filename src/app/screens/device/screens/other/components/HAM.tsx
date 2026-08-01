@@ -37,7 +37,7 @@ export default function HAM() {
     {
       field: {value: channel, onChange: setChannel},
     },
-  ] = useConfigurationProperty(deviceId, 'channel', onDefaultValuesChange, {
+  ] = useConfigurationProperty(deviceId, 'lora/channel', onDefaultValuesChange, {
     control: form.control,
   });
 

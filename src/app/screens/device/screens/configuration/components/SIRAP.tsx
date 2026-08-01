@@ -35,7 +35,7 @@ export default function SIRAP({
     },
   ] = useConfigurationProperty(
     deviceId,
-    'sendtosirapenabled',
+    'sirap/enabled',
     onDefaultValuesChange,
   );
 
@@ -46,7 +46,7 @@ export default function SIRAP({
     },
   ] = useConfigurationProperty(
     deviceId,
-    'sendtosirapip',
+    'sirap/ip',
     onDefaultValuesChange,
     {
       rules: {
@@ -69,7 +69,7 @@ export default function SIRAP({
     },
   ] = useConfigurationProperty(
     deviceId,
-    'sendtosirapipport',
+    'sirap/ipport',
     onDefaultValuesChange,
     {
       rules: {

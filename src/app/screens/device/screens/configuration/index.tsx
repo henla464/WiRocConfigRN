@@ -19,6 +19,7 @@ import {
 
 import {ConfigurationTabParamList} from '../../types';
 import LoraRadio from './components/LoraRadio';
+import ROC from './components/ROC';
 import RS232 from './components/RS232';
 import SIRAP from './components/SIRAP';
 import SRR from './components/SRR';
@@ -170,6 +171,8 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
               <Text style={styles.header}>{t('Utdata')}</Text>
               <Divider bold={true} />
               <SIRAP {...commonSectionProps} />
+              <Divider bold={true} />
+              <ROC {...commonSectionProps} />
               <Divider bold={true} />
             </View>
           </ScrollView>

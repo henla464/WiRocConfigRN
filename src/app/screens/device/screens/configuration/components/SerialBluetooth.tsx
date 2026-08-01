@@ -34,16 +34,16 @@ export default function SerialBluetooth({
   const handlePress = () => setExpanded(!expanded);
 
   const {data: serialBTDevices = [], refetch: refetchDevices} =
-    useWiRocPropertyQuery(deviceId, 'scanbtaddresses', {
+    useWiRocPropertyQuery(deviceId, 'bluetooth/scan', {
       enabled: false, // The scan will be explicitly started by the user
     });
 
-  const {data: rfcommDevices} = useWiRocPropertyQuery(deviceId, 'rfcomm');
+  const {data: rfcommDevices} = useWiRocPropertyQuery(deviceId, 'bluetooth/rfcomm');
 
-  const {mutate: bindBt} = useWiRocPropertyMutation(deviceId, 'bindrfcomm');
+  const {mutate: bindBt} = useWiRocPropertyMutation(deviceId, 'bluetooth/rfcomm/bind');
   const {mutate: releaseBt} = useWiRocPropertyMutation(
     deviceId,
-    'releaserfcomm',
+    'bluetooth/rfcomm/release',
   );
 
   const [
@@ -52,7 +52,7 @@ export default function SerialBluetooth({
     },
   ] = useConfigurationProperty(
     deviceId,
-    'btserialonewayreceive',
+    'btserial/onewayreceive',
     onDefaultValuesChange,
   );
 

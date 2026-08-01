@@ -22,7 +22,7 @@ export default function USB({
     },
   ] = useConfigurationProperty(
     deviceId,
-    'onewayreceive',
+    'sportident/usb/onewayreceive',
     onDefaultValuesChange,
   );
   const [
@@ -31,7 +31,7 @@ export default function USB({
     },
   ] = useConfigurationProperty(
     deviceId,
-    'force4800baudrate',
+    'sportident/usb/force4800baudrate',
     onDefaultValuesChange,
   );
 

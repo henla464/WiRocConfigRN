@@ -49,7 +49,7 @@ export default function SendPunches() {
 
   const {data: ackReq} = useWiRocPropertyQuery(
     deviceId,
-    'acknowledgementrequested',
+    'lora/acknowledgementrequested',
   );
 
   const {data: loraModule} = useWiRocPropertyQuery(deviceId, 'lora/module');

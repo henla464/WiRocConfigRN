@@ -19,21 +19,21 @@ export const DeviceNetworkDetailsScreen = (props: Props) => {
   const {deviceId, networkName} = props.route.params;
   const notify = useNotify();
   const {addToast} = useToasts();
-  const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'wirocdevicename');
+  const {data: deviceName} = useWiRocPropertyQuery(deviceId, 'device/name');
   const {
     data: wifiNetworks = [],
     refetch: refetchWifiNetworks,
     isRefetching: isRefetchingWifiNetworks,
-  } = useWiRocPropertyQuery(deviceId, 'listwifi');
+  } = useWiRocPropertyQuery(deviceId, 'network/listwifi');
   const {refetch: refetchIp, isRefetching: isRefetchingIp} =
-    useWiRocPropertyQuery(deviceId, 'ip');
+    useWiRocPropertyQuery(deviceId, 'network/ip');
 
   const wifiNetwork = wifiNetworks.find(
     network => network.networkName === networkName,
   );
 
   const {mutate: wifiConnect, isPending: isConnecting} =
-    useWiRocPropertyMutation(deviceId, 'connectwifi', {
+    useWiRocPropertyMutation(deviceId, 'network/connectwifi', {
       onError: () => {
         notify({
           type: 'error',
