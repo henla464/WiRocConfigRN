@@ -34,7 +34,11 @@ export default function SendPunches() {
   const settleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const settleTimestamps = useRef<Record<string, number>>({});
   const isTcpStyleOutput = (typeName: string) =>
-    typeName === 'SIRAP' || typeName === 'ROC' || typeName === 'SERIAL' || typeName === 'RS232' || typeName === 'BLENO';
+    typeName === 'SIRAP' ||
+    typeName === 'ROC' ||
+    typeName === 'SERIAL' ||
+    typeName === 'RS232' ||
+    typeName === 'BLENO';
   const notify = useNotify();
 
   const {data: punches = []} = useQuery<unknown, unknown, TestPunch[]>({
@@ -212,13 +216,13 @@ export default function SendPunches() {
       case 'LORA':
         return 'radio-tower';
       case 'SIRAP':
-        return 'link-variant';
+        return 'ethernet';
       case 'ROC':
         return 'cloud-upload-outline';
       case 'SRR':
         return 'radio-handheld';
       case 'SERIAL':
-        return 'serial-port';
+        return 'connection';
       case 'BLENO':
         return 'bluetooth';
       default:
