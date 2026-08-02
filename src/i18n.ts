@@ -294,6 +294,13 @@ export const resources = {
       'Om Wifi-mesh': 'About Wifi-mesh',
       wifimesh_info:
         'Wifi-mesh is used together with Atheros AR9271 based USB WiFi adapters, plugged into one of the USB ports on the device. The USB adapter must be securely fixed in place, as the USB connection can easily glitch and disconnect otherwise. Configure the mesh settings below and use the status section to verify the mesh interface was created successfully.',
+      Inloggad: 'Logged in',
+      'Tailscale körs': 'Tailscale running',
+      'Annonserar routes': 'Advertising routes',
+      'Accepterar routes': 'Accepting routes',
+      'Väntar på inloggning...': 'Waiting for login...',
+      tailscale_approve_routes_note:
+        'Go to the Tailscale admin console (login.tailscale.com) and approve the advertised routes so other devices on your tailnet can reach them.',
       ROC: 'ROC',
       'Skicka stämplingar till ROC-server': 'Send punches to ROC server',
       warn_roc_no_rtc:
@@ -585,6 +592,13 @@ export const resources = {
       'Om Wifi-mesh': 'Om Wifi-mesh',
       wifimesh_info:
         'Wifi-mesh används tillsammans med Atheros AR9271-baserade USB WiFi-adaptrar, inkopplade i en av USB-portarna på enheten. USB-adaptern måste sitta fast ordentligt, eftersom USB-anslutningen lätt kan glappa och tappa kontakten annars. Konfigurera mesh-inställningarna nedan och använd statussektionen för att kontrollera att mesh-interfacet har skapats.',
+      Inloggad: 'Inloggad',
+      'Tailscale körs': 'Tailscale körs',
+      'Annonserar routes': 'Annonserar routes',
+      'Accepterar routes': 'Accepterar routes',
+      'Väntar på inloggning...': 'Väntar på inloggning...',
+      tailscale_approve_routes_note:
+        'Gå till Tailscale admin-konsol (login.tailscale.com) och godkänn de annonserade rutterna så att andra enheter i din tailnet kan nå dem.',
       ROC: 'ROC',
       'Skicka stämplingar till ROC-server':
         'Skicka stämplingar till ROC-server',

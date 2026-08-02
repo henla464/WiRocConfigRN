@@ -427,15 +427,23 @@ export const demoData: Readonly<Partial<Record<GettablePropName, string>>> = {
   'network/tailscale/login': '',
   'network/tailscale/status': JSON.stringify({
     Version: '1.80.0',
-    TailscaleIPs: ['100.64.0.1'],
+    TUN: false,
+    BackendState: 'NoState',
+    TailscaleIPs: [],
     Self: {
       ID: 'demo-node',
       HostName: 'WiRocDemo',
       Online: false,
-      TailscaleIPs: ['100.64.0.1'],
+      TailscaleIPs: [],
+      UserID: undefined,
     },
     Peer: {},
     User: {},
+  }),
+  'network/tailscale/prefs': JSON.stringify({
+    RouteAll: false,
+    LoggedOut: true,
+    AdvertiseRoutes: null,
   }),
 
   'roc/enabled': '0',

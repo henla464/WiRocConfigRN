@@ -155,8 +155,6 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
               <Divider bold={true} />
               {hasRfcomm && <SerialBluetooth {...commonSectionProps} />}
               {hasRfcomm && <Divider bold={true} />}
-              {hasSRR && <SRR {...commonSectionProps} />}
-              {hasSRR && <Divider bold={true} />}
             </View>
             <View style={{backgroundColor: 'orange'}}>
               <Divider bold={true} />
@@ -165,6 +163,9 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
               <LoraRadio {...commonSectionProps} />
               <Divider bold={true} />
               <RS232 {...commonSectionProps} />
+              <Divider bold={true} />
+              {hasSRR && <SRR {...commonSectionProps} />}
+              {hasSRR && <Divider bold={true} />}
             </View>
             <View style={{backgroundColor: 'orange'}}>
               <Divider bold={true} />

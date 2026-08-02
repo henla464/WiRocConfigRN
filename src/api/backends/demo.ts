@@ -179,6 +179,66 @@ class DemoDevice {
       return values[0];
     }
 
+    if (propertyName === 'network/tailscale/enabled') {
+      this.demoData['network/tailscale/enabled'] = values[0];
+      if (values[0] === '1') {
+        // Enable: set status to running but not yet logged in
+        const status = {
+          Version: '1.80.0',
+          TUN: true,
+          BackendState: 'Running',
+          TailscaleIPs: [],
+          Self: {
+            ID: 'demo-node',
+            HostName: 'WiRocDemo',
+            Online: false,
+            TailscaleIPs: [],
+            UserID: undefined,
+          },
+          Peer: {},
+          User: {},
+        };
+        this.demoData['network/tailscale/status'] = JSON.stringify(status);
+        this.demoData['network/tailscale/prefs'] = JSON.stringify({
+          RouteAll: false,
+          LoggedOut: true,
+          AdvertiseRoutes: null,
+        });
+      } else {
+        // Disable: reset
+        this.demoData['network/tailscale/status'] = JSON.stringify({
+          Version: '',
+          TUN: false,
+          BackendState: 'NoState',
+          TailscaleIPs: [],
+          Self: {
+            ID: 'demo-node',
+            HostName: 'WiRocDemo',
+            Online: false,
+            TailscaleIPs: [],
+            UserID: undefined,
+          },
+          Peer: {},
+          User: {},
+        });
+        this.demoData['network/tailscale/prefs'] = JSON.stringify({
+          RouteAll: false,
+          LoggedOut: true,
+          AdvertiseRoutes: null,
+        });
+        this.demoData['network/tailscale/login'] = '';
+      }
+      this.onPropertiesChangesSubscribers.forEach(callback => {
+        callback({
+          'network/tailscale/enabled': values[0],
+          'network/tailscale/status': this.demoData['network/tailscale/status'],
+          'network/tailscale/prefs': this.demoData['network/tailscale/prefs'],
+          'network/tailscale/login': this.demoData['network/tailscale/login'],
+        });
+      });
+      return values[0];
+    }
+
     if (propertyName === 'network/tailscale/login') {
       const loginUrl =
         'https://login.tailscale.com/a/demologin' +
@@ -189,6 +249,39 @@ class DemoDevice {
           'network/tailscale/login': loginUrl,
         });
       });
+
+      // Simulate login completing after 2 seconds
+      setTimeout(() => {
+        const status = {
+          Version: '1.80.0',
+          TUN: true,
+          BackendState: 'Running',
+          TailscaleIPs: ['100.64.0.1'],
+          Self: {
+            ID: 'demo-node',
+            HostName: 'WiRocDemo',
+            Online: true,
+            TailscaleIPs: ['100.64.0.1'],
+            UserID: 12345,
+          },
+          Peer: {},
+          User: {12345: {ID: 12345, LoginName: 'demo', DisplayName: 'Demo'}},
+        };
+        this.demoData['network/tailscale/status'] = JSON.stringify(status);
+        this.demoData['network/tailscale/prefs'] = JSON.stringify({
+          RouteAll: true,
+          LoggedOut: false,
+          AdvertiseRoutes: ['192.168.1.0/24'],
+        });
+        const updated: Record<string, string> = {
+          'network/tailscale/status': this.demoData['network/tailscale/status'],
+          'network/tailscale/prefs': this.demoData['network/tailscale/prefs'],
+        };
+        this.onPropertiesChangesSubscribers.forEach(callback => {
+          callback(updated);
+        });
+      }, 2000);
+
       return loginUrl;
     }
 

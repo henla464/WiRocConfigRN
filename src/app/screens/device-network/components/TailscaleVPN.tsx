@@ -1,7 +1,8 @@
-import React from 'react';
+import React, {useEffect, useRef} from 'react';
 import {Linking, ScrollView, StyleSheet, View} from 'react-native';
 import {
   Button,
+  Icon,
   List,
   ProgressBar,
   Surface,
@@ -20,6 +21,37 @@ import {
 interface TailscaleVPNProps {
   deviceId: string;
 }
+
+interface TailscaleStatus {
+  Version?: string;
+  TUN?: boolean;
+  BackendState?: string;
+  TailscaleIPs?: string[];
+  Self?: {
+    ID?: string;
+    HostName?: string;
+    Online?: boolean;
+    TailscaleIPs?: string[];
+    UserID?: number;
+  };
+}
+
+interface TailscalePrefs {
+  RouteAll?: boolean;
+  LoggedOut?: boolean;
+  AdvertiseRoutes?: string[] | null;
+}
+
+function parseJson<T>(raw: string): T {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return {} as T;
+  }
+}
+
+const POLL_INTERVAL = 3000;
+const POLL_TIMEOUT = 120000; // 2 minutes
 
 export default function TailscaleVPN({deviceId}: TailscaleVPNProps) {
   const {t} = useTranslation();
@@ -41,12 +73,22 @@ export default function TailscaleVPN({deviceId}: TailscaleVPNProps) {
   });
 
   const {
-    data: tailscaleStatus,
+    data: tailscaleStatusRaw,
     refetch: refetchStatus,
     isFetching: isFetchingStatus,
   } = useWiRocPropertyQuery(deviceId, 'network/tailscale/status', {
     enabled: false,
   });
+
+  const {
+    data: tailscalePrefsRaw,
+    refetch: refetchPrefs,
+  } = useWiRocPropertyQuery(deviceId, 'network/tailscale/prefs', {
+    enabled: false,
+  });
+
+  const tailscaleStatus = parseJson<TailscaleStatus>(tailscaleStatusRaw ?? '');
+  const tailscalePrefs = parseJson<TailscalePrefs>(tailscalePrefsRaw ?? '');
 
   const {mutate: setTailscaleEnabled, isPending: isSettingEnabled} =
     useWiRocPropertyMutation(deviceId, 'network/tailscale/enabled', {
@@ -56,9 +98,70 @@ export default function TailscaleVPN({deviceId}: TailscaleVPNProps) {
     });
 
   const {mutate: triggerLogin, isPending: isLoggingIn} =
-    useWiRocPropertyMutation(deviceId, 'network/tailscale/login');
+    useWiRocPropertyMutation(deviceId, 'network/tailscale/login', {
+      onSettled: () => {
+        refetchLoginUrl();
+      },
+    });
 
   const [snackbarMessage, setSnackbarMessage] = React.useState('');
+  const [isPolling, setIsPolling] = React.useState(false);
+  const pollTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const pollStartRef = useRef<number>(0);
+
+  const backendState = tailscaleStatus.BackendState;
+  const isRunning = backendState === 'Running';
+  const self = tailscaleStatus.Self;
+  const isOnline = self?.Online ?? false;
+  const isLoggedIn = isRunning && isOnline && (self?.UserID != null);
+
+  // Advertised routes from prefs
+  const advertisedRoutes = tailscalePrefs.AdvertiseRoutes ?? [];
+  const hasAdvertisedRoutes = advertisedRoutes.length > 0;
+
+  // Accepting routes: prefs RouteAll or LoggedOut=false (implies connected)
+  const isAcceptingRoutes = tailscalePrefs.RouteAll === true;
+
+  // Cleanup polling on unmount
+  useEffect(() => {
+    return () => {
+      if (pollTimerRef.current) {
+        clearInterval(pollTimerRef.current);
+      }
+    };
+  }, []);
+
+  // When login completes, stop polling
+  useEffect(() => {
+    if (isLoggedIn && isPolling) {
+      stopPolling();
+    }
+  }, [isLoggedIn, isPolling]);
+
+  const startPolling = () => {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+    }
+    setIsPolling(true);
+    pollStartRef.current = Date.now();
+    refetchStatus();
+    refetchPrefs();
+    pollTimerRef.current = setInterval(() => {
+      refetchStatus();
+      refetchPrefs();
+      if (Date.now() - pollStartRef.current >= POLL_TIMEOUT) {
+        stopPolling();
+      }
+    }, POLL_INTERVAL);
+  };
+
+  const stopPolling = () => {
+    if (pollTimerRef.current) {
+      clearInterval(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+    setIsPolling(false);
+  };
 
   const handleCopyLink = async () => {
     if (tailscaleLoginUrl) {
@@ -75,8 +178,22 @@ export default function TailscaleVPN({deviceId}: TailscaleVPNProps) {
 
   const handleLogin = () => {
     triggerLogin(undefined as never);
-    refetchLoginUrl();
   };
+
+  // After login mutation settles and URL is refetched, decide what to do
+  useEffect(() => {
+    if (isLoggingIn || isFetchingLogin) return;
+    if (tailscaleLoginUrl === undefined) return; // hasn't been fetched yet
+
+    if (tailscaleLoginUrl) {
+      // Got a URL: show it and start polling
+      startPolling();
+    } else {
+      // Empty URL: may already be logged in — check status now
+      refetchStatus();
+      refetchPrefs();
+    }
+  }, [isLoggingIn, isFetchingLogin, tailscaleLoginUrl]);
 
   const isLoading = isLoadingEnabled || isSettingEnabled;
 
@@ -87,9 +204,7 @@ export default function TailscaleVPN({deviceId}: TailscaleVPNProps) {
         <Surface style={styles.infoSurface}>
           <View style={{padding: 16, gap: 8}}>
             <Text variant="titleSmall">{t('Om Tailscale VPN')}</Text>
-            <Text variant="bodyMedium">
-              {t('tailscale_info')}
-            </Text>
+            <Text variant="bodyMedium">{t('tailscale_info')}</Text>
           </View>
         </Surface>
 
@@ -109,6 +224,7 @@ export default function TailscaleVPN({deviceId}: TailscaleVPNProps) {
                 value={isTailscaleEnabled}
                 disabled={isSettingEnabled}
                 onValueChange={() => {
+                  stopPolling();
                   setTailscaleEnabled(!isTailscaleEnabled);
                 }}
               />
@@ -121,18 +237,29 @@ export default function TailscaleVPN({deviceId}: TailscaleVPNProps) {
             <View style={{padding: 16, gap: 16}}>
               <Text variant="titleSmall">{t('Logga in på Tailscale')}</Text>
 
+              {isLoggedIn && (
+                <View style={styles.loggedInBanner}>
+                  <Icon source="check-circle" size={20} color="#2E7D32" />
+                  <Text variant="bodyMedium" style={{color: '#2E7D32'}}>
+                    {t('Inloggad')}
+                  </Text>
+                </View>
+              )}
+
               <Button
                 mode="contained"
                 icon="login"
                 onPress={handleLogin}
-                loading={isLoggingIn || isFetchingLogin}
+                loading={isLoggingIn || isPolling}
                 disabled={isLoggingIn}>
-                {isLoggingIn
-                  ? t('Loggar in...')
-                  : t('Logga in på Tailscale')}
+                {isPolling
+                  ? t('Väntar på inloggning...')
+                  : isLoggingIn
+                    ? t('Loggar in...')
+                    : t('Logga in på Tailscale')}
               </Button>
 
-              {tailscaleLoginUrl ? (
+              {tailscaleLoginUrl && !isLoggedIn ? (
                 <View style={{gap: 8}}>
                   <Text variant="labelMedium">{t('Inloggningslänk')}:</Text>
                   <Text
@@ -158,10 +285,17 @@ export default function TailscaleVPN({deviceId}: TailscaleVPNProps) {
                     </Button>
                   </View>
                 </View>
-              ) : (
-                <Text variant="bodyMedium" style={{opacity: 0.5}}>
-                  {t('Ingen inloggningslänk tillgänglig')}
-                </Text>
+              ) : null}
+
+              {isPolling && !isLoggedIn && (
+                <View style={styles.pollingIndicator}>
+                  <ProgressBar indeterminate style={{flex: 1}} />
+                  <Text variant="bodySmall">
+                    {Math.round(
+                      Math.max(0, POLL_TIMEOUT - (Date.now() - pollStartRef.current)) / 1000,
+                    )}s
+                  </Text>
+                </View>
               )}
             </View>
           </Surface>
@@ -172,21 +306,94 @@ export default function TailscaleVPN({deviceId}: TailscaleVPNProps) {
             <View style={{padding: 16, gap: 16}}>
               <Text variant="titleSmall">{t('Tailscale status')}</Text>
 
+              <View style={styles.statusList}>
+                <View style={styles.statusRow}>
+                  <Icon
+                    source={isRunning ? 'check-circle' : 'close-circle'}
+                    size={20}
+                    color={isRunning ? '#2E7D32' : '#B71C1C'}
+                  />
+                  <Text variant="bodyMedium">{t('Tailscale körs')}</Text>
+                </View>
+
+                <View style={styles.statusRow}>
+                  <Icon
+                    source={isLoggedIn ? 'check-circle' : 'close-circle'}
+                    size={20}
+                    color={isLoggedIn ? '#2E7D32' : '#B71C1C'}
+                  />
+                  <Text variant="bodyMedium">{t('Inloggad')}</Text>
+                </View>
+
+                <View style={styles.statusRow}>
+                  <Icon
+                    source={isAcceptingRoutes ? 'check-circle' : 'close-circle'}
+                    size={20}
+                    color={isAcceptingRoutes ? '#2E7D32' : '#B71C1C'}
+                  />
+                  <Text variant="bodyMedium">{t('Accepterar routes')}</Text>
+                </View>
+
+                <View style={styles.statusRow}>
+                  <Icon
+                    source={hasAdvertisedRoutes ? 'check-circle' : 'close-circle'}
+                    size={20}
+                    color={hasAdvertisedRoutes ? '#2E7D32' : '#B71C1C'}
+                  />
+                  <Text variant="bodyMedium">
+                    {t('Annonserar routes')}
+                    {hasAdvertisedRoutes && (
+                      <Text variant="bodySmall">
+                        {' '}
+                        ({advertisedRoutes.join(', ')})
+                      </Text>
+                    )}
+                  </Text>
+                </View>
+                {hasAdvertisedRoutes && (
+                  <Text variant="bodySmall" style={{color: '#757575', paddingLeft: 30}}>
+                    {t('tailscale_approve_routes_note')}
+                  </Text>
+                )}
+              </View>
+
               <Button
                 mode="contained"
                 icon="refresh"
-                onPress={() => refetchStatus()}
+                onPress={() => {
+                  refetchStatus();
+                  refetchPrefs();
+                }}
                 loading={isFetchingStatus}>
                 {t('Hämta status')}
               </Button>
 
-              {tailscaleStatus ? (
-                <Text
-                  variant="bodyMedium"
-                  style={{fontFamily: 'monospace'}}
-                  selectable>
-                  {tailscaleStatus}
-                </Text>
+              {tailscaleStatusRaw ? (
+                <View style={styles.rawStatus}>
+                  <Text variant="labelMedium" style={{marginBottom: 4}}>
+                    {t('Status')}:
+                  </Text>
+                  <Text
+                    variant="bodySmall"
+                    style={{fontFamily: 'monospace'}}
+                    selectable>
+                    {tailscaleStatusRaw}
+                  </Text>
+                </View>
+              ) : null}
+
+              {tailscalePrefsRaw ? (
+                <View style={styles.rawStatus}>
+                  <Text variant="labelMedium" style={{marginBottom: 4}}>
+                    {t('Inställningar')}:
+                  </Text>
+                  <Text
+                    variant="bodySmall"
+                    style={{fontFamily: 'monospace'}}
+                    selectable>
+                    {tailscalePrefsRaw}
+                  </Text>
+                </View>
               ) : null}
             </View>
           </Surface>
@@ -219,5 +426,32 @@ const styles = StyleSheet.create({
   buttonRow: {
     flexDirection: 'row',
     gap: 8,
+  },
+  loggedInBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#E8F5E9',
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+  },
+  pollingIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  statusList: {
+    gap: 12,
+  },
+  statusRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  rawStatus: {
+    backgroundColor: '#F5F5F5',
+    padding: 12,
+    borderRadius: 8,
   },
 });

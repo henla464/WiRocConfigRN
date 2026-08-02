@@ -123,6 +123,8 @@ export const getters = {
   'network/ethernetip': stringGetter(),
 
   'roc/enabled': booleanGetter(),
+
+  'network/tailscale/prefs': stringGetter(),
 };
 
 export const setters = {
