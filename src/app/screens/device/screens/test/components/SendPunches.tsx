@@ -5,6 +5,7 @@ import {
   Button,
   DataTable,
   Divider,
+  Icon,
   Surface,
   TextInput,
   useTheme,
@@ -30,8 +31,10 @@ export default function SendPunches() {
   const [isSending, setIsSending] = useState(false);
   const [, setTick] = useState(0);
   const stateRef = useRef<TestPunch[]>(null);
-  const sirapTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const sirapSentTimestamps = useRef<Record<string, number>>({});
+  const settleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const settleTimestamps = useRef<Record<string, number>>({});
+  const isTcpStyleOutput = (typeName: string) =>
+    typeName === 'SIRAP' || typeName === 'ROC' || typeName === 'SERIAL' || typeName === 'RS232' || typeName === 'BLENO';
   const notify = useNotify();
 
   const {data: punches = []} = useQuery<unknown, unknown, TestPunch[]>({
@@ -60,24 +63,24 @@ export default function SendPunches() {
       if (punch.Type !== 'TestPunch') {
         return false;
       }
-      if (punch.TypeName === 'SIRAP') {
-        // SIRAP: no ACK, "Sent" or "Failed" means done
+      if (isTcpStyleOutput(punch.TypeName)) {
+        // TCP-style (SIRAP/ROC/etc): no ACK, "Sent" or "Failed" means done
         if (punch.Status === 'Sent') {
-          if (!(punch.Id in sirapSentTimestamps.current)) {
-            sirapSentTimestamps.current[punch.Id] = Date.now();
+          if (!(punch.Id in settleTimestamps.current)) {
+            settleTimestamps.current[punch.Id] = Date.now();
           }
           return true;
         }
         if (punch.Status === 'Failed') {
           // Failed is immediate, no settle period
-          sirapSentTimestamps.current[punch.Id] = 0;
+          settleTimestamps.current[punch.Id] = 0;
           if (punch.NoOfSendTries >= punch.MaxTries) {
             return true;
           }
         }
         return false;
       }
-      // LORA: acked, not-acked, failed-after-tries, or explicit Failed
+      // Radio-style (LORA/SRR): acked, not-acked, failed-after-tries, or explicit Failed
       return (
         (punch.Status === 'Acked' && ackReq) ||
         (punch.Status === 'Not acked' && !ackReq) ||
@@ -90,7 +93,7 @@ export default function SendPunches() {
     let testPunches = punches.filter(punch => {
       return punch.Type === 'TestPunch';
     });
-    // Use TestPunchId: same punch appears for both LORA and SIRAP, count once
+    // Use TestPunchId: same punch appears for multiple output types, count once
     const uniqueTestPunchIds = new Set(testPunches.map(p => p.TestPunchId))
       .size;
     let noOfCompletedRows = completedPunches.length;
@@ -99,28 +102,28 @@ export default function SendPunches() {
       uniqueTestPunchIds === numberOfPunches &&
       testPunches.length === noOfCompletedRows
     ) {
-      // Find remaining time for the most recent unsettled SIRAP Sent
-      const sirapRemaining = Math.max(
+      // Find remaining time for the most recent unsettled TCP-style Sent
+      const settleRemaining = Math.max(
         0,
         ...completedPunches
-          .filter(p => p.TypeName === 'SIRAP' && p.Status === 'Sent')
+          .filter(p => isTcpStyleOutput(p.TypeName) && p.Status === 'Sent')
           .map(p => {
-            const ts = sirapSentTimestamps.current[p.Id] ?? 0;
+            const ts = settleTimestamps.current[p.Id] ?? 0;
             return 2000 - (Date.now() - ts);
           }),
       );
 
-      if (sirapRemaining > 0) {
-        // SIRAP Sent: wait for settle period to pass before stopping
-        if (sirapTimeoutRef.current) {
-          clearTimeout(sirapTimeoutRef.current);
+      if (settleRemaining > 0) {
+        // TCP-style Sent: wait for settle period to pass before stopping
+        if (settleTimeoutRef.current) {
+          clearTimeout(settleTimeoutRef.current);
         }
-        sirapTimeoutRef.current = setTimeout(() => {
+        settleTimeoutRef.current = setTimeout(() => {
           wiRocDeviceApi.stopWatchingTestPunches();
           setIsSending(false);
-        }, sirapRemaining);
+        }, settleRemaining);
       } else {
-        // LORA: stop immediately
+        // Radio-style: stop immediately
         wiRocDeviceApi.stopWatchingTestPunches();
         setIsSending(false);
       }
@@ -130,9 +133,9 @@ export default function SendPunches() {
   const startStopSendPunches = async () => {
     if (isSending) {
       setIsSending(false);
-      if (sirapTimeoutRef.current) {
-        clearTimeout(sirapTimeoutRef.current);
-        sirapTimeoutRef.current = null;
+      if (settleTimeoutRef.current) {
+        clearTimeout(settleTimeoutRef.current);
+        settleTimeoutRef.current = null;
       }
       wiRocDeviceApi.stopWatchingTestPunches();
     } else {
@@ -162,7 +165,7 @@ export default function SendPunches() {
       }
 
       queryClient.setQueryData([deviceId, 'testPunches'], []);
-      sirapSentTimestamps.current = {};
+      settleTimestamps.current = {};
       wiRocDeviceApi.startWatchingTestPunches();
       wiRocDeviceApi.startSendingTestPunches({
         numberOfPunches,
@@ -191,8 +194,8 @@ export default function SendPunches() {
     }
   };
 
-  const isSettledSirap = (punch: TestPunch) => {
-    if (punch.TypeName !== 'SIRAP') {
+  const isSettled = (punch: TestPunch) => {
+    if (!isTcpStyleOutput(punch.TypeName)) {
       return false;
     }
     if (punch.Status === 'Failed' && punch.NoOfSendTries >= punch.MaxTries) {
@@ -204,14 +207,42 @@ export default function SendPunches() {
     return false;
   };
 
-  const getTypeSymbol = (typeName: string) => {
+  const getTypeIcon = (typeName: string) => {
     switch (typeName) {
       case 'LORA':
-        return '🛜';
+        return 'radio-tower';
       case 'SIRAP':
-        return '🔗';
+        return 'link-variant';
+      case 'ROC':
+        return 'cloud-upload-outline';
+      case 'SRR':
+        return 'radio-handheld';
+      case 'SERIAL':
+        return 'serial-port';
+      case 'BLENO':
+        return 'bluetooth';
       default:
-        return typeName;
+        return 'help-circle-outline';
+    }
+  };
+
+  const getTypeColor = (typeName: string) => {
+    switch (typeName) {
+      case 'LORA':
+        return '#1976D2';
+      case 'SIRAP':
+        return '#7B1FA2';
+      case 'ROC':
+        return '#E65100';
+      case 'SRR':
+        return '#2E7D32';
+      case 'SERIAL':
+      case 'RS232':
+        return '#00838F';
+      case 'BLENO':
+        return '#1565C0';
+      default:
+        return '#757575';
     }
   };
 
@@ -219,7 +250,7 @@ export default function SendPunches() {
     if (punch.Type === 'Punch') {
       return styles.punchBackgroundColor;
     } else {
-      if (punch.TypeName === 'SIRAP') {
+      if (isTcpStyleOutput(punch.TypeName)) {
         if (
           punch.Status === 'Failed' &&
           punch.NoOfSendTries >= punch.MaxTries
@@ -248,17 +279,17 @@ export default function SendPunches() {
     }
   };
 
-  // Tick every second while waiting for 2s SIRAP settle period to pass
+  // Tick every second while waiting for 2s TCP-style settle period to pass
   useEffect(() => {
     if (!isSending) {
       return;
     }
     const hasPending = punches.some(
       p =>
-        p.TypeName === 'SIRAP' &&
+        isTcpStyleOutput(p.TypeName) &&
         p.Status === 'Sent' &&
-        sirapSentTimestamps.current[p.Id] !== undefined &&
-        Date.now() - sirapSentTimestamps.current[p.Id] < 2000,
+        settleTimestamps.current[p.Id] !== undefined &&
+        Date.now() - settleTimestamps.current[p.Id] < 2000,
     );
     if (!hasPending) {
       return;
@@ -379,7 +410,6 @@ export default function SendPunches() {
             {punches.map((punch, idx) => (
               <DataTable.Row key={punch.Id} style={styles.row}>
                 <DataTable.Cell
-                  textStyle={{fontSize: 16}}
                   style={[
                     styles.symbolCol,
                     styles.centered,
@@ -387,7 +417,11 @@ export default function SendPunches() {
                       ? styles.punchBackgroundColor
                       : styles.testPunchBackgroundColor,
                   ]}>
-                  {getTypeSymbol(punch.TypeName)}
+                  <Icon
+                    source={getTypeIcon(punch.TypeName)}
+                    size={18}
+                    color={getTypeColor(punch.TypeName)}
+                  />
                 </DataTable.Cell>
                 <DataTable.Cell
                   textStyle={{fontSize: 20}}
@@ -428,7 +462,7 @@ export default function SendPunches() {
                     {width: 45},
                     punch.Type === 'Punch'
                       ? [styles.punchBackgroundColor, styles.centered]
-                      : isSettledSirap(punch)
+                      : isSettled(punch)
                         ? punch.NoOfSendTries > 1 || punch.Status === 'Failed'
                           ? styles.failure
                           : styles.success
@@ -467,7 +501,7 @@ export default function SendPunches() {
                   p =>
                     p.Type === 'TestPunch' &&
                     (p.Status === 'Acked' ||
-                      (p.TypeName === 'SIRAP' && p.Status === 'Sent')),
+                      (isTcpStyleOutput(p.TypeName) && p.Status === 'Sent')),
                 ).length /
                   punches
                     .filter(punch => {
@@ -485,7 +519,7 @@ export default function SendPunches() {
                   p =>
                     p.Type === 'TestPunch' &&
                     (p.Status === 'Acked' ||
-                      (p.TypeName === 'SIRAP' && p.Status === 'Sent')),
+                      (isTcpStyleOutput(p.TypeName) && p.Status === 'Sent')),
                 ).length /
                   punches.filter(punch => {
                     return punch.Type === 'TestPunch';

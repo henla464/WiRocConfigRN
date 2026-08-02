@@ -367,77 +367,78 @@ class DemoDevice {
     this.sendPunchesTimeouts.forEach(clearTimeout);
     this.sendPunchesTimeouts = [];
 
+    const outputTypes = ['LORA', 'SIRAP', 'ROC', 'SRR'];
+
     const send = () => {
+      const baseId = this.testPunchId++;
+
       this.onTestPunchesSentSubscribers.forEach(callback => {
-        // TODO: Make data below correct/more realistic
-        const punch = {
-          Id: this.testPunchId,
-          MsgId: this.testPunchId++,
-          Status: 'Not Added',
-          SINo: parseInt(options.siCardNo, 10),
-          NoOfSendTries: 0,
-          Type: 'TestPunch',
-          RSSI: 0,
-          Time: new Date().toISOString(),
-          TypeName: 'LORA',
-        };
+        outputTypes.forEach((typeName, typeIndex) => {
+          const punchId = `${baseId}_${typeIndex}`;
+          const punch: TestPunch = {
+            Id: punchId,
+            MsgId: baseId,
+            Status: 'Not added',
+            SINo: parseInt(options.siCardNo, 10),
+            NoOfSendTries: 0,
+            Type: 'TestPunch',
+            RSSI: typeName === 'LORA' || typeName === 'SRR' ? Math.floor(Math.random() * 40) - 120 : 0,
+            SNR: typeName === 'LORA' || typeName === 'SRR' ? Math.floor(Math.random() * 10) : 0,
+            Time: new Date().toISOString(),
+            TypeName: typeName,
+            TestPunchId: baseId,
+            MaxTries: 3,
+          };
 
-        sentPunches = produce(sentPunches, draft => {
-          draft.push(punch);
+          sentPunches = produce(sentPunches, draft => {
+            draft.push(punch);
+          });
+
+          // Stagger timing per output type
+          const baseDelay = typeIndex * 200;
+
+          this.sendPunchesTimeouts.push(
+            setTimeout(() => {
+              sentPunches = produce(sentPunches, draft => {
+                const index = draft.findIndex(p => p.Id === punchId);
+                if (index >= 0) {
+                  draft[index].NoOfSendTries = 1;
+                  // ROC/SIRAP skip Added, go straight to Sent
+                  if (typeName === 'SIRAP' || typeName === 'ROC') {
+                    draft[index].Status = 'Sent';
+                  } else {
+                    draft[index].Status = 'Added';
+                  }
+                }
+              });
+              if (this.isWatchingTestPunches) {
+                callback(sentPunches);
+              }
+            }, 1000 + baseDelay),
+          );
+
+          if (typeName === 'LORA' || typeName === 'SRR') {
+            // Radio types: go through Added -> Acked
+            this.sendPunchesTimeouts.push(
+              setTimeout(() => {
+                sentPunches = produce(sentPunches, draft => {
+                  const index = draft.findIndex(p => p.Id === punchId);
+                  if (index >= 0) {
+                    draft[index].NoOfSendTries = typeName === 'SRR' ? 2 : 1;
+                    draft[index].Status = 'Acked';
+                  }
+                });
+                if (this.isWatchingTestPunches) {
+                  callback(sentPunches);
+                }
+              }, 2500 + baseDelay),
+            );
+          }
+
+          if (this.isWatchingTestPunches) {
+            callback(sentPunches);
+          }
         });
-
-        this.sendPunchesTimeouts.push(
-          setTimeout(() => {
-            sentPunches = produce(sentPunches, draft => {
-              const index = draft.findIndex(p => p.Id === punch.Id);
-              draft[index].Status = 'Added';
-            });
-            if (this.isWatchingTestPunches) {
-              callback(sentPunches);
-            }
-          }, 1000),
-        );
-
-        this.sendPunchesTimeouts.push(
-          setTimeout(() => {
-            sentPunches = produce(sentPunches, draft => {
-              const index = draft.findIndex(p => p.Id === punch.Id);
-              draft[index].Status = 'Sent';
-              draft[index].NoOfSendTries = 1;
-            });
-            if (this.isWatchingTestPunches) {
-              callback(sentPunches);
-            }
-          }, 2000),
-        );
-
-        this.sendPunchesTimeouts.push(
-          setTimeout(() => {
-            sentPunches = produce(sentPunches, draft => {
-              const index = draft.findIndex(p => p.Id === punch.Id);
-              draft[index].NoOfSendTries = 2;
-            });
-            if (this.isWatchingTestPunches) {
-              callback(sentPunches);
-            }
-          }, 3000),
-        );
-
-        this.sendPunchesTimeouts.push(
-          setTimeout(() => {
-            sentPunches = produce(sentPunches, draft => {
-              const index = draft.findIndex(p => p.Id === punch.Id);
-              draft[index].Status = 'Acked';
-            });
-            if (this.isWatchingTestPunches) {
-              callback(sentPunches);
-            }
-          }, 4000),
-        );
-
-        if (this.isWatchingTestPunches) {
-          callback(sentPunches);
-        }
       });
 
       punchesLeft--;

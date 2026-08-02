@@ -1,10 +1,9 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {useTranslation} from 'react-i18next';
 import {Divider, Icon, List, Switch, Text} from 'react-native-paper';
 
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
-import useInterval from '@lib/hooks/useInterval';
 import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
 
 import {SectionComponentProps} from '../';
@@ -57,7 +56,7 @@ export default function ROC({
     defaultValue: false,
   });
 
-  const {data: wiRocDateTime} = useWiRocPropertyQuery(deviceId, 'rtc/datetime', {
+  const {data: wiRocDateTime, refetch: refetchDateTime} = useWiRocPropertyQuery(deviceId, 'rtc/datetime', {
     enabled: isROCEnabled,
   });
 
@@ -67,7 +66,15 @@ export default function ROC({
     number | null
   >(null);
 
-  useInterval(() => {
+  // Refetch device time every time ROC is toggled on (staleTime is Infinity by default)
+  useEffect(() => {
+    if (isROCEnabled) {
+      refetchDateTime();
+    }
+  }, [isROCEnabled, refetchDateTime]);
+
+  // Compute time offset once when device time is fetched (on ROC enable or first load)
+  useEffect(() => {
     if (!isROCEnabled || !wiRocDateTime) {
       setTimeOffsetMinutes(null);
       return;
@@ -80,7 +87,7 @@ export default function ROC({
     const phoneTime = new Date();
     const diffMs = Math.abs(phoneTime.getTime() - deviceTime.getTime());
     setTimeOffsetMinutes(Math.round(diffMs / 60000));
-  }, 5000);
+  }, [isROCEnabled, wiRocDateTime]);
 
   const showTimeWarning = isROCEnabled && timeOffsetMinutes !== null && timeOffsetMinutes > 5;
 

@@ -390,7 +390,7 @@ export const demoData: Readonly<Partial<Record<GettablePropName, string>>> = {
   'network/ip': '192.168.1.115',
   'rtc/wakeupenabled': '0',
   'device/version/wirocbleapi': '0.14',
-  'device/version/wirochw': 'v7Rev1',
+  'device/version/wirochw': 'v8Rev2',
   'device/version/wirocpython': '0.210',
   'rtc/datetime': '2024-01-01 10:10:00',
   'rtc/wakeup': '10:15',
