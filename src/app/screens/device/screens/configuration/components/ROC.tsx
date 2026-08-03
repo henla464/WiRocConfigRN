@@ -10,7 +10,7 @@ import {SectionComponentProps} from '../';
 import OnOffChip from './OnOffChip';
 import WarningIcon from './WarningIcon';
 
-function parseWiRocDateTime(dateTimeStr: string): Date | null {
+export function parseWiRocDateTime(dateTimeStr: string): Date | null {
   if (!dateTimeStr) {
     return null;
   }
@@ -58,6 +58,7 @@ export default function ROC({
 
   const {data: wiRocDateTime, refetch: refetchDateTime} = useWiRocPropertyQuery(deviceId, 'rtc/datetime', {
     enabled: isROCEnabled,
+    staleTime: 0,
   });
 
   const showRTCWarning = isROCEnabled && !hasRTC;
@@ -66,7 +67,7 @@ export default function ROC({
     number | null
   >(null);
 
-  // Refetch device time every time ROC is toggled on (staleTime is Infinity by default)
+  // Refetch device time every time ROC is toggled on
   useEffect(() => {
     if (isROCEnabled) {
       refetchDateTime();

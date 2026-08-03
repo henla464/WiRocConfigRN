@@ -1,5 +1,6 @@
 import {useQueryClient} from '@tanstack/react-query';
-import React, {useEffect, useState} from 'react';
+import {useFocusEffect} from '@react-navigation/native';
+import React, {useCallback, useEffect, useState} from 'react';
 import {Controller, useForm} from 'react-hook-form';
 import {StyleSheet, View} from 'react-native';
 import {ScrollView} from 'react-native-gesture-handler';
@@ -17,7 +18,6 @@ import {useTranslation} from 'react-i18next';
 import {SettableValues} from '@api/transformers';
 import SaveBanner from '@lib/components/SaveBanner';
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
-import useInterval from '@lib/hooks/useInterval';
 import {
   useWiRocPropertyMutation,
   useWiRocPropertyQuery,
@@ -38,7 +38,9 @@ export default function WakeUp() {
 
   const [phoneDateTime, setPhoneDateTime] = useState<string>('');
 
-  const {data: wiRocDateTime} = useWiRocPropertyQuery(deviceId, 'rtc/datetime');
+  const {data: wiRocDateTime, refetch: refetchDateTime} = useWiRocPropertyQuery(deviceId, 'rtc/datetime', {
+    staleTime: 0,
+  });
   const {data: origWiRocWakeUpTime} = useWiRocPropertyQuery(
     deviceId,
     'rtc/wakeup',
@@ -78,12 +80,18 @@ export default function WakeUp() {
     });
   }, [form, origWiRocWakeUpTime, origWiRocWakeUpToBeEnabledAtShutdown]);
 
-  useInterval(() => {
-    let dateTimeString = new Date().toLocaleString('sv-SE');
-    //dateTimeString = dateTimeString.replaceAll('T', ' ');
-    //dateTimeString = dateTimeString.substring(0, 19);
-    setPhoneDateTime(dateTimeString);
-  }, 1000);
+  // Update phone and device time every 5 seconds while tab is visible
+  useFocusEffect(
+    useCallback(() => {
+      const tick = () => {
+        const phoneTimeAtRequest = new Date().toLocaleString('sv-SE');
+        refetchDateTime().then(() => setPhoneDateTime(phoneTimeAtRequest));
+      };
+      tick(); // immediate first update
+      const interval = setInterval(tick, 5000);
+      return () => clearInterval(interval);
+    }, [refetchDateTime]),
+  );
 
   const SaveWakeUp = (data: Partial<SettableValues>) => {
     if (data['rtc/wakeupenabled'] && data['rtc/wakeup']) {

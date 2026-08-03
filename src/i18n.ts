@@ -313,6 +313,8 @@ export const resources = {
         'ROC is enabled but the device does not have an RTC chip. Without RTC, the device cannot keep accurate date/time across reboots, which makes ROC unreliable. It is not recommended to use ROC on this device.',
       warn_roc_time_offset:
         'The device time is off by {{minutes}} minutes compared to the phone. ROC requires accurate time to work reliably. Set the device time from the Date & Time page.',
+      warn_device_time_out_of_sync:
+        'Device time out of sync',
     },
   },
   sv: {
@@ -618,6 +620,8 @@ export const resources = {
         'ROC är aktiverat men enheten saknar RTC-chip. Utan RTC kan enheten inte hålla korrekt datum/tid efter omstart, vilket gör ROC otillförlitligt. Det rekommenderas inte att använda ROC på denna enhet.',
       warn_roc_time_offset:
         'Enhetens tid skiljer {{minutes}} minuter jämfört med telefonens. ROC kräver korrekt tid för att fungera tillförlitligt. Ställ in enhetens tid från sidan Tid/Väckning.',
+      warn_device_time_out_of_sync:
+        'Enhetstiden är osynkroniserad',
     },
   },
 } as const;

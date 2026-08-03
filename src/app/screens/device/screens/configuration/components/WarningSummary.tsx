@@ -7,6 +7,7 @@ import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
 import {BluetoothDevice} from '@api/index';
 
 import WarningIcon from './WarningIcon';
+import {parseWiRocDateTime} from './ROC';
 
 interface WarningSummaryProps {
   deviceId: string;
@@ -35,6 +36,10 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
   );
   const {data: listenOnly} = useWiRocPropertyQuery(deviceId, 'lora/listenonly');
   const {data: rfcommDevices} = useWiRocPropertyQuery(deviceId, 'bluetooth/rfcomm');
+  const {data: rocEnabled} = useWiRocPropertyQuery(deviceId, 'roc/enabled');
+  const {data: wiRocDateTime} = useWiRocPropertyQuery(deviceId, 'rtc/datetime', {
+    staleTime: 0,
+  });
   const defaultCodeRate = 1;
 
   const warnings: string[] = [];
@@ -79,6 +84,16 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
     warnings.push(
       t('warn_rtc_wakeup') + (wakeUpTime !== undefined ? ' ' + wakeUpTime : ''),
     );
+  }
+  if (rocEnabled && wiRocDateTime) {
+    const deviceTime = parseWiRocDateTime(wiRocDateTime);
+    if (deviceTime) {
+      const diffMs = Math.abs(Date.now() - deviceTime.getTime());
+      const offsetMinutes = Math.round(diffMs / 60000);
+      if (offsetMinutes > 5) {
+        warnings.push(t('warn_device_time_out_of_sync'));
+      }
+    }
   }
 
   if (warnings.length === 0) {

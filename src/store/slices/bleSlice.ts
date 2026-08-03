@@ -157,6 +157,11 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
         await wiRocBleManager.connectToDevice(deviceId);
         log.info('Successfully connected to', deviceId);
         setWiRocConnection(deviceId, state => (state.status = 'connected'));
+        // Refetch all cached queries for this device so stale values
+        // (e.g. rtc/datetime with staleTime: Infinity) are refreshed
+        queryClient.invalidateQueries({
+          queryKey: ['wiRocDevice', deviceId],
+        });
         log.debug('Connected to', deviceId);
       } catch (err) {
         log.error('Error while connecting', err);
