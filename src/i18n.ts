@@ -301,6 +301,12 @@ export const resources = {
       'Väntar på inloggning...': 'Waiting for login...',
       tailscale_approve_routes_note:
         'Go to the Tailscale admin console (login.tailscale.com) and approve the advertised routes so other devices on your tailnet can reach them.',
+      'Begränsa åtkomst': 'Restrict access',
+      'Tillåtna IP-adresser': 'Allowed IP addresses',
+      Port: 'Port',
+      Protokoll: 'Protocol',
+      Alla: 'All',
+      'Lägg till': 'Add',
       ROC: 'ROC',
       'Skicka stämplingar till ROC-server': 'Send punches to ROC server',
       warn_roc_no_rtc:
@@ -599,6 +605,12 @@ export const resources = {
       'Väntar på inloggning...': 'Väntar på inloggning...',
       tailscale_approve_routes_note:
         'Gå till Tailscale admin-konsol (login.tailscale.com) och godkänn de annonserade rutterna så att andra enheter i din tailnet kan nå dem.',
+      'Begränsa åtkomst': 'Begränsa åtkomst',
+      'Tillåtna IP-adresser': 'Tillåtna IP-adresser',
+      Port: 'Port',
+      Protokoll: 'Protokoll',
+      Alla: 'Alla',
+      'Lägg till': 'Lägg till',
       ROC: 'ROC',
       'Skicka stämplingar till ROC-server':
         'Skicka stämplingar till ROC-server',

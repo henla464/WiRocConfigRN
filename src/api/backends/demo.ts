@@ -285,39 +285,39 @@ class DemoDevice {
       return loginUrl;
     }
 
-    if (propertyName === 'wifimesh/enabled') {
-      this.demoData['wifimesh/enabled'] = values[0];
+    if (propertyName === 'network/wifimesh/enabled') {
+      this.demoData['network/wifimesh/enabled'] = values[0];
       if (values[0] === '1') {
-        const nodeNumber = this.demoData['wifimesh/nodenumber'] || '1';
-        this.demoData['wifimesh/ipaddress'] = `192.168.25.${nodeNumber}`;
-        this.demoData['wifimesh/interfacecreated'] = '1';
-        this.demoData['wifimesh/mac'] = '02:00:00:00:00:01';
+        const nodeNumber = this.demoData['network/wifimesh/nodenumber'] || '1';
+        this.demoData['network/wifimesh/ipaddress'] = `192.168.25.${nodeNumber}`;
+        this.demoData['network/wifimesh/interfacecreated'] = '1';
+        this.demoData['network/wifimesh/mac'] = '02:00:00:00:00:01';
       } else {
-        this.demoData['wifimesh/ipaddress'] = '';
-        this.demoData['wifimesh/interfacecreated'] = '0';
-        this.demoData['wifimesh/mac'] = '';
+        this.demoData['network/wifimesh/ipaddress'] = '';
+        this.demoData['network/wifimesh/interfacecreated'] = '0';
+        this.demoData['network/wifimesh/mac'] = '';
       }
       this.onPropertiesChangesSubscribers.forEach(callback => {
         callback({
-          'wifimesh/enabled': values[0],
-          'wifimesh/ipaddress': this.demoData['wifimesh/ipaddress'],
-          'wifimesh/interfacecreated': this.demoData['wifimesh/interfacecreated'],
-          'wifimesh/mac': this.demoData['wifimesh/mac'],
+          'network/wifimesh/enabled': values[0],
+          'network/wifimesh/ipaddress': this.demoData['network/wifimesh/ipaddress'],
+          'network/wifimesh/interfacecreated': this.demoData['network/wifimesh/interfacecreated'],
+          'network/wifimesh/mac': this.demoData['network/wifimesh/mac'],
         });
       });
       return values[0];
     }
 
-    if (propertyName === 'wifimesh/nodenumber') {
-      this.demoData['wifimesh/nodenumber'] = values[0];
+    if (propertyName === 'network/wifimesh/nodenumber') {
+      this.demoData['network/wifimesh/nodenumber'] = values[0];
       // Update mesh IP when node number changes and mesh is enabled
-      if (this.demoData['wifimesh/enabled'] === '1') {
-        this.demoData['wifimesh/ipaddress'] = `192.168.25.${values[0]}`;
+      if (this.demoData['network/wifimesh/enabled'] === '1') {
+        this.demoData['network/wifimesh/ipaddress'] = `192.168.25.${values[0]}`;
       }
       this.onPropertiesChangesSubscribers.forEach(callback => {
         callback({
-          'wifimesh/nodenumber': values[0],
-          'wifimesh/ipaddress': this.demoData['wifimesh/ipaddress'],
+          'network/wifimesh/nodenumber': values[0],
+          'network/wifimesh/ipaddress': this.demoData['network/wifimesh/ipaddress'],
         });
       });
       return values[0];

@@ -66,6 +66,12 @@ export interface Setting {
   Value: string;
 }
 
+export interface AllowedIP {
+  ip: string;
+  port: number | '*';
+  protocol: 'tcp' | 'udp' | '*';
+}
+
 export interface MPaths {
   mpaths: MPath[];
 }

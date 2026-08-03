@@ -3,6 +3,7 @@ import orderBy from 'lodash/orderBy';
 import uniqBy from 'lodash/uniqBy';
 
 import {
+  AllowedIP,
   BluetoothDevice,
   LoraMode,
   LoraRange,
@@ -106,15 +107,17 @@ export const getters = {
   'ham/enabled': booleanGetter(26),
   'ham/callsign': stringGetter(),
 
-  'wifimesh/enabled': booleanGetter(),
-  'wifimesh/gateway/enabled': booleanGetter(),
-  'wifimesh/nodenumber': numberGetter(),
-  'wifimesh/ipnetworknumber': numberGetter(),
-  'wifimesh/ipaddress': stringGetter(),
-  'wifimesh/interfacecreated': booleanGetter(),
-  'wifimesh/mac': stringGetter(),
-  'wifimesh/routetointerface': stringGetter(),
-  'wifimesh/mpath': jsonGetter<MPaths>(),
+  'network/wifimesh/enabled': booleanGetter(),
+  'network/wifimesh/gateway/enabled': booleanGetter(),
+  'network/wifimesh/nodenumber': numberGetter(),
+  'network/wifimesh/ipnetworknumber': numberGetter(),
+  'network/wifimesh/ipaddress': stringGetter(),
+  'network/wifimesh/interfacecreated': booleanGetter(),
+  'network/wifimesh/mac': stringGetter(),
+  'network/wifimesh/routetointerface': stringGetter(),
+  'network/wifimesh/mpath': jsonGetter<MPaths>(),
+  'network/wifimesh/restrictenabled': booleanGetter(),
+  'network/wifimesh/allowedips': allowedIPsGetter(),
 
   'network/tailscale/enabled': booleanGetter(),
   'network/tailscale/login': stringGetter(),
@@ -183,10 +186,13 @@ export const setters = {
   'ham/enabled': booleanSetter(),
   'ham/callsign': stringSetter(),
 
-  'wifimesh/enabled': booleanSetter(),
-  'wifimesh/gateway/enabled': booleanSetter(),
-  'wifimesh/nodenumber': numberSetter(),
-  'wifimesh/routetointerface': stringSetter(),
+  'network/wifimesh/enabled': booleanSetter(),
+  'network/wifimesh/gateway/enabled': booleanSetter(),
+  'network/wifimesh/nodenumber': numberSetter(),
+  'network/wifimesh/routetointerface': stringSetter(),
+
+  'network/wifimesh/restrictenabled': booleanSetter(),
+  'network/wifimesh/allowedips': allowedIPsSetter(),
 
   'network/tailscale/enabled': booleanSetter(),
   'network/tailscale/login': tailscaleLoginSetter(),
@@ -373,5 +379,31 @@ function renewIpSetter(): Setter<string, void> {
       }
       return;
     },
+  };
+}
+
+function allowedIPsGetter(): Getter<AllowedIP[]> {
+  return {
+    deserialize: (value: string) => {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return [];
+      }
+    },
+  };
+}
+
+function allowedIPsSetter(): Setter<AllowedIP[], AllowedIP[]> {
+  return {
+    serialize: value => JSON.stringify(value),
+    deserializeResponse: (value: string) => {
+      try {
+        return JSON.parse(value);
+      } catch {
+        return [];
+      }
+    },
+    responseTarget: 'network/wifimesh/allowedips',
   };
 }

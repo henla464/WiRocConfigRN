@@ -1,9 +1,10 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {ScrollView, StyleSheet, View} from 'react-native';
-import {Switch, List, Text, Button, DataTable, Surface} from 'react-native-paper';
+import {Switch, List, Text, Button, DataTable, Surface, TextInput, IconButton} from 'react-native-paper';
 import {useTranslation} from 'react-i18next';
 
+import {AllowedIP} from '@api/index';
 import {SettablePropName, SettableValues} from '@api/transformers';
 import SaveBanner from '@lib/components/SaveBanner';
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
@@ -43,7 +44,7 @@ export default function WifiMesh() {
     },
   ] = useConfigurationProperty(
     deviceId,
-    'wifimesh/enabled',
+    'network/wifimesh/enabled',
     onDefaultValuesChange,
     {
       control: form.control,
@@ -56,7 +57,7 @@ export default function WifiMesh() {
     },
   ] = useConfigurationProperty(
     deviceId,
-    'wifimesh/gateway/enabled',
+    'network/wifimesh/gateway/enabled',
     onDefaultValuesChange,
     {
       control: form.control,
@@ -69,7 +70,7 @@ export default function WifiMesh() {
     },
   ] = useConfigurationProperty(
     deviceId,
-    'wifimesh/nodenumber',
+    'network/wifimesh/nodenumber',
     onDefaultValuesChange,
     {
       control: form.control,
@@ -113,7 +114,7 @@ export default function WifiMesh() {
     },
   ] = useConfigurationProperty(
     deviceId,
-    'wifimesh/routetointerface',
+    'network/wifimesh/routetointerface',
     onDefaultValuesChange,
     {
       control: form.control,
@@ -132,18 +133,74 @@ export default function WifiMesh() {
   const {
     data: meshInterfaceCreated,
     refetch: fetchOrRefreshMeshInterfaceCreated,
-  } = useWiRocPropertyQuery(deviceId, 'wifimesh/interfacecreated');
+  } = useWiRocPropertyQuery(deviceId, 'network/wifimesh/interfacecreated');
 
   const {data: meshIPAddress, refetch: fetchOrRefreshIPAddress} =
-    useWiRocPropertyQuery(deviceId, 'wifimesh/ipaddress');
+    useWiRocPropertyQuery(deviceId, 'network/wifimesh/ipaddress');
 
   const {data: meshMACAddress, refetch: fetchOrRefreshMAC} =
-    useWiRocPropertyQuery(deviceId, 'wifimesh/mac');
+    useWiRocPropertyQuery(deviceId, 'network/wifimesh/mac');
 
   const {data: {mpaths} = {mpaths: []}, refetch: fetchOrRefresh} =
-    useWiRocPropertyQuery(deviceId, 'wifimesh/mpath', {
+    useWiRocPropertyQuery(deviceId, 'network/wifimesh/mpath', {
       enabled: false,
     });
+
+  const [
+    {
+      field: {value: isRestrictEnabled, onChange: setRestrictEnabled},
+    },
+  ] = useConfigurationProperty(
+    deviceId,
+    'network/wifimesh/restrictenabled',
+    onDefaultValuesChange,
+    {
+      control: form.control,
+    },
+  );
+
+  const [
+    {
+      field: {value: allowedIPs = [], onChange: setAllowedIPs},
+    },
+  ] = useConfigurationProperty(
+    deviceId,
+    'network/wifimesh/allowedips',
+    onDefaultValuesChange,
+    {
+      control: form.control,
+    },
+  );
+
+  const [newAllowedIP, setNewAllowedIP] = useState('');
+  const [newAllowedPort, setNewAllowedPort] = useState('');
+  const [newAllowedProtocol, setNewAllowedProtocol] = useState<'tcp' | 'udp' | '*'>('tcp');
+
+  const handleAddAllowedIP = () => {
+    if (!newAllowedIP.trim()) return;
+    const portStr = newAllowedPort.trim();
+    let port: number | '*';
+    if (portStr === '*' || portStr === '') {
+      port = '*';
+    } else {
+      port = parseInt(portStr, 10);
+      if (isNaN(port)) port = '*';
+    }
+    const newEntry: AllowedIP = {ip: newAllowedIP.trim(), port, protocol: newAllowedProtocol};
+    setAllowedIPs([...(allowedIPs || []), newEntry]);
+    setNewAllowedIP('');
+    setNewAllowedPort('');
+  };
+
+  const handleRemoveAllowedIP = (index: number) => {
+    setAllowedIPs((allowedIPs || []).filter((_, i) => i !== index));
+  };
+
+  const protocolOptions = [
+    {value: 'tcp' as const, label: 'TCP'},
+    {value: 'udp' as const, label: 'UDP'},
+    {value: '*' as const, label: t('Alla')},
+  ];
 
   const [mTop, setMTop] = useState(0);
   const {reset, formState, handleSubmit} = form;
@@ -297,6 +354,110 @@ export default function WifiMesh() {
             />
           )}
         </ListItemMenu>
+        <List.Item
+          title={t('Begränsa åtkomst')}
+          description={isRestrictEnabled ? t('På') : t('Av')}
+          disabled={
+            typeof isWifiMeshEnabled !== 'boolean' || !isWifiMeshEnabled || !isGatewayEnabled
+          }
+          style={{
+            opacity:
+              typeof isWifiMeshEnabled !== 'boolean' || !isWifiMeshEnabled || !isGatewayEnabled
+                ? 0.5
+                : undefined,
+          }}
+          left={props => <List.Icon {...props} icon="shield-lock" />}
+          right={props => (
+            <Switch
+              {...props}
+              value={isRestrictEnabled}
+              disabled={
+                typeof isWifiMeshEnabled !== 'boolean' || !isWifiMeshEnabled || !isGatewayEnabled
+              }
+              onValueChange={() => {
+                setRestrictEnabled(!isRestrictEnabled);
+              }}
+            />
+          )}
+        />
+        {isRestrictEnabled && isWifiMeshEnabled && isGatewayEnabled && (
+          <View style={styles.allowedIPsContainer}>
+            <Text variant="titleSmall" style={{marginBottom: 8}}>
+              {t('Tillåtna IP-adresser')}
+            </Text>
+
+            <View style={styles.allowedIPRow}>
+              <TextInput
+                mode="outlined"
+                label={t('IP-adress')}
+                value={newAllowedIP}
+                onChangeText={setNewAllowedIP}
+                style={{flex: 1}}
+                keyboardType="numeric"
+                autoCapitalize="none"
+              />
+            </View>
+            <View style={[styles.allowedIPRow, {marginTop: 4}]}>
+              <TextInput
+                mode="outlined"
+                label={t('Port') + ' (* = ' + t('Alla') + ')'}
+                value={newAllowedPort}
+                onChangeText={setNewAllowedPort}
+                style={{flex: 1}}
+                keyboardType="default"
+              />
+              <View style={{flex: 1, gap: 4}}>
+                <Text variant="bodySmall" style={{color: '#757575'}}>{t('Protokoll')}</Text>
+                <View style={{flexDirection: 'row', gap: 4}}>
+                  {protocolOptions.map(item => (
+                    <Button
+                      key={item.value}
+                      mode={newAllowedProtocol === item.value ? 'contained' : 'outlined'}
+                      compact
+                      style={{flex: 1}}
+                      onPress={() => setNewAllowedProtocol(item.value)}>
+                      {item.label}
+                    </Button>
+                  ))}
+                </View>
+              </View>
+            </View>
+
+            <Button
+              mode="contained"
+              icon="plus"
+              onPress={handleAddAllowedIP}
+              disabled={!newAllowedIP.trim()}
+              style={{marginTop: 8}}>
+              {t('Lägg till')}
+            </Button>
+
+            {(allowedIPs || []).length > 0 && (
+              <DataTable style={{marginTop: 12}}>
+                <DataTable.Header>
+                  <DataTable.Title style={{flex: 3}}>{t('IP-adress')}</DataTable.Title>
+                  <DataTable.Title style={{flex: 1.5}}>{t('Port')}</DataTable.Title>
+                  <DataTable.Title style={{flex: 1.2}}>{t('Protokoll')}</DataTable.Title>
+                  <DataTable.Title style={{flex: 0.3}}>{' '}</DataTable.Title>
+                </DataTable.Header>
+                {(allowedIPs || []).map((entry, index) => (
+                  <DataTable.Row key={index}>
+                    <DataTable.Cell style={{flex: 3}}>{entry.ip}</DataTable.Cell>
+                    <DataTable.Cell style={{flex: 1.5}}>{entry.port === '*' ? '*' : entry.port || t('Alla')}</DataTable.Cell>
+                    <DataTable.Cell style={{flex: 1.2}}>{entry.protocol}</DataTable.Cell>
+                    <DataTable.Cell style={{flex: 0.3}}>
+                      <IconButton
+                        icon="delete"
+                        size={18}
+                        onPress={() => handleRemoveAllowedIP(index)}
+                      />
+                    </DataTable.Cell>
+                  </DataTable.Row>
+                ))}
+              </DataTable>
+            )}
+          </View>
+        )}
         <Button
           mode="contained"
           style={styles.button}
@@ -488,5 +649,16 @@ const styles = StyleSheet.create({
     padding: 0,
     marginBottom: 16,
     backgroundColor: '#E3F2FD',
+  },
+  allowedIPsContainer: {
+    paddingLeft: 16,
+    paddingRight: 16,
+    paddingTop: 8,
+    paddingBottom: 8,
+  },
+  allowedIPRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
 });

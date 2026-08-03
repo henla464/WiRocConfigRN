@@ -22,7 +22,7 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
   const {data: rs232Mode} = useWiRocPropertyQuery(deviceId, 'sportident/rs232/mode');
   const {data: wifiMeshEnabled} = useWiRocPropertyQuery(
     deviceId,
-    'wifimesh/enabled',
+    'network/wifimesh/enabled',
   );
   const {data: wakeUpEnabled} = useWiRocPropertyQuery(
     deviceId,

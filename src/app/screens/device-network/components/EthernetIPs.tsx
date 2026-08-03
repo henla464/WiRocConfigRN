@@ -46,7 +46,7 @@ export default function EthernetIPs({deviceId}: EthernetIPsProps) {
 
   const {data: wifiMeshIp} = useWiRocPropertyQuery(
     deviceId,
-    'wifimesh/ipaddress',
+    'network/wifimesh/ipaddress',
   );
 
   const {data: tailscaleStatus, refetch: refetchTailscaleStatus} =
