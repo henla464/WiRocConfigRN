@@ -37,8 +37,12 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
   const {data: listenOnly} = useWiRocPropertyQuery(deviceId, 'lora/listenonly');
   const {data: rfcommDevices} = useWiRocPropertyQuery(deviceId, 'bluetooth/rfcomm');
   const {data: rocEnabled} = useWiRocPropertyQuery(deviceId, 'roc/enabled');
-  const {data: wiRocDateTime} = useWiRocPropertyQuery(deviceId, 'rtc/datetime', {
+  const {
+    data: wiRocDateTime,
+    dataUpdatedAt: dateTimeFetchedAt,
+  } = useWiRocPropertyQuery(deviceId, 'rtc/datetime', {
     staleTime: 0,
+    enabled: rocEnabled,
   });
   const defaultCodeRate = 1;
 
@@ -85,10 +89,10 @@ export default function WarningSummary({deviceId}: WarningSummaryProps) {
       t('warn_rtc_wakeup') + (wakeUpTime !== undefined ? ' ' + wakeUpTime : ''),
     );
   }
-  if (rocEnabled && wiRocDateTime) {
+  if (rocEnabled && wiRocDateTime && dateTimeFetchedAt) {
     const deviceTime = parseWiRocDateTime(wiRocDateTime);
     if (deviceTime) {
-      const diffMs = Math.abs(Date.now() - deviceTime.getTime());
+      const diffMs = Math.abs(dateTimeFetchedAt - deviceTime.getTime());
       const offsetMinutes = Math.round(diffMs / 60000);
       if (offsetMinutes > 5) {
         warnings.push(t('warn_device_time_out_of_sync'));
