@@ -5,11 +5,14 @@ import {useTranslation} from 'react-i18next';
 
 import {Notifications} from '@lib/components/Notifications';
 import {Toasts} from '@lib/components/Toasts';
+import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
+import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
 
 import Database from './components/Database';
 import DeviceAccess from './components/DeviceAccess';
 import HAM from './components/HAM';
 import Settings from './components/Settings';
+import SRRTestMode from './components/SRRTestMode';
 import Status from './components/Status';
 import Update from './components/Update';
 import WakeUp from './components/WakeUp';
@@ -18,6 +21,14 @@ const Tab = createMaterialTopTabNavigator();
 
 export default function OtherScreen() {
   const {t} = useTranslation();
+  const deviceId = useActiveWiRocDevice();
+
+  const {data: srrTestMode} = useWiRocPropertyQuery(deviceId, 'srr/testmode', {
+    retry: false,
+    defaultValue: -1,
+  });
+
+  const hasSrrTestMode = (srrTestMode ?? -1) >= 0;
 
   return (
     <>
@@ -43,6 +54,9 @@ export default function OtherScreen() {
         <Tab.Screen name={t('Amatörradio')} component={HAM} />
         <Tab.Screen name={t('Monitor åtkomst')} component={DeviceAccess} />
         <Tab.Screen name={t('Uppdatera')} component={Update} />
+        {hasSrrTestMode && (
+          <Tab.Screen name={t('SRR-testläge')} component={SRRTestMode} />
+        )}
       </Tab.Navigator>
     </>
   );
