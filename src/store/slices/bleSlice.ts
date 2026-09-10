@@ -59,11 +59,26 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
       });
     },
     startBleScan: async () => {
+      if (get().isScanning) {
+        // Avoid starting a second scan while one is already in progress,
+        // which can cause "scan already in progress" errors on Android.
+        log.info('Scan already in progress, ignoring start request');
+        return;
+      }
+      // Set synchronously so a rapid second tap can't slip past the guard
+      // above while we wait on async permission/BLE-state checks below.
+      set(state => {
+        state.isScanning = true;
+      });
+
       log.info('Scanning...');
       log.info('Checking permissions...');
       const granted = await requestBlePermissions();
       if (!granted) {
         log.info('Permissions not granted');
+        set(state => {
+          state.isScanning = false;
+        });
         return;
       }
       log.info('Permissions granted');
@@ -71,10 +86,12 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
       const bleState = await bleManager.state();
       log.info('BLE state:', bleState);
       if (bleState !== 'PoweredOn') {
+        set(state => {
+          state.isScanning = false;
+        });
         get().addNotification({
           type: 'info',
-          message:
-            'Bluetooth måste vara aktiverat för att söka enheter',
+          message: 'Bluetooth måste vara aktiverat för att söka enheter',
         });
         if (Platform.OS === 'android') {
           try {
@@ -88,10 +105,6 @@ export const createBleSlice: ImmerStateCreator<BleSliceState> = (set, get) => {
         }
         return;
       }
-
-      set(state => {
-        state.isScanning = true;
-      });
 
       try {
         wiRocBleManager.startDeviceScan(async device => {

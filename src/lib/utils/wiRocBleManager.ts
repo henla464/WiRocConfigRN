@@ -56,8 +56,11 @@ type TestPunchSentCallback = (
   },
 ) => void;
 
-let scanOption: ScanOptions = {
-  scanMode: ScanMode.LowPower,
+// Use the highest duty cycle scan mode to find devices as reliably as
+// possible. Scanning is user-initiated and only runs while the app is in the
+// foreground, so the extra power usage during the short scan is negligible.
+const scanOption: ScanOptions = {
+  scanMode: ScanMode.LowLatency,
 };
 
 const createWiRocBleManager = () => {
@@ -75,18 +78,17 @@ const createWiRocBleManager = () => {
   const isDisconnecting: Record<string, boolean> = {};
 
   const startDeviceScan = (callback: (device: Device) => void) => {
-    bleManager.startDeviceScan(
-      [apiService],
-      scanOption,
-      async (error, device) => {
-        if (error) {
-          throw error;
-        }
-        if (device) {
-          callback(device);
-        }
-      },
-    );
+    bleManager.startDeviceScan([apiService], scanOption, (error, device) => {
+      if (error) {
+        // Log instead of throwing: this runs inside a native event callback,
+        // so throwing here would only produce an unhandled rejection.
+        log.error('Error while scanning for devices', error);
+        return;
+      }
+      if (device) {
+        callback(device);
+      }
+    });
   };
 
   const stopDeviceScan = () => {
@@ -230,7 +232,7 @@ const createWiRocBleManager = () => {
         await new Promise<void>(resolveScan => {
           bleManager.startDeviceScan(
             [apiService],
-            null,
+            scanOption,
             async (err, scannedDevice) => {
               if (err) {
                 log.error('Error while scanning for device', err);
