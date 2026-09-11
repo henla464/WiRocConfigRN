@@ -97,6 +97,9 @@ android/app/build.gradle
 app.json
 src/app/screens/about/index.tsx
 
+run: npx expo prebuild
+to update android/gradle.properities with the correct target and api versions
+
 Generate release
 NODE_ENV=production npx react-native build-android --mode=release
                     
