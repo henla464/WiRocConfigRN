@@ -1,12 +1,6 @@
 import React from 'react';
-import {
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  SafeAreaView,
-  View,
-  Text,
-} from 'react-native';
+import {ScrollView, StatusBar, StyleSheet, View, Text} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {Button, IconButton} from 'react-native-paper';
 import Swipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
@@ -59,7 +53,10 @@ export default function ScanForDevicesScreen() {
   notFound.sort(sortByName);
 
   return (
-    <SafeAreaView style={{flex: 1}}>
+    // Only the bottom inset is applied - the top one is handled by the drawer
+    // header. It keeps the last device card above the Android navigation bar:
+    // the app draws edge-to-edge, so nothing else reserves that space.
+    <SafeAreaView style={{flex: 1}} edges={['bottom']}>
       <StatusBar barStyle={'dark-content'} />
       <Notifications />
       <ScanButton />

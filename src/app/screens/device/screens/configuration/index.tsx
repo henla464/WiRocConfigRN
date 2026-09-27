@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {FormProvider, useForm} from 'react-hook-form';
 import {SafeAreaView, ScrollView, StyleSheet, View} from 'react-native';
 import {
@@ -9,6 +9,8 @@ import {
 } from 'react-native-paper';
 
 import {SettablePropName, SettableValues} from '@api/transformers';
+import {KeyboardAvoidingContainer} from '@lib/components/KeyboardAvoidingContainer';
+import {KeyboardAwareScrollView} from '@lib/components/KeyboardAwareScrollView';
 import {Notifications} from '@lib/components/Notifications';
 import SaveBanner from '@lib/components/SaveBanner';
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
@@ -52,7 +54,7 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
     mode: 'onChange',
   });
 
-  const [scrollViewRef, setScrollViewRef] = useState<ScrollView | null>(null);
+  const scrollViewRef = useRef<ScrollView | null>(null);
 
   const {reset, formState, handleSubmit} = form;
 
@@ -107,9 +109,9 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
   const {colors} = useTheme();
 
   return (
-    <View style={{flex: 1, backgroundColor: colors.background}}>
+    <KeyboardAvoidingContainer style={{backgroundColor: colors.background}}>
       <FormProvider {...form}>
-        <SafeAreaView>
+        <SafeAreaView style={{flex: 1}}>
           <Notifications />
           <SaveBanner
             visible={formState.isDirty}
@@ -120,7 +122,7 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
             onHideAnimationFinished={() => {
               requestAnimationFrame(() => {
                 setMTop(0);
-                scrollViewRef?.scrollTo({
+                scrollViewRef.current?.scrollTo({
                   x: 0,
                   y: currentScrollPosition - 133,
                   animated: false,
@@ -130,7 +132,7 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
             onShowAnimationFinished={() => {
               requestAnimationFrame(() => {
                 setMTop(133);
-                scrollViewRef?.scrollTo({
+                scrollViewRef.current?.scrollTo({
                   x: 0,
                   y: currentScrollPosition + 133,
                   animated: false,
@@ -138,10 +140,8 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
               });
             }}
           />
-          <ScrollView
-            ref={ref => {
-              setScrollViewRef(ref);
-            }}
+          <KeyboardAwareScrollView
+            ref={scrollViewRef}
             onScroll={e => {
               setCurrentScrollPosition(e.nativeEvent.contentOffset.y);
             }}
@@ -176,10 +176,10 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
               <ROC {...commonSectionProps} />
               <Divider bold={true} />
             </View>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </SafeAreaView>
       </FormProvider>
-    </View>
+    </KeyboardAvoidingContainer>
   );
 }
 

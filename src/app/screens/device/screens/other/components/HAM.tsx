@@ -5,6 +5,8 @@ import {Checkbox, TextInput} from 'react-native-paper';
 import {useTranslation} from 'react-i18next';
 
 import {SettablePropName, SettableValues} from '@api/transformers';
+import {KeyboardAvoidingContainer} from '@lib/components/KeyboardAvoidingContainer';
+import {KeyboardAwareScrollView} from '@lib/components/KeyboardAwareScrollView';
 import SaveBanner from '@lib/components/SaveBanner';
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
@@ -91,7 +93,7 @@ export default function HAM() {
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingContainer style={styles.container}>
       <SaveBanner
         visible={formState.isDirty}
         isSaveDisabled={!formState.isValid}
@@ -105,33 +107,37 @@ export default function HAM() {
           setTimeout(() => setMTop(133), 0);
         }}
       />
-      <View style={(styles.containerRow, {width: '100%', marginTop: mTop})}>
-        <View style={[styles.mainCheckBoxContainer]}>
-          <Checkbox.Item
-            status={isHamEnabled ? 'checked' : 'unchecked'}
-            label={t('Amatörradio')}
-            position="leading"
-            onPress={() => {
-              if (isHamEnabled && channel.startsWith('HAM')) {
-                setChannel('1');
-              }
-              setHamEnabled(!isHamEnabled);
-            }}
+      <KeyboardAwareScrollView
+        style={{flex: 1, marginTop: mTop}}
+        contentContainerStyle={styles.content}>
+        <View style={(styles.containerRow, {width: '100%'})}>
+          <View style={[styles.mainCheckBoxContainer]}>
+            <Checkbox.Item
+              status={isHamEnabled ? 'checked' : 'unchecked'}
+              label={t('Amatörradio')}
+              position="leading"
+              onPress={() => {
+                if (isHamEnabled && channel.startsWith('HAM')) {
+                  setChannel('1');
+                }
+                setHamEnabled(!isHamEnabled);
+              }}
+            />
+          </View>
+        </View>
+
+        <View>
+          <TextInput
+            disabled={!isHamEnabled}
+            value={hamCallSign}
+            onChangeText={setHamCallSign}
+            label={t('Anropssignal')}
+            maxLength={10}
+            style={{backgroundColor: 'rgb(255, 251, 255)'}}
           />
         </View>
-      </View>
-
-      <View>
-        <TextInput
-          disabled={!isHamEnabled}
-          value={hamCallSign}
-          onChangeText={setHamCallSign}
-          label={t('Anropssignal')}
-          maxLength={10}
-          style={{backgroundColor: 'rgb(255, 251, 255)'}}
-        />
-      </View>
-    </View>
+      </KeyboardAwareScrollView>
+    </KeyboardAvoidingContainer>
   );
 }
 
@@ -144,6 +150,9 @@ const styles = StyleSheet.create({
     paddingRight: 10,
     paddingBottom: 0,
     backgroundColor: 'rgb(255, 251, 255)',
+  },
+  content: {
+    flexGrow: 1,
   },
   containerRow: {
     flexDirection: 'row',

@@ -1,5 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {Alert, Modal, StyleSheet, View} from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
+  View,
+} from 'react-native';
 import {Button, TextInput, Text} from 'react-native-paper';
 import {useTranslation} from 'react-i18next';
 
@@ -41,7 +48,9 @@ export default function AddEditSettingsModal({
         setCurrentKey(keyName);
         setCurrentValue(value);
       }}>
-      <View style={styles.centeredView}>
+      <KeyboardAvoidingView
+        style={styles.centeredView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.modalView}>
           <Text style={styles.modalText}>
             {t(newSetting ? 'Lägg till nytt nyckelvärde' : 'Ändra inställning')}
@@ -77,7 +86,7 @@ export default function AddEditSettingsModal({
             </Button>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

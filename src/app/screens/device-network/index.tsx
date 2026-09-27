@@ -1,7 +1,8 @@
 import {createMaterialTopTabNavigator} from '@react-navigation/material-top-tabs';
 import type {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React from 'react';
-import {Dimensions, SafeAreaView} from 'react-native';
+import {Dimensions} from 'react-native';
+import {SafeAreaView} from 'react-native-safe-area-context';
 import {useTranslation} from 'react-i18next';
 
 import {Notifications} from '@lib/components/Notifications';
@@ -25,7 +26,10 @@ export const DeviceNetworkScreen = (props: Props) => {
 
   return (
     <>
-      <SafeAreaView style={{flex: 1}}>
+      {/* There is no bottom tab bar on this screen, so the bottom inset has to
+          be applied here to keep the tab content above the Android navigation
+          bar. The top inset is handled by the stack header. */}
+      <SafeAreaView style={{flex: 1}} edges={['bottom']}>
         <Notifications />
         <Toasts offset={80} />
         <Tab.Navigator

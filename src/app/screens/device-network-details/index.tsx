@@ -1,10 +1,12 @@
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import React, {useEffect, useState} from 'react';
-import {SafeAreaView, ScrollView, View} from 'react-native';
+import {SafeAreaView, StyleSheet, View} from 'react-native';
 import {Button, ProgressBar, Text, TextInput} from 'react-native-paper';
 import {useTranslation} from 'react-i18next';
 import {RootStackParamList} from 'src/app/types';
 
+import {KeyboardAvoidingContainer} from '@lib/components/KeyboardAvoidingContainer';
+import {KeyboardAwareScrollView} from '@lib/components/KeyboardAwareScrollView';
 import {useNotify} from '@lib/hooks/useNotify';
 import {useToasts} from '@lib/hooks/useToasts';
 import {
@@ -77,9 +79,9 @@ export const DeviceNetworkDetailsScreen = (props: Props) => {
 
   const isLoading = isRefetchingWifiNetworks || isRefetchingIp || isConnecting;
   return (
-    <>
-      <SafeAreaView>
-        <ScrollView stickyHeaderIndices={[0]}>
+    <KeyboardAvoidingContainer style={styles.screen}>
+      <SafeAreaView style={styles.screen}>
+        <KeyboardAwareScrollView stickyHeaderIndices={[0]}>
           <ProgressBar visible={isLoading} indeterminate />
           <View style={{padding: 16, gap: 16}}>
             {!wifiNetwork?.isConnected ? (
@@ -117,8 +119,14 @@ export const DeviceNetworkDetailsScreen = (props: Props) => {
               </>
             ) : undefined}
           </View>
-        </ScrollView>
+        </KeyboardAwareScrollView>
       </SafeAreaView>
-    </>
+    </KeyboardAvoidingContainer>
   );
 };
+
+const styles = StyleSheet.create({
+  screen: {
+    flex: 1,
+  },
+});

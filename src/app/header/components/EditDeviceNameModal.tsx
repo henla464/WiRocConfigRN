@@ -1,5 +1,12 @@
 import React, {useEffect, useState} from 'react';
-import {Alert, Modal, StyleSheet, View} from 'react-native';
+import {
+  Alert,
+  KeyboardAvoidingView,
+  Modal,
+  Platform,
+  StyleSheet,
+  View,
+} from 'react-native';
 import {Button, TextInput, Text} from 'react-native-paper';
 import {useTranslation} from 'react-i18next';
 
@@ -36,7 +43,9 @@ export default function EditDeviceNameModal({
       onShow={() => {
         setCurrentDeviceName(deviceName);
       }}>
-      <View style={styles.centeredView}>
+      <KeyboardAvoidingView
+        style={styles.centeredView}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <View style={styles.modalView}>
           <Text style={styles.modalText}>{t('Ändra enhetsnamn')}</Text>
           <TextInput
@@ -62,7 +71,7 @@ export default function EditDeviceNameModal({
             </Button>
           </View>
         </View>
-      </View>
+      </KeyboardAvoidingView>
     </Modal>
   );
 }

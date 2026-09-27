@@ -1,6 +1,6 @@
 import {useQuery, useQueryClient} from '@tanstack/react-query';
 import React, {useEffect, useRef, useState} from 'react';
-import {ScrollView, StyleSheet, View} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {
   Button,
   DataTable,
@@ -13,6 +13,8 @@ import {
 import {useTranslation} from 'react-i18next';
 
 import {TestPunch} from '@api/types';
+import {KeyboardAvoidingContainer} from '@lib/components/KeyboardAvoidingContainer';
+import {KeyboardAwareScrollView} from '@lib/components/KeyboardAwareScrollView';
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useNotify} from '@lib/hooks/useNotify';
 import {useWiRocDeviceApi} from '@lib/hooks/useWiRocDeviceApi';
@@ -86,7 +88,7 @@ export default function SendPunches() {
       }
       // Radio-style (LORA/SRR): acked, not-acked, failed-after-tries, or explicit Failed
       return (
-        (punch.Status === 'Acked' && ackReq) ||
+        punch.Status === 'Acked' ||
         (punch.Status === 'Not acked' && !ackReq) ||
         punch.Status === 'Failed' ||
         (punch.NoOfSendTries > 1 &&
@@ -270,14 +272,16 @@ export default function SendPunches() {
           return styles.failure;
         }
       }
-      if (!ackReq) {
-        return styles.centered;
-      }
+      // An "Acked" status means an acknowledgement was actually received,
+      // so it is always a success - even if the (LoRa) ack setting can't be
+      // read, or the output type doesn't use that setting.
       if (punch.Status === 'Acked') {
         return styles.success;
       }
+      // "Not acked" is a failure only when acknowledgements were requested.
+      // Otherwise it is the expected terminal state and should stay neutral.
       if (punch.Status === 'Not acked') {
-        return styles.failure;
+        return ackReq ? styles.failure : styles.centered;
       }
       return styles.centered;
     }
@@ -304,11 +308,10 @@ export default function SendPunches() {
 
   const {colors} = useTheme();
   return (
-    <View
+    <KeyboardAvoidingContainer
       style={{
         padding: 8,
         gap: 8,
-        flex: 1,
         backgroundColor: colors.background,
       }}>
       <Surface
@@ -410,7 +413,7 @@ export default function SendPunches() {
             </DataTable.Title>
           </DataTable.Header>
           <Divider bold={true} />
-          <ScrollView contentContainerStyle={{flexGrow: 1}} style={{}}>
+          <KeyboardAwareScrollView contentContainerStyle={{flexGrow: 1}}>
             {punches.map((punch, idx) => (
               <DataTable.Row key={punch.Id} style={styles.row}>
                 <DataTable.Cell
@@ -487,7 +490,7 @@ export default function SendPunches() {
                 </DataTable.Cell>
               </DataTable.Row>
             ))}
-          </ScrollView>
+          </KeyboardAwareScrollView>
           <Divider bold={true} />
           <DataTable.Row key={'footer'} style={styles.row}>
             <DataTable.Cell textStyle={{fontSize: 22}} style={{flex: 3}}>
@@ -533,7 +536,7 @@ export default function SendPunches() {
           </DataTable.Row>
         </DataTable>
       </Surface>
-    </View>
+    </KeyboardAvoidingContainer>
   );
 }
 

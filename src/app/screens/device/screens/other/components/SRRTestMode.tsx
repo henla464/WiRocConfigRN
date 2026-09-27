@@ -1,11 +1,12 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {StyleSheet, View} from 'react-native';
-import {ScrollView} from 'react-native-gesture-handler';
 import {useTranslation} from 'react-i18next';
 import {Button, List, Switch, TextInput} from 'react-native-paper';
 
 import {SettablePropName, SettableValues, getters} from '@api/transformers';
+import {KeyboardAvoidingContainer} from '@lib/components/KeyboardAvoidingContainer';
+import {KeyboardAwareScrollView} from '@lib/components/KeyboardAwareScrollView';
 import {ListItemMenu, ListItemMenuItem} from '@lib/components/ListItemMenu';
 import SaveBanner from '@lib/components/SaveBanner';
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
@@ -191,7 +192,7 @@ export default function SRRTestMode() {
     successPercent !== undefined ? 100 - successPercent : undefined;
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingContainer style={styles.container}>
       <SaveBanner
         visible={formState.isDirty}
         isSaveDisabled={!formState.isValid}
@@ -205,7 +206,7 @@ export default function SRRTestMode() {
           setTimeout(() => setMTop(133), 0);
         }}
       />
-      <ScrollView
+      <KeyboardAwareScrollView
         style={{flex: 1, marginTop: mTop}}
         contentContainerStyle={{width: '100%', paddingBottom: 16}}>
         <View style={{width: '100%'}}>
@@ -333,8 +334,8 @@ export default function SRRTestMode() {
             style={styles.statItem}
           />
         </View>
-      </ScrollView>
-    </View>
+      </KeyboardAwareScrollView>
+    </KeyboardAvoidingContainer>
   );
 }
 

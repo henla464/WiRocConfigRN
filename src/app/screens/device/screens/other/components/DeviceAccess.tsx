@@ -1,8 +1,10 @@
 import React, {useState} from 'react';
-import {StyleSheet, View} from 'react-native';
+import {StyleSheet} from 'react-native';
 import {Button, Text, TextInput} from 'react-native-paper';
 import {useTranslation} from 'react-i18next';
 
+import {KeyboardAvoidingContainer} from '@lib/components/KeyboardAvoidingContainer';
+import {KeyboardAwareScrollView} from '@lib/components/KeyboardAwareScrollView';
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useNotify} from '@lib/hooks/useNotify';
 import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
@@ -79,47 +81,55 @@ export default function DeviceAccess() {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.explanation}>
-        {t(
-          'Ange din email och lösenord till monitor.wiroc.se för att ge dig åtkomst att redigera denna enhet på monitor.wiroc.se',
-        )}
-      </Text>
-      <TextInput
-        mode="outlined"
-        label={t('E-post')}
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-        disabled={!isConnected || isLoading}
-        style={styles.input}
-      />
-      <TextInput
-        mode="outlined"
-        label={t('Lösenord')}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        disabled={!isConnected || isLoading}
-        style={styles.input}
-      />
-      <Button
-        icon="account-key"
-        mode="contained"
-        loading={isLoading}
-        disabled={!isConnected || isLoading}
-        onPress={grantAccess}
-        style={styles.button}>
-        {t('Ge åtkomst till enhet')}
-      </Button>
-    </View>
+    <KeyboardAvoidingContainer style={styles.scrollView}>
+      <KeyboardAwareScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.container}>
+        <Text style={styles.explanation}>
+          {t(
+            'Ange din email och lösenord till monitor.wiroc.se för att ge dig åtkomst att redigera denna enhet på monitor.wiroc.se',
+          )}
+        </Text>
+        <TextInput
+          mode="outlined"
+          label={t('E-post')}
+          value={email}
+          onChangeText={setEmail}
+          autoCapitalize="none"
+          keyboardType="email-address"
+          disabled={!isConnected || isLoading}
+          style={styles.input}
+        />
+        <TextInput
+          mode="outlined"
+          label={t('Lösenord')}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+          disabled={!isConnected || isLoading}
+          style={styles.input}
+        />
+        <Button
+          icon="account-key"
+          mode="contained"
+          loading={isLoading}
+          disabled={!isConnected || isLoading}
+          onPress={grantAccess}
+          style={styles.button}>
+          {t('Ge åtkomst till enhet')}
+        </Button>
+      </KeyboardAwareScrollView>
+    </KeyboardAvoidingContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  scrollView: {
     flex: 1,
+    backgroundColor: 'rgb(255, 251, 255)',
+  },
+  container: {
+    flexGrow: 1,
     justifyContent: 'flex-start',
     paddingLeft: 16,
     paddingTop: 24,

@@ -6,6 +6,8 @@ import {useTranslation} from 'react-i18next';
 
 import {AllowedIP} from '@api/index';
 import {SettablePropName, SettableValues} from '@api/transformers';
+import {KeyboardAvoidingContainer} from '@lib/components/KeyboardAvoidingContainer';
+import {KeyboardAwareScrollView} from '@lib/components/KeyboardAwareScrollView';
 import SaveBanner from '@lib/components/SaveBanner';
 import {useActiveWiRocDevice} from '@lib/hooks/useActiveWiRocDevice';
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
@@ -223,7 +225,7 @@ export default function WifiMesh() {
   };
 
   return (
-    <View style={{flex: 1}}>
+    <KeyboardAvoidingContainer>
       <SaveBanner
         visible={formState.isDirty}
         isSaveDisabled={!formState.isValid}
@@ -237,7 +239,7 @@ export default function WifiMesh() {
           setMTop(133);
         }}
       />
-      <ScrollView style={{marginTop: mTop}}>
+      <KeyboardAwareScrollView style={{marginTop: mTop}}>
         <View style={styles.container}>
           <Surface style={styles.infoSurface}>
             <View style={{padding: 16, gap: 8}}>
@@ -582,8 +584,8 @@ export default function WifiMesh() {
           </ScrollView>
         </View>
         </View>
-      </ScrollView>
-    </View>
+      </KeyboardAwareScrollView>
+    </KeyboardAvoidingContainer>
   );
 }
 
