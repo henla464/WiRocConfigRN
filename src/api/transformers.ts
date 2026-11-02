@@ -57,6 +57,7 @@ export const getters = {
   'lora/listenonly': booleanGetter(),
   'lora/drf1268dscompatmode': booleanGetter(),
   'lora/module': stringGetter(11),
+  'lora/meshsupported': booleanGetter(),
   datarate: numberGetter(6),
   'lora/channel': stringGetter(7),
   'power/battery': numberGetter(8),

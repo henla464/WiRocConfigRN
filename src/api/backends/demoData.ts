@@ -3,7 +3,8 @@ import {GettablePropName} from '@api/transformers';
 export const demoData: Readonly<Partial<Record<GettablePropName, string>>> = {
   'lora/mode': 'RECEIVER',
   'lora/channel': '2',
-  'lora/module': 'DRF1268DS',
+  'lora/module': 'RAK3172',
+  'lora/meshsupported': '1',
   'lora/listenonly': '0',
   'lora/drf1268dscompatmode': '0',
   'lora/lorarange': 'L',

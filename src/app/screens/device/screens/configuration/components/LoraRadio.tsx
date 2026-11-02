@@ -1,9 +1,11 @@
 import React from 'react';
+import {useFormContext} from 'react-hook-form';
 import {StyleSheet, View} from 'react-native';
 import {Divider, Icon, List, Switch, Text} from 'react-native-paper';
 import {useTranslation} from 'react-i18next';
 
 import {LoraMode, LoraRange} from '@api/index';
+import {SettableValues} from '@api/transformers';
 import {ListItemMenu, ListItemMenuItem} from '@lib/components/ListItemMenu';
 import {useConfigurationProperty} from '@lib/hooks/useConfigurationProperty';
 import {useWiRocPropertyQuery} from '@lib/hooks/useWiRocPropertyQuery';
@@ -12,11 +14,23 @@ import {SectionComponentProps} from '../';
 import OnOffChip from './OnOffChip';
 import WarningIcon from './WarningIcon';
 
+const meshLoraModes: LoraMode[] = ['MESHROOT', 'MESHNODE', 'MESHSTANDBYROOT'];
+export const isMeshLoraMode = (mode?: LoraMode) =>
+  mode !== undefined && meshLoraModes.includes(mode);
+
+const meshCompatibleRanges: LoraRange[] = ['MS', 'S', 'XF', 'UF'];
+const isMeshCompatibleRange = (range?: LoraRange) =>
+  range !== undefined && meshCompatibleRanges.includes(range);
+
+const isNarrowLoraChannel = (channel?: string) =>
+  channel !== undefined && (channel.endsWith('A') || channel.endsWith('B'));
+
 export default function LoraRadio({
   deviceId,
   onDefaultValuesChange,
 }: SectionComponentProps) {
   const {t} = useTranslation();
+  const form = useFormContext<Partial<SettableValues>>();
   const [expanded, setExpanded] = React.useState(false);
   const handlePress = () => setExpanded(!expanded);
 
@@ -49,32 +63,56 @@ export default function LoraRadio({
       field: {value: channel, onChange: setChannel},
       fieldState: {error: channelError},
     },
-  ] = useConfigurationProperty(deviceId, 'lora/channel', onDefaultValuesChange, {
-    rules: {
-      validate: (value: string) => {
-        if (
-          drf1268dsCompatMode &&
-          value !== undefined &&
-          (value.endsWith('A') || value.endsWith('B'))
-        ) {
-          return 'Half channels not available in DRF1268DS compatibility mode';
-        }
-        return true;
+  ] = useConfigurationProperty(
+    deviceId,
+    'lora/channel',
+    onDefaultValuesChange,
+    {
+      rules: {
+        validate: (value: string) => {
+          if (drf1268dsCompatMode && isNarrowLoraChannel(value)) {
+            return 'Half channels not available in DRF1268DS compatibility mode';
+          }
+          return true;
+        },
       },
     },
-  });
+  );
 
   const [
     {
       field: {value: loraMode, onChange: setLoraMode},
     },
-  ] = useConfigurationProperty(deviceId, 'lora/mode', onDefaultValuesChange);
+  ] = useConfigurationProperty(deviceId, 'lora/mode', onDefaultValuesChange, {
+    rules: {
+      deps: ['lora/lorarange'],
+      validate: (value: LoraMode) =>
+        isMeshLoraMode(value) &&
+        !isMeshCompatibleRange(form.getValues('lora/lorarange'))
+          ? t('Mesh kräver datahastigheten MS, S, XF eller UF')
+          : true,
+    },
+  });
 
   const [
     {
       field: {value: loraRange, onChange: setLoraRange},
     },
-  ] = useConfigurationProperty(deviceId, 'lora/lorarange', onDefaultValuesChange);
+  ] = useConfigurationProperty(
+    deviceId,
+    'lora/lorarange',
+    onDefaultValuesChange,
+    {
+      rules: {
+        deps: ['lora/mode'],
+        validate: (value: LoraRange) =>
+          isMeshLoraMode(form.getValues('lora/mode')) &&
+          !isMeshCompatibleRange(value)
+            ? t('Mesh kräver datahastigheten MS, S, XF eller UF')
+            : true,
+      },
+    },
+  );
 
   const [
     {
@@ -122,6 +160,12 @@ export default function LoraRadio({
   const {data: loraModule} = useWiRocPropertyQuery(deviceId, 'lora/module');
   const isRak3172 = loraModule === 'RAK3172';
 
+  const {data: isMeshSupported} = useWiRocPropertyQuery(
+    deviceId,
+    'lora/meshsupported',
+    {retry: false, defaultValue: false},
+  );
+
   const {data: wiRocVersion} = useWiRocPropertyQuery(
     deviceId,
     'device/version/wirocpython',
@@ -132,13 +176,25 @@ export default function LoraRadio({
     versionParts.length >= 2 &&
     (versionParts[0] > 1 || (versionParts[0] === 1 && versionParts[1] >= 23));
 
-  const isNarrowChannel =
-    channel !== undefined && (channel.endsWith('A') || channel.endsWith('B'));
+  const isNarrowChannel = isNarrowLoraChannel(channel);
+
+  const isMeshMode = isMeshLoraMode(loraMode);
 
   const modeOptions = [
     {value: 'RECEIVER', label: t('Mottagare'), icon: 'login'},
     {value: 'SENDER', label: t('Sändare'), icon: 'logout'},
     {value: 'REPEATER', label: t('Repeterare'), icon: 'pan-horizontal'},
+    ...(isMeshSupported
+      ? [
+          {value: 'MESHROOT', label: t('Mesh root'), icon: 'home'},
+          {value: 'MESHNODE', label: t('Mesh node'), icon: 'access-point'},
+          {
+            value: 'MESHSTANDBYROOT',
+            label: t('Mesh standby root'),
+            icon: 'home-clock',
+          },
+        ]
+      : []),
   ];
   const selectedModeOption = modeOptions.find(m => m.value === loraMode);
 
@@ -211,7 +267,12 @@ export default function LoraRadio({
           },
         ]
       : []),
-  ];
+  ].map(option => ({
+    ...option,
+    disabled:
+      option.disabled ||
+      (isMeshMode && !isMeshCompatibleRange(option.value as LoraRange)),
+  }));
   const selectedRangeOption = rangeOptions.find(
     r => r.value === loraRange || r.altValue === loraRange,
   );
@@ -361,12 +422,19 @@ export default function LoraRadio({
               />
             ))}
           </ListItemMenu>
+          {loraMode === 'MESHSTANDBYROOT' && (
+            <Text variant="bodySmall" style={styles.helperText}>
+              {t(
+                'Ligger tyst som en andra mesh-rot tills den aktiva roten tystnar, och tar då över automatiskt',
+              )}
+            </Text>
+          )}
           {isRak3172 && (
             <List.Item
               left={props => <List.Icon {...props} icon="chip" />}
-              disabled={!isLoraRadioEnabled}
+              disabled={!isLoraRadioEnabled || isMeshMode}
               style={{
-                opacity: isLoraRadioEnabled ? undefined : 0.5,
+                opacity: isLoraRadioEnabled && !isMeshMode ? undefined : 0.5,
               }}
               title={t('DRF1268DS kompatibilitetsläge')}
               description={
@@ -381,7 +449,7 @@ export default function LoraRadio({
                   onValueChange={value => {
                     setDrf1268dsCompatMode(value);
                   }}
-                  disabled={!isLoraRadioEnabled}
+                  disabled={!isLoraRadioEnabled || isMeshMode}
                 />
               )}
             />
@@ -448,12 +516,12 @@ export default function LoraRadio({
               )}
             />
           )}
-          {loraMode === 'RECEIVER' && (
+          {(loraMode === 'RECEIVER' || isMeshMode) && (
             <List.Item
               left={props => <List.Icon {...props} icon="ear-hearing" />}
-              disabled={!isLoraRadioEnabled}
+              disabled={!isLoraRadioEnabled || isMeshMode}
               style={{
-                opacity: isLoraRadioEnabled ? undefined : 0.5,
+                opacity: isLoraRadioEnabled && !isMeshMode ? undefined : 0.5,
               }}
               title={t('Lyssna endast')}
               descriptionNumberOfLines={3}
@@ -473,7 +541,7 @@ export default function LoraRadio({
                   onValueChange={value => {
                     setListenOnly(value);
                   }}
-                  disabled={!isLoraRadioEnabled}
+                  disabled={!isLoraRadioEnabled || isMeshMode}
                 />
               )}
             />
@@ -523,6 +591,10 @@ const styles = StyleSheet.create({
   container: {
     backgroundColor: 'rgb(255, 251, 255)',
     marginLeft: 10,
+  },
+  helperText: {
+    paddingHorizontal: 16,
+    paddingBottom: 8,
   },
   containerColumn: {
     flex: 1,

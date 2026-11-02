@@ -20,7 +20,7 @@ import {
 } from '@lib/hooks/useWiRocPropertyQuery';
 
 import {ConfigurationTabParamList} from '../../types';
-import LoraRadio from './components/LoraRadio';
+import LoraRadio, {isMeshLoraMode} from './components/LoraRadio';
 import ROC from './components/ROC';
 import RS232 from './components/RS232';
 import SIRAP from './components/SIRAP';
@@ -75,12 +75,28 @@ export default function ConfigurationScreen(_props: ConfigurationScreenProps) {
   const {mutate} = useWiRocPropertiesMutation(deviceId);
 
   const onSubmit = (data: Partial<SettableValues>) => {
-    const changedData = Object.fromEntries(
-      Object.entries(data).filter(([key]) => {
-        return formState.dirtyFields[key as SettablePropName];
-      }),
+    const changedEntries = Object.entries(data).filter(([key]) => {
+      return formState.dirtyFields[key as SettablePropName];
+    });
+
+    // The device validates the range against the current mesh mode, so apply a
+    // new range before entering a mesh mode, and the mode first when leaving.
+    const currentModeIsMesh = isMeshLoraMode(defaultValues['lora/mode']);
+    const newModeIsMesh = isMeshLoraMode(
+      data['lora/mode'] ?? defaultValues['lora/mode'],
     );
-    mutate(changedData);
+    const orderOf = (key: string) => {
+      if (key === 'lora/lorarange') {
+        return currentModeIsMesh && !newModeIsMesh ? 1 : newModeIsMesh ? -1 : 0;
+      }
+      if (key === 'lora/mode') {
+        return currentModeIsMesh && !newModeIsMesh ? -1 : newModeIsMesh ? 1 : 0;
+      }
+      return 0;
+    };
+    changedEntries.sort(([a], [b]) => orderOf(a) - orderOf(b));
+
+    mutate(Object.fromEntries(changedEntries));
     reset(undefined, {
       keepValues: true,
     });

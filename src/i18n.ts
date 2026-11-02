@@ -122,6 +122,13 @@ export const resources = {
       Mottagare: 'Receiver',
       Sändare: 'Sender',
       Repeterare: 'Repeater',
+      'Mesh root': 'Mesh root',
+      'Mesh node': 'Mesh node',
+      'Mesh standby root': 'Mesh standby root',
+      'Ligger tyst som en andra mesh-rot tills den aktiva roten tystnar, och tar då över automatiskt':
+        'Stays silent as a second mesh root until the active root goes dark, then takes over automatically',
+      'Mesh kräver datahastigheten MS, S, XF eller UF':
+        'Mesh requires the MS, S, XF or UF data rate',
       'SIRAP-tcp/ip': 'SIRAP-tcp/ip',
       'Ogiltig IP-adress': 'Invalid IP address',
       'IP-adress krävs när SIRAP är aktiverat':
@@ -350,6 +357,13 @@ export const resources = {
       Mottagare: 'Mottagare',
       Sändare: 'Sändare',
       Repeterare: 'Repeterare',
+      'Mesh root': 'Mesh root',
+      'Mesh node': 'Mesh node',
+      'Mesh standby root': 'Mesh standby root',
+      'Ligger tyst som en andra mesh-rot tills den aktiva roten tystnar, och tar då över automatiskt':
+        'Ligger tyst som en andra mesh-rot tills den aktiva roten tystnar, och tar då över automatiskt',
+      'Mesh kräver datahastigheten MS, S, XF eller UF':
+        'Mesh kräver datahastigheten MS, S, XF eller UF',
       'SIRAP-tcp/ip': 'SIRAP-tcp/ip',
       'Ogiltig IP-adress': 'Ogiltig IP-adress',
       'IP-adress krävs när SIRAP är aktiverat':

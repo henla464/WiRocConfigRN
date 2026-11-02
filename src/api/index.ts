@@ -5,7 +5,13 @@ import {createDemoApiBackend} from './backends/demo';
 import {createRestApiBackend} from './backends/rest';
 import {WiRocApiBackend} from './types';
 
-export type LoraMode = 'RECEIVER' | 'REPEATER' | 'SENDER';
+export type LoraMode =
+  | 'RECEIVER'
+  | 'REPEATER'
+  | 'SENDER'
+  | 'MESHROOT'
+  | 'MESHNODE'
+  | 'MESHSTANDBYROOT';
 export type LoraRange =
   | 'UL'
   | 'XL'
