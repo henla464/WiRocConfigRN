@@ -84,14 +84,9 @@ export default function LoraRadio({
       field: {value: loraMode, onChange: setLoraMode},
     },
   ] = useConfigurationProperty(deviceId, 'lora/mode', onDefaultValuesChange, {
-    rules: {
-      deps: ['lora/lorarange'],
-      validate: (value: LoraMode) =>
-        isMeshLoraMode(value) &&
-        !isMeshCompatibleRange(form.getValues('lora/lorarange'))
-          ? t('Mesh kräver datahastigheten MS, S, XF eller UF')
-          : true,
-    },
+    // only revalidates the range; the range carries the mesh error message so
+    // it is not reported twice in the save banner
+    rules: {deps: ['lora/lorarange']},
   });
 
   const [
@@ -104,7 +99,6 @@ export default function LoraRadio({
     onDefaultValuesChange,
     {
       rules: {
-        deps: ['lora/mode'],
         validate: (value: LoraRange) =>
           isMeshLoraMode(form.getValues('lora/mode')) &&
           !isMeshCompatibleRange(value)
@@ -124,7 +118,11 @@ export default function LoraRadio({
     {
       field: {value: codeRate, onChange: setCodeRate},
     },
-  ] = useConfigurationProperty(deviceId, 'lora/coderate', onDefaultValuesChange);
+  ] = useConfigurationProperty(
+    deviceId,
+    'lora/coderate',
+    onDefaultValuesChange,
+  );
 
   const [
     {
@@ -179,6 +177,29 @@ export default function LoraRadio({
   const isNarrowChannel = isNarrowLoraChannel(channel);
 
   const isMeshMode = isMeshLoraMode(loraMode);
+  // hidden in the mesh modes, so they must not keep stale values either
+  React.useEffect(() => {
+    if (!isMeshMode) {
+      return;
+    }
+    if (drf1268dsCompatMode) {
+      setDrf1268dsCompatMode(false);
+    }
+    if (listenOnly) {
+      setListenOnly(false);
+    }
+    if (!acknowledgementRequested) {
+      setAcknowledgementRequested(true);
+    }
+  }, [
+    isMeshMode,
+    drf1268dsCompatMode,
+    listenOnly,
+    acknowledgementRequested,
+    setDrf1268dsCompatMode,
+    setListenOnly,
+    setAcknowledgementRequested,
+  ]);
 
   const modeOptions = [
     {value: 'RECEIVER', label: t('Mottagare'), icon: 'login'},
@@ -429,12 +450,12 @@ export default function LoraRadio({
               )}
             </Text>
           )}
-          {isRak3172 && (
+          {isRak3172 && !isMeshMode && (
             <List.Item
               left={props => <List.Icon {...props} icon="chip" />}
-              disabled={!isLoraRadioEnabled || isMeshMode}
+              disabled={!isLoraRadioEnabled}
               style={{
-                opacity: isLoraRadioEnabled && !isMeshMode ? undefined : 0.5,
+                opacity: isLoraRadioEnabled ? undefined : 0.5,
               }}
               title={t('DRF1268DS kompatibilitetsläge')}
               description={
@@ -449,7 +470,7 @@ export default function LoraRadio({
                   onValueChange={value => {
                     setDrf1268dsCompatMode(value);
                   }}
-                  disabled={!isLoraRadioEnabled || isMeshMode}
+                  disabled={!isLoraRadioEnabled}
                 />
               )}
             />
@@ -491,7 +512,7 @@ export default function LoraRadio({
               />
             ))}
           </ListItemMenu>
-          {loraMode !== 'RECEIVER' && (
+          {!isMeshMode && loraMode !== 'RECEIVER' && (
             <List.Item
               left={props => <List.Icon {...props} icon="reply" />}
               disabled={!isLoraRadioEnabled}
@@ -516,12 +537,12 @@ export default function LoraRadio({
               )}
             />
           )}
-          {(loraMode === 'RECEIVER' || isMeshMode) && (
+          {loraMode === 'RECEIVER' && (
             <List.Item
               left={props => <List.Icon {...props} icon="ear-hearing" />}
-              disabled={!isLoraRadioEnabled || isMeshMode}
+              disabled={!isLoraRadioEnabled}
               style={{
-                opacity: isLoraRadioEnabled && !isMeshMode ? undefined : 0.5,
+                opacity: isLoraRadioEnabled ? undefined : 0.5,
               }}
               title={t('Lyssna endast')}
               descriptionNumberOfLines={3}
@@ -541,7 +562,7 @@ export default function LoraRadio({
                   onValueChange={value => {
                     setListenOnly(value);
                   }}
-                  disabled={!isLoraRadioEnabled || isMeshMode}
+                  disabled={!isLoraRadioEnabled}
                 />
               )}
             />
