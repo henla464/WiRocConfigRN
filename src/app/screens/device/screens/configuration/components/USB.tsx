@@ -68,23 +68,17 @@ export default function USB({
             label={t('Envägs, lyssna passivt')}
             position="leading"
             status={isOneWay ? 'checked' : 'unchecked'}
-            onPress={() => {
-              if (isOneWay) {
-                setIs4800bps(false);
-              }
-              setIsOneWay(!isOneWay);
-            }}
+            onPress={() => setIsOneWay(!isOneWay)}
             labelStyle={styles.checkBoxLabel}
           />
         </View>
-        <View style={styles.secondaryCheckBoxContainer}>
+        <View style={styles.mainCheckBoxContainer}>
           <Checkbox.Item
             label={t('Använd 4800 bps')}
             position="leading"
             status={is4800bps ? 'checked' : 'unchecked'}
             onPress={() => setIs4800bps(!is4800bps)}
             labelStyle={styles.checkBoxLabel}
-            disabled={!isOneWay}
           />
         </View>
       </View>
@@ -103,10 +97,6 @@ const styles = StyleSheet.create({
   },
   mainCheckBoxContainer: {
     alignItems: 'flex-start',
-  },
-  secondaryCheckBoxContainer: {
-    alignItems: 'flex-start',
-    paddingLeft: 25,
   },
   checkBoxLabel: {
     marginLeft: 5,

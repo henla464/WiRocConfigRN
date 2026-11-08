@@ -82,7 +82,6 @@ export default function RS232({
         <RadioButton.Group
           onValueChange={newValue => {
             setSendReceive(newValue);
-            setIs4800bps(false);
             if (newValue === 'SEND') {
               setIsOneWay(false);
             }
@@ -106,12 +105,7 @@ export default function RS232({
                 label={t('Envägs, lyssna passivt')}
                 position="leading"
                 status={isOneWay ? 'checked' : 'unchecked'}
-                onPress={() => {
-                  if (isOneWay) {
-                    setIs4800bps(false);
-                  }
-                  setIsOneWay(!isOneWay);
-                }}
+                onPress={() => setIsOneWay(!isOneWay)}
                 disabled={sendReceive === 'SEND'}
                 labelStyle={styles.checkBoxLabel}
               />
@@ -123,7 +117,6 @@ export default function RS232({
                 status={is4800bps ? 'checked' : 'unchecked'}
                 onPress={() => setIs4800bps(!is4800bps)}
                 labelStyle={styles.checkBoxLabel}
-                disabled={!isOneWay && sendReceive === 'RECEIVE'}
               />
             </View>
           </View>
