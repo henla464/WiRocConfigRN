@@ -142,6 +142,11 @@ export const resources = {
         'The receiver should confirm the received punch',
       'Mottagaren bekräftar inte mottagen stämpling':
         'The receiver does not confirm the received punch',
+      'Skicka med subsekund': 'Send with subsecond',
+      'Stämplingar skickas med Lora-meddelanden som innehåller SI-subsekund. Båda ändarna måste stödja det':
+        'Punches are sent with Lora messages that carry the SI subsecond. Both ends must support it',
+      'Stämplingar skickas utan SI-subsekund':
+        'Punches are sent without SI subsecond',
       Aktivera: 'Enable',
       SRR: 'SRR',
       Radiofunktion: 'Radio function',
@@ -387,6 +392,11 @@ export const resources = {
         'Mottagaren ska bekräfta mottagen stämpling',
       'Mottagaren bekräftar inte mottagen stämpling':
         'Mottagaren bekräftar inte mottagen stämpling',
+      'Skicka med subsekund': 'Skicka med subsekund',
+      'Stämplingar skickas med Lora-meddelanden som innehåller SI-subsekund. Båda ändarna måste stödja det':
+        'Stämplingar skickas med Lora-meddelanden som innehåller SI-subsekund. Båda ändarna måste stödja det',
+      'Stämplingar skickas utan SI-subsekund':
+        'Stämplingar skickas utan SI-subsekund',
       Aktivera: 'Aktivera',
       SRR: 'SRR',
       Radiofunktion: 'Radiofunktion',

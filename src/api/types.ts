@@ -37,6 +37,7 @@ export interface TestPunch {
   RSSI: number;
   SNR: number;
   Time: string;
+  SubSecond?: number | null;
   TypeName: string;
   MaxTries: number;
 }

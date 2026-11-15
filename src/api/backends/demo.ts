@@ -478,6 +478,7 @@ class DemoDevice {
             RSSI: typeName === 'LORA' || typeName === 'SRR' ? Math.floor(Math.random() * 40) - 120 : 0,
             SNR: typeName === 'LORA' || typeName === 'SRR' ? Math.floor(Math.random() * 10) : 0,
             Time: new Date().toISOString(),
+            SubSecond: Math.floor(Math.random() * 256),
             TypeName: typeName,
             TestPunchId: baseId,
             MaxTries: 3,

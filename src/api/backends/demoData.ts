@@ -405,6 +405,7 @@ export const demoData: Readonly<Partial<Record<GettablePropName, string>>> = {
   'rtc/wakeup': '10:15',
   'lora/power': '22',
   'lora/coderate': '0',
+  'lora/sendsubsecond': '0',
   'lora/enabled': '1',
   'ham/enabled': '0',
   'ham/callsign': '',

@@ -18,6 +18,10 @@ const meshLoraModes: LoraMode[] = ['MESHROOT', 'MESHNODE', 'MESHSTANDBYROOT'];
 export const isMeshLoraMode = (mode?: LoraMode) =>
   mode !== undefined && meshLoraModes.includes(mode);
 
+const senderLoraModes: LoraMode[] = ['SENDER', 'REPEATER', 'MESHNODE'];
+const isSenderLoraMode = (mode?: LoraMode) =>
+  mode !== undefined && senderLoraModes.includes(mode);
+
 const meshCompatibleRanges: LoraRange[] = ['MS', 'S', 'XF', 'UF'];
 const isMeshCompatibleRange = (range?: LoraRange) =>
   range !== undefined && meshCompatibleRanges.includes(range);
@@ -135,6 +139,18 @@ export default function LoraRadio({
     deviceId,
     'lora/acknowledgementrequested',
     onDefaultValuesChange,
+  );
+
+  const [
+    {
+      field: {value: sendSubSecond, onChange: setSendSubSecond},
+    },
+  ] = useConfigurationProperty(
+    deviceId,
+    'lora/sendsubsecond',
+    onDefaultValuesChange,
+    undefined,
+    {defaultValue: false},
   );
 
   const [
@@ -532,6 +548,32 @@ export default function LoraRadio({
                   onValueChange={value => {
                     setAcknowledgementRequested(value);
                   }}
+                  disabled={!isLoraRadioEnabled}
+                />
+              )}
+            />
+          )}
+          {isSenderLoraMode(loraMode) && (
+            <List.Item
+              left={props => <List.Icon {...props} icon="clock-digital" />}
+              disabled={!isLoraRadioEnabled}
+              style={{
+                opacity: isLoraRadioEnabled ? undefined : 0.5,
+              }}
+              title={t('Skicka med subsekund')}
+              descriptionNumberOfLines={3}
+              description={
+                sendSubSecond
+                  ? t(
+                      'Stämplingar skickas med Lora-meddelanden som innehåller SI-subsekund. Båda ändarna måste stödja det',
+                    )
+                  : t('Stämplingar skickas utan SI-subsekund')
+              }
+              right={props => (
+                <Switch
+                  {...props}
+                  value={sendSubSecond}
+                  onValueChange={setSendSubSecond}
                   disabled={!isLoraRadioEnabled}
                 />
               )}

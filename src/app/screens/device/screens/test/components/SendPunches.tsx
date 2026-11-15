@@ -61,6 +61,11 @@ export default function SendPunches() {
     'lora/acknowledgementrequested',
   );
 
+  const {data: sendSubSecond} = useWiRocPropertyQuery(
+    deviceId,
+    'lora/sendsubsecond',
+  );
+
   const {data: loraModule} = useWiRocPropertyQuery(deviceId, 'lora/module');
   const isRak3172 = loraModule === 'RAK3172';
 
@@ -440,6 +445,12 @@ export default function SendPunches() {
                     {flex: 1.5},
                   ]}>
                   {punch.Time}
+                  {sendSubSecond && punch.SubSecond != null
+                    ? '.' +
+                      String(
+                        Math.floor((punch.SubSecond * 100) / 256),
+                      ).padStart(2, '0')
+                    : ''}
                 </DataTable.Cell>
                 <DataTable.Cell
                   textStyle={{fontSize: 20}}
