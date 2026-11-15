@@ -408,7 +408,7 @@ export default function SendPunches() {
             </DataTable.Title>
             <DataTable.Title
               textStyle={{fontSize: 20}}
-              style={{flex: 1.5, justifyContent: 'center'}}>
+              style={{flex: 2.8, justifyContent: 'center'}}>
               {t('Tid')}
             </DataTable.Title>
             <DataTable.Title
@@ -459,7 +459,7 @@ export default function SendPunches() {
                       ? styles.punchBackgroundColor
                       : styles.testPunchBackgroundColor,
                     styles.centered,
-                    {flex: 1.5},
+                    {flex: 2.8},
                   ]}>
                   {punch.Time}
                   {sendSubSecond && punch.SubSecond != null
