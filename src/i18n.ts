@@ -147,6 +147,8 @@ export const resources = {
         'Punches are sent with Lora messages that carry the SI subsecond. Both ends must support it',
       'Stämplingar skickas utan SI-subsekund':
         'Punches are sent without SI subsecond',
+      'Öka SI-nummer för varje stämpling':
+        'Increment SI number for each punch',
       Aktivera: 'Enable',
       SRR: 'SRR',
       Radiofunktion: 'Radio function',
@@ -397,6 +399,8 @@ export const resources = {
         'Stämplingar skickas med Lora-meddelanden som innehåller SI-subsekund. Båda ändarna måste stödja det',
       'Stämplingar skickas utan SI-subsekund':
         'Stämplingar skickas utan SI-subsekund',
+      'Öka SI-nummer för varje stämpling':
+        'Öka SI-nummer för varje stämpling',
       Aktivera: 'Aktivera',
       SRR: 'SRR',
       Radiofunktion: 'Radiofunktion',

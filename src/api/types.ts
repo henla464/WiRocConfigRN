@@ -52,4 +52,5 @@ export interface TestPunchesOptions {
   numberOfPunches: number;
   sendInterval: number;
   siCardNo: string;
+  incrementSiCardNo: boolean;
 }

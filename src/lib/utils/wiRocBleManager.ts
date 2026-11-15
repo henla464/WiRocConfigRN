@@ -452,13 +452,20 @@ const createWiRocBleManager = () => {
 
   const startSendTestPunches = async (
     deviceId: string,
-    params: {numberOfPunches: number; sendInterval: number; siCardNo: string},
+    params: {
+      numberOfPunches: number;
+      sendInterval: number;
+      siCardNo: string;
+      incrementSiCardNo: boolean;
+    },
   ): Promise<void> => {
     log.debug('startSendTestPunches', deviceId, params);
     const data = await sendData(
       deviceId,
       testPunchesCharacteristic,
-      `${params.numberOfPunches}\t${params.sendInterval}\t${params.siCardNo}`,
+      `${params.numberOfPunches}\t${params.sendInterval}\t${params.siCardNo}\t${
+        params.incrementSiCardNo ? '1' : '0'
+      }`,
     );
     log.debug('startSendTestPunches response', data);
   };

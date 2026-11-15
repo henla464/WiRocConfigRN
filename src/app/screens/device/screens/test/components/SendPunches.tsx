@@ -3,6 +3,7 @@ import React, {useEffect, useRef, useState} from 'react';
 import {StyleSheet} from 'react-native';
 import {
   Button,
+  Checkbox,
   DataTable,
   Divider,
   Icon,
@@ -26,6 +27,7 @@ export default function SendPunches() {
   const queryClient = useQueryClient();
   const wiRocDeviceApi = useWiRocDeviceApi(deviceId);
   const [siCardNo, setSiCardNo] = useState<string>('16777215');
+  const [incrementSiCardNo, setIncrementSiCardNo] = useState(false);
   const [numberOfPunchesInput, setNumberOfPunchesInput] = useState('1');
   const numberOfPunches = parseInt2(numberOfPunchesInput);
   const [sendIntervalInput, setSendIntervalInput] = useState('1');
@@ -65,6 +67,10 @@ export default function SendPunches() {
     deviceId,
     'lora/sendsubsecond',
   );
+
+  // Without subseconds, sub-second intervals can yield identical timestamps
+  // that get merged on the device, so punches must differ in SI number.
+  const mustIncrementSiCardNo = sendInterval < 1 && !sendSubSecond;
 
   const {data: loraModule} = useWiRocPropertyQuery(deviceId, 'lora/module');
   const isRak3172 = loraModule === 'RAK3172';
@@ -182,6 +188,7 @@ export default function SendPunches() {
         numberOfPunches,
         sendInterval: sendInterval * 1000,
         siCardNo,
+        incrementSiCardNo: mustIncrementSiCardNo || incrementSiCardNo,
       });
     }
   };
@@ -344,6 +351,16 @@ export default function SendPunches() {
           mode="outlined"
           keyboardType="number-pad"
           style={{width: '100%'}}
+        />
+        <Checkbox.Item
+          disabled={isSending || mustIncrementSiCardNo}
+          status={
+            mustIncrementSiCardNo || incrementSiCardNo ? 'checked' : 'unchecked'
+          }
+          label={t('Öka SI-nummer för varje stämpling')}
+          position="leading"
+          onPress={() => setIncrementSiCardNo(!incrementSiCardNo)}
+          style={{width: '100%', paddingHorizontal: 0}}
         />
         <TextInput
           disabled={isSending}
